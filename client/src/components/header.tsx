@@ -28,7 +28,11 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-fractown-primary">fractOWN</h1>
+              <img 
+                src="@assets/fractOWN_logo_1754209748656.jpg" 
+                alt="fractOWN Logo"
+                className="h-12 w-auto"
+              />
             </div>
             <div className="hidden md:block ml-10">
               <div className="flex items-baseline space-x-4">

@@ -21,6 +21,13 @@ export default function HeroSection() {
       ></div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="max-w-3xl">
+          <div className="mb-8">
+            <img 
+              src="@assets/fractOWN_logo_1754209748656.jpg" 
+              alt="fractOWN Logo"
+              className="h-20 w-auto mb-6"
+            />
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
             Own Prime Real Estate with{" "}
             <span className="text-fractown-accent">Fractional Investment</span>
