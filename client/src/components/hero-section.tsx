@@ -23,7 +23,7 @@ export default function HeroSection() {
         <div className="max-w-3xl">
           <div className="mb-8">
             <img 
-              src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
+              src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
               alt="fractOWN Logo"
               className="h-48 w-auto mb-6"
             />
@@ -33,7 +33,7 @@ export default function HeroSection() {
             <span className="text-fractown-accent">Fractional Investment</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-blue-100">
-            Start your real estate journey with as little as ₹10,000. Invest in premium properties across India and earn regular rental income.
+            Start your real estate journey with as little as ₹10L. Own a fraction of premium properties across India and watch your wealth grow.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button 
@@ -52,7 +52,7 @@ export default function HeroSection() {
           </div>
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">₹5,000+</div>
+              <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>
               <div className="text-blue-200">Min Investment</div>
             </div>
             <div className="text-center">
