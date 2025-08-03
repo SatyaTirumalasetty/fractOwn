@@ -141,3 +141,16 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(222, 82%, 35%);
 }
+
+/* Logo background transparency */
+.logo-transparent {
+  mix-blend-mode: multiply;
+  filter: brightness(1.2) contrast(1.1);
+}
+
+.logo-hero {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}

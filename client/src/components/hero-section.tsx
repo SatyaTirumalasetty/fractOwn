@@ -22,11 +22,13 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="max-w-3xl">
           <div className="mb-8">
-            <img 
-              src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
-              alt="fractOWN Logo"
-              className="h-48 w-auto mb-6"
-            />
+            <div className="logo-hero">
+              <img 
+                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
+                alt="fractOWN Logo"
+                className="h-48 w-auto logo-transparent"
+              />
+            </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
             <span className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg inline-block mb-2">
