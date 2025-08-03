@@ -29,7 +29,10 @@ export default function HeroSection() {
             />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            Own Prime Real Estate with{" "}
+            <span className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg inline-block mb-2">
+              Own Prime Real Estate with
+            </span>{" "}
+            <br />
             <span className="text-fractown-accent">Fractional Investment</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-blue-100">
