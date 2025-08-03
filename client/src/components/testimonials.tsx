@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 export default function Testimonials() {
   const testimonials = [
     {
-      quote: "I started with just ₹25,000 and now earn ₹2,800 monthly from rental income. fractOWN made real estate investment so accessible for someone like me.",
+      quote: "I started with just ₹25,000 and my investment has grown significantly. fractOWN made real estate investment so accessible for someone like me.",
       name: "Priya Sharma",
       role: "Software Engineer, Bangalore",
       image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"
@@ -16,7 +16,7 @@ export default function Testimonials() {
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"
     },
     {
-      quote: "Diversifying across 5 properties has given me stable monthly income of ₹12,000. Much better returns than my fixed deposits!",
+      quote: "Diversifying across 5 properties has given me excellent returns and portfolio growth. Much better than my fixed deposits!",
       name: "Anjali Patel",
       role: "Financial Advisor, Pune",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"

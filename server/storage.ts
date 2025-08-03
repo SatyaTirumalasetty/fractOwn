@@ -36,7 +36,7 @@ export class MemStorage implements IStorage {
         totalValue: 25000000, // ₹2.5 Cr
         minInvestment: 25000,
         expectedReturn: "11.20",
-        rentalYield: "7.80",
+
         fundingProgress: 72,
         imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
         propertyType: "residential",
@@ -52,7 +52,7 @@ export class MemStorage implements IStorage {
         totalValue: 52000000, // ₹5.2 Cr
         minInvestment: 50000,
         expectedReturn: "13.50",
-        rentalYield: "9.20",
+
         fundingProgress: 45,
         imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
         propertyType: "commercial",
@@ -68,7 +68,7 @@ export class MemStorage implements IStorage {
         totalValue: 38000000, // ₹3.8 Cr
         minInvestment: 38000,
         expectedReturn: "10.80",
-        rentalYield: "6.50",
+
         fundingProgress: 95,
         imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
         propertyType: "residential",
@@ -84,7 +84,7 @@ export class MemStorage implements IStorage {
         totalValue: 45000000, // ₹4.5 Cr
         minInvestment: 45000,
         expectedReturn: "12.50",
-        rentalYield: "8.10",
+
         fundingProgress: 28,
         imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
         propertyType: "residential",
@@ -100,7 +100,7 @@ export class MemStorage implements IStorage {
         totalValue: 68000000, // ₹6.8 Cr
         minInvestment: 68000,
         expectedReturn: "14.20",
-        rentalYield: "10.50",
+
         fundingProgress: 63,
         imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
         propertyType: "commercial",
@@ -116,7 +116,7 @@ export class MemStorage implements IStorage {
         totalValue: 32000000, // ₹3.2 Cr
         minInvestment: 32000,
         expectedReturn: "10.50",
-        rentalYield: "6.80",
+
         fundingProgress: 55,
         imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
         propertyType: "residential",

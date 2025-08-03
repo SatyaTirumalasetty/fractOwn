@@ -23,7 +23,7 @@ export default function HowItWorks() {
     {
       icon: TrendingUp,
       title: "4. Earn Returns",
-      description: "Receive monthly rental income and benefit from property appreciation over time",
+      description: "Benefit from property appreciation and market growth over time",
       color: "bg-purple-600"
     }
   ];

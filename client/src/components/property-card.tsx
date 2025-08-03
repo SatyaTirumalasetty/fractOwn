@@ -68,14 +68,10 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
           </div>
         </div>
         
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-center mb-4">
           <div>
             <div className="text-sm text-gray-500">Expected Return</div>
             <div className="font-semibold text-fractown-secondary">{property.expectedReturn}% p.a.</div>
-          </div>
-          <div>
-            <div className="text-sm text-gray-500">Rental Yield</div>
-            <div className="font-semibold text-fractown-secondary">{property.rentalYield}% p.a.</div>
           </div>
         </div>
         

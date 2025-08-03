@@ -13,7 +13,7 @@ export const properties = pgTable("properties", {
   totalValue: integer("total_value").notNull(), // in rupees
   minInvestment: integer("min_investment").notNull(), // in rupees
   expectedReturn: decimal("expected_return", { precision: 5, scale: 2 }).notNull(), // percentage
-  rentalYield: decimal("rental_yield", { precision: 5, scale: 2 }).notNull(), // percentage
+
   fundingProgress: integer("funding_progress").notNull().default(0), // percentage 0-100
   imageUrl: text("image_url").notNull(),
   propertyType: text("property_type").notNull(), // 'residential' | 'commercial'

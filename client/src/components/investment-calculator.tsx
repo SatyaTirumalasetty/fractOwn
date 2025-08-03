@@ -11,18 +11,13 @@ export default function InvestmentCalculator() {
   const [period, setPeriod] = useState("3");
 
   const calculateReturns = () => {
-    const monthlyRentalRate = returnRate[0] / 12 / 100;
-    const monthlyIncome = investment * monthlyRentalRate;
-    const annualIncome = monthlyIncome * 12;
-    const valueGrowthRate = returnRate[0] * 0.3 / 100; // Assuming property appreciation is 30% of rental yield
-    const valueGrowth = investment * valueGrowthRate * parseInt(period);
-    const totalReturn = annualIncome * parseInt(period) + valueGrowth;
+    const annualGrowthRate = returnRate[0] / 100;
+    const futureValue = investment * Math.pow(1 + annualGrowthRate, parseInt(period));
+    const totalReturn = futureValue - investment;
     const roi = ((totalReturn / investment) * 100).toFixed(0);
 
     return {
-      monthlyIncome: monthlyIncome.toLocaleString('en-IN'),
-      annualIncome: annualIncome.toLocaleString('en-IN'),
-      valueGrowth: valueGrowth.toLocaleString('en-IN'),
+      futureValue: futureValue.toLocaleString('en-IN'),
       totalReturn: totalReturn.toLocaleString('en-IN'),
       roi
     };
@@ -95,16 +90,12 @@ export default function InvestmentCalculator() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Projected Returns</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Monthly Rental Income</span>
-                    <span className="font-semibold text-fractown-secondary">₹{returns.monthlyIncome}</span>
+                    <span className="text-gray-600">Initial Investment</span>
+                    <span className="font-semibold text-gray-900">₹{investment.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Annual Rental Income</span>
-                    <span className="font-semibold text-fractown-secondary">₹{returns.annualIncome}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Property Value Growth</span>
-                    <span className="font-semibold text-fractown-primary">₹{returns.valueGrowth}</span>
+                    <span className="text-gray-600">Future Value ({period} Years)</span>
+                    <span className="font-semibold text-fractown-primary">₹{returns.futureValue}</span>
                   </div>
                   <hr className="border-gray-200" />
                   <div className="flex justify-between items-center text-lg">
