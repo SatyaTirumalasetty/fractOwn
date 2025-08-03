@@ -21,7 +21,7 @@ export default function HeroSection() {
       ></div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="max-w-3xl">
-          <div className="mb-8 flex justify-center">
+          <div className="mb-8 flex justify-start">
             <div className="logo-hero">
               <img 
                 src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
