@@ -31,14 +31,14 @@ export default function InvestmentCalculator() {
   const returns = calculateReturns();
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Calculate Your Returns</h2>
           <p className="text-xl text-gray-600">See how your investment can grow over time</p>
         </div>
         
-        <div className="max-w-4xl mx-auto bg-gray-50 rounded-2xl p-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>

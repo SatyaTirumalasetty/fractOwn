@@ -38,14 +38,14 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gray-800 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <img 
               src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
               alt="fractOWN Logo"
-              className="h-16 w-auto mb-4"
+              className="h-20 w-auto mb-4"
             />
             <p className="text-gray-400 mb-4">
               Democratizing real estate investment through fractional ownership. Start your wealth journey today.

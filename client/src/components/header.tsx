@@ -23,15 +23,15 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-gray-50 shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <img 
                 src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
                 alt="fractOWN Logo"
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
             </div>
             <div className="hidden md:block ml-10">
