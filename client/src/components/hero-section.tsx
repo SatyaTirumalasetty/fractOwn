@@ -50,7 +50,7 @@ export default function HeroSection() {
             <Button 
               onClick={() => scrollToSection('properties')}
               variant="outline"
-              className="border border-white text-white px-8 py-4 text-lg font-semibold hover:bg-white hover:text-fractown-primary h-auto"
+              className="border border-white text-black bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-100 hover:text-fractown-primary h-auto"
             >
               View Properties
             </Button>
