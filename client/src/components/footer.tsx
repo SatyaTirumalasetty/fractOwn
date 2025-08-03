@@ -43,7 +43,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <img 
-              src="@assets/fractOWN_logo_1754209748656.jpg" 
+              src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
               alt="fractOWN Logo"
               className="h-16 w-auto mb-4"
             />

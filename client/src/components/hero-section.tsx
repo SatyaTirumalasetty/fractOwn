@@ -23,7 +23,7 @@ export default function HeroSection() {
         <div className="max-w-3xl">
           <div className="mb-8">
             <img 
-              src="@assets/fractOWN_logo_1754209748656.jpg" 
+              src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
               alt="fractOWN Logo"
               className="h-20 w-auto mb-6"
             />
