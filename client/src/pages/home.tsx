@@ -1,6 +1,6 @@
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
-import InvestmentCalculator from "@/components/investment-calculator";
+
 import PropertiesSection from "@/components/properties-section";
 import HowItWorks from "@/components/how-it-works";
 import Testimonials from "@/components/testimonials";
@@ -14,7 +14,7 @@ export default function Home() {
       <Header />
       <main>
         <HeroSection />
-        <InvestmentCalculator />
+
         <PropertiesSection />
         <HowItWorks />
         <Testimonials />
