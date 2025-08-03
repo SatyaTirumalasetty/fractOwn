@@ -35,7 +35,7 @@ export default function HeroSection() {
             <br />
             <span className="text-fractown-accent">Fractional Investment</span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100">
+          <p className="text-xl md:text-2xl mb-8 text-blue-100 bg-gray-900 bg-opacity-40 px-6 py-4 rounded-lg">
             Start your real estate journey with as little as ₹10L. Own a fraction of premium properties across India and watch your wealth grow.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
