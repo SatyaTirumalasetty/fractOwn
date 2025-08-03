@@ -25,7 +25,7 @@ export default function HeroSection() {
             <img 
               src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
               alt="fractOWN Logo"
-              className="h-32 w-auto mb-6"
+              className="h-48 w-auto mb-6"
             />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">

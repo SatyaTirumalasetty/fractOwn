@@ -45,7 +45,7 @@ export default function Footer() {
             <img 
               src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
               alt="fractOWN Logo"
-              className="h-20 w-auto mb-4"
+              className="h-28 w-auto mb-4"
             />
             <p className="text-gray-400 mb-4">
               Democratizing real estate investment through fractional ownership. Start your wealth journey today.
