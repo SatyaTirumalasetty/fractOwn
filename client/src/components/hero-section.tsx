@@ -31,7 +31,7 @@ export default function HeroSection() {
             </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            <span className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg inline-block mb-2">
+            <span className="bg-gray-900 bg-opacity-40 text-white px-4 py-2 rounded-lg inline-block mb-2">
               Own Prime Real Estate with
             </span>{" "}
             <br />
