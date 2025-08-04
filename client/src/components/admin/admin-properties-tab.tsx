@@ -120,6 +120,15 @@ export function AdminPropertiesTab() {
     form.setValue("city", ""); // Reset city when state changes
   };
 
+  // Initialize cities when editing existing property
+  useEffect(() => {
+    if (editingProperty && editingProperty.state) {
+      setSelectedState(editingProperty.state);
+      const cities = getCitiesByState(editingProperty.state);
+      setAvailableCities(cities);
+    }
+  }, [editingProperty]);
+
   // Toggle property active status
   const togglePropertyStatus = async (property: Property) => {
     try {

@@ -1,19 +1,26 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import PropertyCard from "./property-card";
-import { useToast } from "@/hooks/use-toast";
 import type { Property } from "@shared/schema";
 
 export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState<string>("all");
-  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ["/api/properties"],
   });
 
-  const cities = ["All Properties", "Mumbai", "Bangalore", "Pune", "Delhi NCR"];
+  // Dynamically generate city tabs based on actual property data
+  const availableCities = useMemo(() => {
+    if (!properties || properties.length === 0) return ["All Properties"];
+    
+    const citySet = new Set(properties.map(property => property.city));
+    const uniqueCities = Array.from(citySet);
+    return ["All Properties", ...uniqueCities.sort()];
+  }, [properties]);
 
   const filteredProperties = properties?.filter(property => {
     if (selectedCity === "all") return true;
@@ -21,10 +28,7 @@ export default function PropertiesSection() {
   }) || [];
 
   const handleViewDetails = (id: string) => {
-    toast({
-      title: "Property Details",
-      description: "Property details page would open here in a full application.",
-    });
+    setLocation(`/property/${id}`);
   };
 
   const handleCityFilter = (city: string) => {
@@ -56,9 +60,9 @@ export default function PropertiesSection() {
           </p>
         </div>
         
-        {/* Property Filters */}
+        {/* Dynamic City Filters */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {cities.map((city) => (
+          {availableCities.map((city) => (
             <Button
               key={city}
               onClick={() => handleCityFilter(city)}

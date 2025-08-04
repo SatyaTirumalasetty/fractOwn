@@ -19,7 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get single property
+  // Get single property (including inactive ones for detail view)
   app.get("/api/properties/:id", async (req, res) => {
     try {
       const property = await storage.getProperty(req.params.id);
