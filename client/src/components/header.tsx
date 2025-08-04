@@ -87,6 +87,16 @@ export default function Header() {
                     <Button variant="ghost" className="w-full justify-start">
                       Login
                     </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-gray-600 hover:text-fractown-primary" 
+                      onClick={() => {
+                        window.location.href = '/admin/login';
+                        setIsOpen(false);
+                      }}
+                    >
+                      Admin
+                    </Button>
                     <Button className="w-full bg-fractown-primary text-white hover:bg-fractown-primary/90">
                       Get Started
                     </Button>
