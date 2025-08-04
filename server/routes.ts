@@ -1,8 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSchema } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
+import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all properties
@@ -65,6 +67,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(contacts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch contacts" });
+    }
+  });
+
+  // Delete contact (admin)
+  app.delete("/api/contacts/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteContact(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+      res.json({ message: "Contact deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete contact" });
+    }
+  });
+
+  // Admin Property CRUD operations
+  
+  // Get all properties (including inactive ones for admin)
+  app.get("/api/admin/properties", async (req, res) => {
+    try {
+      // For admin, get all properties without filtering by isActive
+      const allProperties = await db.select().from(properties);
+      res.json(allProperties);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch all properties" });
+    }
+  });
+
+  // Create property (admin)
+  app.post("/api/admin/properties", async (req, res) => {
+    try {
+      const validatedData = insertPropertySchema.parse(req.body);
+      const property = await storage.createProperty(validatedData);
+      res.status(201).json(property);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create property" });
+    }
+  });
+
+  // Update property (admin)
+  app.put("/api/admin/properties/:id", async (req, res) => {
+    try {
+      const validatedData = updatePropertySchema.parse(req.body);
+      const property = await storage.updateProperty(req.params.id, validatedData);
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      res.json(property);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update property" });
+    }
+  });
+
+  // Delete property (admin) - soft delete
+  app.delete("/api/admin/properties/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteProperty(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      res.json({ message: "Property deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete property" });
+    }
+  });
+
+  // Admin user management
+  
+  // Create admin user
+  app.post("/api/admin/users", async (req, res) => {
+    try {
+      const { password, ...userData } = insertAdminUserSchema.parse(req.body);
+      const passwordHash = await bcrypt.hash(password, 10);
+      const adminUser = await storage.createAdminUser({
+        ...userData,
+        passwordHash
+      });
+      // Don't return password hash
+      const { passwordHash: _, ...safeUser } = adminUser;
+      res.status(201).json(safeUser);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create admin user" });
+    }
+  });
+
+  // Login admin user
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required" });
+      }
+      
+      const adminUser = await storage.getAdminUserByUsername(username);
+      if (!adminUser) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      const isValidPassword = await bcrypt.compare(password, adminUser.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Don't return password hash
+      const { passwordHash: _, ...safeUser } = adminUser;
+      res.json({ user: safeUser, message: "Login successful" });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Get all admin users
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const adminUsers = await storage.getAdminUsers();
+      // Don't return password hashes
+      const safeUsers = adminUsers.map(({ passwordHash, ...user }) => user);
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch admin users" });
     }
   });
 

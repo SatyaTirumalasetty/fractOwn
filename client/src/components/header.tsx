@@ -57,6 +57,9 @@ export default function Header() {
               <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary">
                 Login
               </Button>
+              <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
+                Admin
+              </Button>
               <Button className="bg-fractown-primary text-white hover:bg-fractown-primary/90">
                 Get Started
               </Button>
