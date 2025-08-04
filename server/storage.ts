@@ -51,10 +51,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProperty(id: string): Promise<boolean> {
-    const result = await db
-      .update(properties)
-      .set({ isActive: false })
-      .where(eq(properties.id, id));
+    // Hard delete instead of soft delete for admin
+    const result = await db.delete(properties).where(eq(properties.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 

@@ -15,7 +15,7 @@ export const properties = pgTable("properties", {
   expectedReturn: decimal("expected_return", { precision: 5, scale: 2 }).notNull(), // percentage
 
   fundingProgress: integer("funding_progress").notNull().default(0), // percentage 0-100
-  imageUrl: text("image_url").notNull(),
+  imageUrls: text("image_urls").array().notNull().default(sql`ARRAY[]::text[]`),
   propertyType: text("property_type").notNull(), // 'residential' | 'commercial'
   isActive: boolean("is_active").notNull().default(true),
 });

@@ -9,7 +9,7 @@ const sampleProperties = [
     location: "Goregaon",
     city: "Mumbai",
     state: "Maharashtra",
-    totalValue: 25000000, // ₹2.5 Cr
+    totalValue: 25000000,
     minInvestment: 25000,
     expectedReturn: "11.20",
     fundingProgress: 72,
@@ -23,11 +23,11 @@ const sampleProperties = [
     location: "Electronic City",
     city: "Bangalore",
     state: "Karnataka",
-    totalValue: 52000000, // ₹5.2 Cr
+    totalValue: 52000000,
     minInvestment: 50000,
     expectedReturn: "13.50",
     fundingProgress: 45,
-    imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    imageUrls: ["https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600", "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "commercial",
     isActive: true,
   },
@@ -37,53 +37,11 @@ const sampleProperties = [
     location: "Baner",
     city: "Pune",
     state: "Maharashtra",
-    totalValue: 38000000, // ₹3.8 Cr
+    totalValue: 38000000,
     minInvestment: 38000,
     expectedReturn: "10.80",
     fundingProgress: 95,
-    imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-    propertyType: "residential",
-    isActive: true,
-  },
-  {
-    name: "Marina Bay Towers",
-    description: "Luxury waterfront apartments with sea views and premium amenities",
-    location: "Marine Drive",
-    city: "Mumbai",
-    state: "Maharashtra",
-    totalValue: 45000000, // ₹4.5 Cr
-    minInvestment: 45000,
-    expectedReturn: "12.50",
-    fundingProgress: 28,
-    imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-    propertyType: "residential",
-    isActive: true,
-  },
-  {
-    name: "Business Central Hub",
-    description: "Prime commercial space in Cyber City with multinational tenants",
-    location: "Cyber City",
-    city: "Gurgaon",
-    state: "Haryana",
-    totalValue: 68000000, // ₹6.8 Cr
-    minInvestment: 68000,
-    expectedReturn: "14.20",
-    fundingProgress: 63,
-    imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-    propertyType: "commercial",
-    isActive: true,
-  },
-  {
-    name: "Green Valley Residences",
-    description: "Eco-friendly apartments with solar panels and rainwater harvesting",
-    location: "Whitefield",
-    city: "Bangalore",
-    state: "Karnataka",
-    totalValue: 32000000, // ₹3.2 Cr
-    minInvestment: 32000,
-    expectedReturn: "10.50",
-    fundingProgress: 55,
-    imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    imageUrls: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600", "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "residential",
     isActive: true,
   }
@@ -91,6 +49,10 @@ const sampleProperties = [
 
 async function seedDatabase() {
   try {
+    console.log("Clearing existing data...");
+    await db.delete(properties);
+    await db.delete(adminUsers);
+    
     console.log("Seeding database...");
     
     // Add sample properties
@@ -105,7 +67,7 @@ async function seedDatabase() {
       passwordHash,
       role: "admin"
     });
-    console.log("✓ Admin user created (username: admin, password: admin123)");
+    console.log("✓ Admin user created");
     
     console.log("Database seeded successfully!");
   } catch (error) {

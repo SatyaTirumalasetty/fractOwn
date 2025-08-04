@@ -37,7 +37,7 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
   return (
     <Card className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
       <img
-        src={property.imageUrl}
+        src={property.imageUrls[0]}
         alt={property.name}
         className="w-full h-48 object-cover"
       />

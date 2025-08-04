@@ -21,6 +21,7 @@ const propertyFormSchema = insertPropertySchema.extend({
   totalValue: z.coerce.number().min(1, "Total value must be greater than 0"),
   minInvestment: z.coerce.number().min(1, "Minimum investment must be greater than 0"),
   fundingProgress: z.coerce.number().min(0).max(100).default(0),
+  imageUrls: z.string().transform((val) => val.split('\n').filter(url => url.trim().length > 0)),
 });
 
 type PropertyForm = z.infer<typeof propertyFormSchema>;
@@ -48,7 +49,7 @@ export function AdminPropertiesTab() {
       minInvestment: 0,
       expectedReturn: "",
       fundingProgress: 0,
-      imageUrl: "",
+      imageUrls: "",
       propertyType: "residential",
       isActive: true,
     },
@@ -145,7 +146,7 @@ export function AdminPropertiesTab() {
       minInvestment: property.minInvestment,
       expectedReturn: property.expectedReturn,
       fundingProgress: property.fundingProgress,
-      imageUrl: property.imageUrl,
+      imageUrls: property.imageUrls.join('\n'),
       propertyType: property.propertyType as "residential" | "commercial",
       isActive: property.isActive,
     });
@@ -262,10 +263,14 @@ export function AdminPropertiesTab() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="imageUrl">Image URL</Label>
-        <Input {...form.register("imageUrl")} placeholder="https://example.com/image.jpg" />
-        {form.formState.errors.imageUrl && (
-          <p className="text-sm text-red-500">{form.formState.errors.imageUrl.message}</p>
+        <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
+        <Textarea 
+          {...form.register("imageUrls")} 
+          placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+          className="min-h-[80px]"
+        />
+        {form.formState.errors.imageUrls && (
+          <p className="text-sm text-red-500">{form.formState.errors.imageUrls.message}</p>
         )}
       </div>
 
@@ -356,7 +361,13 @@ export function AdminPropertiesTab() {
                     <Button variant="outline" size="sm" onClick={() => handleEdit(property)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(property.id)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleDelete(property.id)}
+                      className="text-red-600 hover:text-red-700 hover:border-red-200"
+                      disabled={deleteMutation.isPending}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

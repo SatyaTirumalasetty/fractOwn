@@ -34,11 +34,20 @@ export default function AdminLogin() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
-      const response = await apiRequest("/api/admin/login", {
+      const response = await fetch("/api/admin/login", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       localStorage.setItem("adminUser", JSON.stringify(data.user));
@@ -114,11 +123,7 @@ export default function AdminLogin() {
             </Button>
           </form>
           
-          <div className="mt-4 text-sm text-gray-600 text-center">
-            <p>Default admin credentials:</p>
-            <p>Username: <strong>admin</strong></p>
-            <p>Password: <strong>admin123</strong></p>
-          </div>
+
         </CardContent>
       </Card>
     </div>
