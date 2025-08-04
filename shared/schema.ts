@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, boolean, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -16,6 +16,7 @@ export const properties = pgTable("properties", {
 
   fundingProgress: integer("funding_progress").notNull().default(0), // percentage 0-100
   imageUrls: text("image_urls").array().notNull().default(sql`ARRAY[]::text[]`),
+  attachments: jsonb("attachments").default(sql`'[]'::jsonb`), // Store file attachments with metadata
   propertyType: text("property_type").notNull(), // 'residential' | 'commercial'
   isActive: boolean("is_active").notNull().default(true),
 });

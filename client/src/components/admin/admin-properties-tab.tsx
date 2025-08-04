@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
@@ -22,6 +22,12 @@ const propertyFormSchema = insertPropertySchema.extend({
   minInvestment: z.coerce.number().min(1, "Minimum investment must be greater than 0"),
   fundingProgress: z.coerce.number().min(0).max(100).default(0),
   imageUrls: z.string().transform((val) => val.split('\n').filter(url => url.trim().length > 0)),
+  attachments: z.array(z.object({
+    name: z.string(),
+    url: z.string(),
+    type: z.enum(["image", "document", "pdf"]),
+    size: z.number().optional(),
+  })).default([]),
 });
 
 type PropertyForm = z.infer<typeof propertyFormSchema>;
@@ -30,6 +36,8 @@ export function AdminPropertiesTab() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [googleDriveLink, setGoogleDriveLink] = useState("");
+  const [attachments, setAttachments] = useState<Array<{name: string, url: string, type: "image" | "document" | "pdf"}>>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,6 +60,7 @@ export function AdminPropertiesTab() {
       imageUrls: "",
       propertyType: "residential",
       isActive: true,
+      attachments: [],
     },
   });
 
@@ -59,11 +68,56 @@ export function AdminPropertiesTab() {
     resolver: zodResolver(propertyFormSchema),
   });
 
+  // File handling functions
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach((file) => {
+        const fileType = file.type.startsWith('image/') ? 'image' : 
+                        file.type === 'application/pdf' ? 'pdf' : 'document';
+        
+        // Create a URL for the file (in a real app, you'd upload to a server)
+        const url = URL.createObjectURL(file);
+        
+        setAttachments(prev => [...prev, {
+          name: file.name,
+          url: url,
+          type: fileType
+        }]);
+      });
+    }
+  };
+
+  const handleGoogleDriveLink = () => {
+    if (googleDriveLink.trim()) {
+      // Extract file name from Google Drive link
+      const fileName = googleDriveLink.split('/').pop()?.split('?')[0] || 'Google Drive File';
+      const fileType = googleDriveLink.includes('document') ? 'document' : 
+                      googleDriveLink.includes('pdf') ? 'pdf' : 'image';
+      
+      setAttachments(prev => [...prev, {
+        name: fileName,
+        url: googleDriveLink,
+        type: fileType
+      }]);
+      setGoogleDriveLink("");
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: PropertyForm) => {
+      const propertyData = {
+        ...data,
+        attachments: attachments
+      };
+      
       return await apiRequest("/api/admin/properties", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(propertyData),
       });
     },
     onSuccess: () => {
@@ -75,6 +129,8 @@ export function AdminPropertiesTab() {
       });
       setIsCreateOpen(false);
       createForm.reset();
+      setAttachments([]);
+      setGoogleDriveLink("");
     },
     onError: (error: any) => {
       toast({
@@ -262,15 +318,80 @@ export function AdminPropertiesTab() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
-        <Textarea 
-          {...form.register("imageUrls")} 
-          placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-          className="min-h-[80px]"
-        />
-        {form.formState.errors.imageUrls && (
-          <p className="text-sm text-red-500">{form.formState.errors.imageUrls.message}</p>
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
+          <Textarea 
+            {...form.register("imageUrls")} 
+            placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+            className="min-h-[80px]"
+          />
+          {form.formState.errors.imageUrls && (
+            <p className="text-sm text-red-500">{form.formState.errors.imageUrls.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label>File Attachments</Label>
+          <div className="space-y-2">
+            <div className="flex space-x-2">
+              <Input
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx"
+                onChange={handleFileUpload}
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" onClick={() => document.querySelector('input[type="file"]')?.click()}>
+                <Upload className="w-4 h-4 mr-2" />
+                Browse Files
+              </Button>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Google Drive link (https://drive.google.com/...)"
+                value={googleDriveLink}
+                onChange={(e) => setGoogleDriveLink(e.target.value)}
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" onClick={handleGoogleDriveLink}>
+                <Link className="w-4 h-4 mr-2" />
+                Add Link
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {attachments.length > 0 && (
+          <div>
+            <Label>Attached Files</Label>
+            <div className="space-y-2 mt-2">
+              {attachments.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 border rounded">
+                  <div className="flex items-center space-x-2">
+                    {file.type === "image" ? (
+                      <Image className="w-4 h-4" />
+                    ) : file.type === "pdf" ? (
+                      <FileText className="w-4 h-4" />
+                    ) : (
+                      <FileIcon className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">{file.name}</span>
+                    <Badge variant="outline">{file.type}</Badge>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAttachment(index)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
