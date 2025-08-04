@@ -2,16 +2,18 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all properties
+  // Get all active properties (public endpoint)
   app.get("/api/properties", async (req, res) => {
     try {
-      const properties = await storage.getProperties();
-      res.json(properties);
+      // Only show active properties to public users
+      const activeProperties = await db.select().from(properties).where(eq(properties.isActive, true));
+      res.json(activeProperties);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch properties" });
     }

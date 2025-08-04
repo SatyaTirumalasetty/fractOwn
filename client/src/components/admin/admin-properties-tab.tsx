@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon, ToggleLeft, ToggleRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
+import { getStates, getCitiesByState } from "@/data/indian-states-cities";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -38,6 +39,8 @@ export function AdminPropertiesTab() {
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [googleDriveLink, setGoogleDriveLink] = useState("");
   const [attachments, setAttachments] = useState<Array<{name: string, url: string, type: "image" | "document" | "pdf"}>>([]);
+  const [selectedState, setSelectedState] = useState("");
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -108,6 +111,46 @@ export function AdminPropertiesTab() {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Handle state change to update available cities
+  const handleStateChange = (state: string, form: any) => {
+    setSelectedState(state);
+    const cities = getCitiesByState(state);
+    setAvailableCities(cities);
+    form.setValue("state", state);
+    form.setValue("city", ""); // Reset city when state changes
+  };
+
+  // Toggle property active status
+  const togglePropertyStatus = async (property: Property) => {
+    try {
+      const response = await fetch(`/api/admin/properties/${property.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isActive: !property.isActive }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle property status");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+      
+      toast({
+        title: "Status Updated",
+        description: `Property ${property.isActive ? 'deactivated' : 'activated'} successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update property status.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: PropertyForm) => {
       const propertyData = {
@@ -143,10 +186,20 @@ export function AdminPropertiesTab() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<PropertyForm> }) => {
-      return await apiRequest(`/api/admin/properties/${id}`, {
+      const response = await fetch(`/api/admin/properties/${id}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update property");
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] });
@@ -269,17 +322,39 @@ export function AdminPropertiesTab() {
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input {...form.register("city")} placeholder="City" />
-          {form.formState.errors.city && (
-            <p className="text-sm text-red-500">{form.formState.errors.city.message}</p>
+          <Label htmlFor="state">State</Label>
+          <Select value={form.watch("state")} onValueChange={(value) => handleStateChange(value, form)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select state" />
+            </SelectTrigger>
+            <SelectContent>
+              {getStates().map((state) => (
+                <SelectItem key={state} value={state}>
+                  {state}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {form.formState.errors.state && (
+            <p className="text-sm text-red-500">{form.formState.errors.state.message}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="state">State</Label>
-          <Input {...form.register("state")} placeholder="State" />
-          {form.formState.errors.state && (
-            <p className="text-sm text-red-500">{form.formState.errors.state.message}</p>
+          <Label htmlFor="city">City</Label>
+          <Select value={form.watch("city")} onValueChange={(value) => form.setValue("city", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select city" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableCities.map((city) => (
+                <SelectItem key={city} value={city}>
+                  {city}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {form.formState.errors.city && (
+            <p className="text-sm text-red-500">{form.formState.errors.city.message}</p>
           )}
         </div>
       </div>
@@ -479,6 +554,14 @@ export function AdminPropertiesTab() {
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => togglePropertyStatus(property)}
+                      className={property.isActive ? "text-green-600 hover:text-green-700" : "text-gray-600 hover:text-gray-700"}
+                    >
+                      {property.isActive ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleEdit(property)}>
                       <Edit className="h-4 w-4" />
                     </Button>
