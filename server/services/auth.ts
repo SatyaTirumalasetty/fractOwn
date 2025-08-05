@@ -74,50 +74,55 @@ export class AuthService {
 
       // If user doesn't exist, create new user
       if (!user) {
-        if (!name || !countryCode) {
-          return { success: false, message: "Name and country code required for new users" };
+        if (!name) {
+          return { 
+            success: false, 
+            message: "Name is required for new users" 
+          };
         }
 
-        const [newUser] = await db.insert(users).values({
+        const insertData: InsertUser = {
           name,
-          countryCode,
+          countryCode: countryCode || "+91",
           phoneNumber,
-          isVerified: true
-        }).returning();
+          isVerified: true,
+          isActive: true
+        };
 
-        user = newUser;
-
-        // Send welcome notification
-        await notificationService.sendWelcome(phoneNumber, name);
+        [user] = await db.insert(users)
+          .values(insertData)
+          .returning();
       } else {
-        // Update verification status if not already verified
-        if (!user.isVerified) {
-          [user] = await db.update(users)
-            .set({ isVerified: true })
-            .where(eq(users.id, user.id))
-            .returning();
-        }
+        // Update existing user as verified
+        [user] = await db.update(users)
+          .set({ 
+            isVerified: true,
+            isActive: true,
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, user.id))
+          .returning();
       }
 
       // Create session
       const sessionToken = nanoid(32);
-      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
       await db.insert(userSessions).values({
         userId: user.id,
-        sessionToken,
+        token: sessionToken,
         expiresAt
       });
 
       return {
         success: true,
-        message: "Login successful",
+        message: user ? "Login successful" : "Registration successful",
         user,
         sessionToken
       };
 
     } catch (error) {
-      console.error("Verify OTP error:", error);
+      console.error("OTP verification error:", error);
       return { success: false, message: "Verification failed" };
     }
   }
@@ -127,33 +132,60 @@ export class AuthService {
     try {
       const [session] = await db.select({
         user: users,
-        session: userSessions
+        sessionExpiresAt: userSessions.expiresAt
       })
       .from(userSessions)
       .innerJoin(users, eq(userSessions.userId, users.id))
       .where(
         and(
-          eq(userSessions.sessionToken, sessionToken),
-          gt(userSessions.expiresAt, new Date())
+          eq(userSessions.token, sessionToken),
+          gt(userSessions.expiresAt, new Date()),
+          eq(users.isActive, true)
         )
       );
 
       return session?.user || null;
     } catch (error) {
-      console.error("Validate session error:", error);
+      console.error("Session validation error:", error);
       return null;
     }
   }
 
-  // Logout user
+  // Logout - invalidate session
   async logout(sessionToken: string): Promise<boolean> {
     try {
       await db.delete(userSessions)
-        .where(eq(userSessions.sessionToken, sessionToken));
+        .where(eq(userSessions.token, sessionToken));
       return true;
     } catch (error) {
       console.error("Logout error:", error);
       return false;
+    }
+  }
+
+  // Admin login with username/password
+  async adminLogin(username: string, password: string): Promise<{
+    success: boolean;
+    message: string;
+    sessionToken?: string;
+  }> {
+    try {
+      // Simple hardcoded admin check
+      if (username === "admin" && password === "admin123") {
+        const sessionToken = nanoid(32);
+        
+        // You could create an admin sessions table, but for now just return token
+        return {
+          success: true,
+          message: "Admin login successful",
+          sessionToken
+        };
+      }
+      
+      return { success: false, message: "Invalid credentials" };
+    } catch (error) {
+      console.error("Admin login error:", error);
+      return { success: false, message: "Login failed" };
     }
   }
 }

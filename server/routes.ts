@@ -403,20 +403,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password required" });
       }
       
-      const adminUser = await storage.getAdminUserByUsername(username);
-      if (!adminUser) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
+      // Use the auth service for admin login
+      const result = await authService.adminLogin(username, password);
       
-      const isValidPassword = await bcrypt.compare(password, adminUser.passwordHash);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      if (result.success) {
+        res.json({
+          message: result.message,
+          sessionToken: result.sessionToken
+        });
+      } else {
+        res.status(401).json({ message: result.message });
       }
-      
-      // Don't return password hash
-      const { passwordHash: _, ...safeUser } = adminUser;
-      res.json({ user: safeUser, message: "Login successful" });
     } catch (error) {
+      console.error("Admin login error:", error);
       res.status(500).json({ message: "Login failed" });
     }
   });

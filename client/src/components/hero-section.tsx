@@ -107,12 +107,14 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4">
             <Button 
               onClick={handleGetStarted}
+              data-testid="button-get-started"
               className="bg-fractown-accent text-gray-900 px-8 py-4 text-lg font-semibold hover:bg-fractown-accent/90 h-auto"
             >
               {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'}
             </Button>
             <Button 
               onClick={handleLogin}
+              data-testid="button-login"
               variant="outline"
               className="border border-white text-black bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-100 hover:text-fractown-primary h-auto"
             >

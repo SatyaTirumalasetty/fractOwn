@@ -282,6 +282,7 @@ export function OTPLoginDialog({ open, onOpenChange, onSuccess }: OTPLoginDialog
                 data-testid="button-verify-otp"
                 className="flex-1"
                 disabled={verifyOTPMutation.isPending}
+                onClick={handleVerifyOTP}
               >
                 {verifyOTPMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

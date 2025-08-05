@@ -5,11 +5,12 @@ export function useRealtimeUpdates() {
   const queryClient = useQueryClient();
 
   const connectWebSocket = useCallback(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    const socket = new WebSocket(wsUrl);
+    try {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const socket = new WebSocket(wsUrl);
 
-    socket.onopen = () => {
+      socket.onopen = () => {
       console.log('Real-time updates connected');
     };
 
@@ -38,24 +39,29 @@ export function useRealtimeUpdates() {
       }
     };
 
-    socket.onclose = () => {
-      console.log('Real-time updates disconnected, attempting to reconnect...');
-      // Attempt to reconnect after 3 seconds
-      setTimeout(connectWebSocket, 3000);
-    };
+      socket.onclose = () => {
+        console.log('Real-time updates disconnected, attempting to reconnect...');
+        // Attempt to reconnect after 3 seconds
+        setTimeout(connectWebSocket, 3000);
+      };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
 
-    return socket;
+      return socket;
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error);
+      // Return null socket if connection fails
+      return null;
+    }
   }, [queryClient]);
 
   useEffect(() => {
     const socket = connectWebSocket();
     
     return () => {
-      if (socket) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
     };
