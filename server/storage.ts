@@ -1,4 +1,4 @@
-import { type Property, type InsertProperty, type Contact, type InsertContact, type AdminUser, type InsertAdminUser, type UpdateProperty, properties, contacts, adminUsers } from "@shared/schema";
+import { type Property, type InsertProperty, type Contact, type InsertContact, type AdminUser, type InsertAdminUser, type InsertAdminUserDB, type UpdateProperty, properties, contacts, adminUsers } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -17,7 +17,7 @@ export interface IStorage {
   deleteContact(id: string): Promise<boolean>;
   
   // Admin Users
-  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
+  createAdminUser(user: InsertAdminUserDB): Promise<AdminUser>;
   getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
   getAdminUsers(): Promise<AdminUser[]>;
 }
@@ -75,7 +75,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Admin Users
-  async createAdminUser(insertAdminUser: InsertAdminUser): Promise<AdminUser> {
+  async createAdminUser(insertAdminUser: InsertAdminUserDB): Promise<AdminUser> {
     const [adminUser] = await db
       .insert(adminUsers)
       .values(insertAdminUser)

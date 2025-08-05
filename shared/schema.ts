@@ -65,5 +65,6 @@ export type Property = typeof properties.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+export type InsertAdminUserDB = typeof adminUsers.$inferInsert;
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;
