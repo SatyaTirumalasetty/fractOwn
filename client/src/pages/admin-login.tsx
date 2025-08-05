@@ -50,7 +50,9 @@ export default function AdminLogin() {
       return await response.json();
     },
     onSuccess: (data) => {
-      localStorage.setItem("adminUser", JSON.stringify(data.user));
+      // Store admin session token and user info
+      localStorage.setItem("adminSessionToken", data.sessionToken);
+      localStorage.setItem("adminUser", JSON.stringify({ username: "admin" }));
       toast({
         title: "Login Successful",
         description: "Welcome to the admin dashboard!",
@@ -88,6 +90,7 @@ export default function AdminLogin() {
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
+                data-testid="input-admin-username"
                 type="text"
                 {...form.register("username")}
                 placeholder="Enter your username"
@@ -103,6 +106,7 @@ export default function AdminLogin() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                data-testid="input-admin-password"
                 type="password"
                 {...form.register("password")}
                 placeholder="Enter your password"
@@ -116,12 +120,19 @@ export default function AdminLogin() {
 
             <Button
               type="submit"
+              data-testid="button-admin-login"
               className="w-full"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          
+          <div className="mt-4 text-center text-sm text-gray-600 bg-gray-50 p-3 rounded">
+            <p className="font-medium">Demo Credentials:</p>
+            <p><strong>Username:</strong> admin</p>
+            <p><strong>Password:</strong> admin123</p>
+          </div>
           
 
         </CardContent>

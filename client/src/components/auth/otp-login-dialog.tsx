@@ -48,10 +48,20 @@ export function OTPLoginDialog({ open, onOpenChange, onSuccess }: OTPLoginDialog
   const sendOTPMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; email?: string }) => {
       const fullPhoneNumber = countryCode + phoneNumber;
-      return await apiRequest("/api/auth/send-otp", {
+      const response = await fetch("/api/auth/send-otp", {
         method: "POST",
-        body: { phoneNumber: fullPhoneNumber, email: data.email || undefined },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phoneNumber: fullPhoneNumber, email: data.email || undefined }),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to send OTP");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       setStep("otp");
@@ -71,10 +81,20 @@ export function OTPLoginDialog({ open, onOpenChange, onSuccess }: OTPLoginDialog
 
   const verifyOTPMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; otp: string; name?: string; countryCode?: string }) => {
-      return await apiRequest("/api/auth/verify-otp", {
+      const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
-        body: data,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "OTP verification failed");
+      }
+      
+      return response.json();
     },
     onSuccess: (data: any) => {
       onSuccess(data.user, data.sessionToken);
@@ -295,7 +315,7 @@ export function OTPLoginDialog({ open, onOpenChange, onSuccess }: OTPLoginDialog
               type="button"
               variant="ghost"
               data-testid="button-resend-otp"
-              onClick={() => sendOTPMutation.mutate({ phoneNumber, email: email || undefined })}
+              onClick={() => sendOTPMutation.mutate({ phoneNumber: countryCode + phoneNumber, email: email || undefined })}
               disabled={sendOTPMutation.isPending}
               className="w-full"
             >

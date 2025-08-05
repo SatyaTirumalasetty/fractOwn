@@ -25,8 +25,9 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("adminUser");
+    localStorage.removeItem("adminSessionToken");
     toast({
-      title: "Logged Out",
+      title: "Logged Out", 
       description: "You have been successfully logged out.",
     });
     setLocation("/admin/login");

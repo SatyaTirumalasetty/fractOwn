@@ -43,7 +43,7 @@ export function PropertyImageCarousel({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[80vh] p-0" data-testid="property-image-carousel">
+      <DialogContent className="max-w-4xl w-full h-[80vh] p-0" data-testid="property-image-carousel" aria-describedby="carousel-description">
         <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
           {/* Close Button */}
           <Button
@@ -59,7 +59,7 @@ export function PropertyImageCarousel({
           {/* Property Name */}
           <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-1 rounded">
             <h3 className="font-medium" data-testid="text-property-name">{propertyName}</h3>
-            <p className="text-sm opacity-90" data-testid="text-image-counter">
+            <p id="carousel-description" className="text-sm opacity-90" data-testid="text-image-counter">
               {currentIndex + 1} of {images.length}
             </p>
           </div>

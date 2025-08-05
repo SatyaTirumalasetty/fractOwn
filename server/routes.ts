@@ -257,6 +257,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // OTP Authentication Routes
+  app.post("/api/auth/send-otp", [
+    body('phoneNumber').isMobilePhone('any', { strictMode: false }),
+    body('email').optional().isEmail()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { phoneNumber, email } = req.body;
+      const result = await authService.sendOTP(phoneNumber, email);
+      
+      if (result.success) {
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Send OTP error:", error);
+      res.status(500).json({ message: "Failed to send OTP" });
+    }
+  });
+
+  app.post("/api/auth/verify-otp", [
+    body('phoneNumber').isMobilePhone('any', { strictMode: false }),
+    body('otp').isLength({ min: 4, max: 6 }),
+    body('name').optional().trim().isLength({ min: 1 }),
+    body('countryCode').optional().trim()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { phoneNumber, otp, name, countryCode } = req.body;
+      const result = await authService.verifyOTPAndLogin(phoneNumber, otp, name, countryCode);
+      
+      if (result.success) {
+        res.json({
+          message: result.message,
+          user: result.user,
+          sessionToken: result.sessionToken
+        });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Verify OTP error:", error);
+      res.status(500).json({ message: "OTP verification failed" });
+    }
+  });
+
   // Submit contact form
   app.post("/api/contact", async (req, res) => {
     try {
