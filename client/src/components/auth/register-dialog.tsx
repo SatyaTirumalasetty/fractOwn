@@ -20,7 +20,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useAuthState } from '@/hooks/use-auth';
 
 const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -39,12 +38,12 @@ interface RegisterDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSwitchToLogin?: () => void;
+  onRegisterSuccess?: (user: any) => void;
 }
 
-export function RegisterDialog({ open, onOpenChange, onSwitchToLogin }: RegisterDialogProps) {
+export function RegisterDialog({ open, onOpenChange, onSwitchToLogin, onRegisterSuccess }: RegisterDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { register } = useAuthState();
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -60,12 +59,31 @@ export function RegisterDialog({ open, onOpenChange, onSwitchToLogin }: Register
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      await register({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        password: data.password,
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          password: data.password,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Registration failed');
+      }
+
+      if (result.token && result.user) {
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        onRegisterSuccess?.(result.user);
+      }
+
       toast({
         title: 'Success',
         description: 'Your account has been created successfully.',

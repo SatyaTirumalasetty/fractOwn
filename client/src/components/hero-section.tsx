@@ -1,15 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/login-dialog";
 import { RegisterDialog } from "@/components/auth/register-dialog";
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
-import { useAuthState } from "@/hooks/use-auth";
 
 export default function HeroSection() {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [user, setUser] = useState(null);
   const { features } = useFeatureFlags();
-  const { user, logout } = useAuthState();
+
+  useEffect(() => {
+    // Check for stored user
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setUser(null);
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -94,6 +107,7 @@ export default function HeroSection() {
                 setShowRegister(true);
               }
             }}
+            onLoginSuccess={(user) => setUser(user)}
           />
           
           {features.enableUserRegistration && (
@@ -104,6 +118,7 @@ export default function HeroSection() {
                 setShowRegister(false);
                 setShowLogin(true);
               }}
+              onRegisterSuccess={(user) => setUser(user)}
             />
           )}
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">

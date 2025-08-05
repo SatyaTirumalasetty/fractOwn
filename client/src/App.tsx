@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+// Remove AuthProvider import for now to fix the immediate issue
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import PropertyDetail from "@/pages/property-detail";

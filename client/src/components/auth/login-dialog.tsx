@@ -20,7 +20,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useAuthState } from '@/hooks/use-auth';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -33,12 +32,12 @@ interface LoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSwitchToRegister?: () => void;
+  onLoginSuccess?: (user: any) => void;
 }
 
-export function LoginDialog({ open, onOpenChange, onSwitchToRegister }: LoginDialogProps) {
+export function LoginDialog({ open, onOpenChange, onSwitchToRegister, onLoginSuccess }: LoginDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { login } = useAuthState();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -51,7 +50,26 @@ export function LoginDialog({ open, onOpenChange, onSwitchToRegister }: LoginDia
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: data.email, password: data.password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Login failed');
+      }
+
+      if (result.token && result.user) {
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        onLoginSuccess?.(result.user);
+      }
+
       toast({
         title: 'Success',
         description: 'You have been logged in successfully.',
