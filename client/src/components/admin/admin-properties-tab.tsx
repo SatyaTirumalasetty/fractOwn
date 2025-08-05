@@ -292,7 +292,7 @@ export function AdminPropertiesTab() {
     isSubmitting: boolean;
   }) => (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Property Name</Label>
           <Input {...form.register("name")} placeholder="Property name" />
@@ -502,19 +502,21 @@ export function AdminPropertiesTab() {
               Add Property
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Property</DialogTitle>
               <DialogDescription>
                 Add a new property to the fractOWN platform
               </DialogDescription>
             </DialogHeader>
-            <PropertyForm
-              form={createForm}
-              onSubmit={(data) => createMutation.mutate(data)}
-              submitText="Create Property"
-              isSubmitting={createMutation.isPending}
-            />
+            <div className="max-h-[70vh] overflow-y-auto pr-2">
+              <PropertyForm
+                form={createForm}
+                onSubmit={(data) => createMutation.mutate(data)}
+                submitText="Create Property"
+                isSubmitting={createMutation.isPending}
+              />
+            </div>
           </DialogContent>
         </Dialog>
       </div>
@@ -593,21 +595,23 @@ export function AdminPropertiesTab() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Property</DialogTitle>
             <DialogDescription>
               Update property information
             </DialogDescription>
           </DialogHeader>
-          {editingProperty && (
-            <PropertyForm
-              form={editForm}
-              onSubmit={(data) => updateMutation.mutate({ id: editingProperty.id, data })}
-              submitText="Update Property"
-              isSubmitting={updateMutation.isPending}
-            />
-          )}
+          <div className="max-h-[70vh] overflow-y-auto pr-2">
+            {editingProperty && (
+              <PropertyForm
+                form={editForm}
+                onSubmit={(data) => updateMutation.mutate({ id: editingProperty.id, data })}
+                submitText="Update Property"
+                isSubmitting={updateMutation.isPending}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
