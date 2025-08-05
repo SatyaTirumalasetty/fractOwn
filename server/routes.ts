@@ -10,6 +10,8 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { body, validationResult } from "express-validator";
 import { db } from "./db";
+import { authService } from "./services/auth";
+import { seedProperties } from "./seed-properties";
 
 // Load configuration
 import config from '../config/app.config.js';
@@ -111,71 +113,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User registration (if enabled)
-  app.post("/api/auth/register", [
-    body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 6 }),
-    body('firstName').notEmpty().trim(),
-    body('lastName').notEmpty().trim()
+  // Send OTP for phone verification
+  app.post("/api/auth/send-otp", [
+    body('phoneNumber').isMobilePhone(),
+    body('email').optional().isEmail()
   ], async (req, res) => {
     try {
-      if (!config.app.features.enableUserRegistration) {
-        return res.status(403).json({ message: "User registration is disabled" });
-      }
-
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, password, firstName, lastName } = req.body;
+      const { phoneNumber, email } = req.body;
+      const result = await authService.sendOTP(phoneNumber, email);
       
-      // Check if user already exists
-      const existingUser = await db.select().from(users).where(eq(users.email, email));
-      if (existingUser.length > 0) {
-        return res.status(400).json({ message: "User already exists" });
+      if (result.success) {
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
       }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, config.auth.bcryptRounds);
-      
-      // Create user
-      const [newUser] = await db.insert(users).values({
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName
-      }).returning();
-
-      // Send welcome notification if enabled
-      if (config.app.features.enableEmailNotifications && config.email.auth.user) {
-        await sendWelcomeEmail(newUser.email, newUser.firstName);
-      }
-
-      if (config.app.features.enableSMSNotifications && config.sms.twilio.accountSid) {
-        await sendWelcomeSMS(newUser.phone);
-      }
-
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: newUser.id, email: newUser.email },
-        config.auth.sessionSecret,
-        { expiresIn: '24h' }
-      );
-
-      res.status(201).json({
-        message: "User registered successfully",
-        token,
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName
-        }
-      });
     } catch (error) {
-      console.error('Registration error:', error);
-      res.status(500).json({ message: "Failed to register user" });
+      console.error("Send OTP error:", error);
+      res.status(500).json({ message: "Failed to send OTP" });
+    }
+  });
+
+  // Verify OTP and login/register user
+  app.post("/api/auth/verify-otp", [
+    body('phoneNumber').isMobilePhone(),
+    body('otp').isLength({ min: 6, max: 6 }),
+    body('name').optional().notEmpty().trim(),
+    body('countryCode').optional().notEmpty().trim()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { phoneNumber, otp, name, countryCode } = req.body;
+      const result = await authService.verifyOTPAndLogin(phoneNumber, otp, name, countryCode);
+      
+      if (result.success) {
+        res.json({
+          message: result.message,
+          user: result.user,
+          sessionToken: result.sessionToken
+        });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Verify OTP error:", error);
+      res.status(500).json({ message: "Verification failed" });
+    }
+  });
+
+  // User logout
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const sessionToken = authHeader && authHeader.split(' ')[1];
+      
+      if (sessionToken) {
+        await authService.logout(sessionToken);
+      }
+      
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
+  // Get current user info
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const sessionToken = authHeader && authHeader.split(' ')[1];
+      
+      if (!sessionToken) {
+        return res.status(401).json({ message: "No session token" });
+      }
+      
+      const user = await authService.validateSession(sessionToken);
+      
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(401).json({ message: "Invalid session" });
+      }
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user info" });
     }
   });
 

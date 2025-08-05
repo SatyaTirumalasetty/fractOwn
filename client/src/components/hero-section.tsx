@@ -1,27 +1,52 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LoginDialog } from "@/components/auth/login-dialog";
-import { RegisterDialog } from "@/components/auth/register-dialog";
+import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
 
 export default function HeroSection() {
   const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
   const [user, setUser] = useState(null);
+  const [sessionToken, setSessionToken] = useState(null);
   const { features } = useFeatureFlags();
 
   useEffect(() => {
-    // Check for stored user
+    // Check for stored user and session
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('sessionToken');
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
+      setSessionToken(storedToken);
     }
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      // Call logout API
+      if (sessionToken) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local storage
+      localStorage.removeItem('sessionToken');
+      localStorage.removeItem('user');
+      setUser(null);
+      setSessionToken(null);
+    }
+  };
+
+  const handleLoginSuccess = (userData: any, token: string) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('sessionToken', token);
+    setUser(userData);
+    setSessionToken(token);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -34,10 +59,8 @@ export default function HeroSection() {
   const handleGetStarted = () => {
     if (user) {
       scrollToSection('properties');
-    } else if (features.enableUserRegistration) {
-      setShowRegister(true);
     } else {
-      scrollToSection('contact');
+      setShowLogin(true);
     }
   };
 
@@ -98,29 +121,11 @@ export default function HeroSection() {
           </div>
 
           {/* Auth Dialogs */}
-          <LoginDialog 
+          <OTPLoginDialog 
             open={showLogin} 
             onOpenChange={setShowLogin}
-            onSwitchToRegister={() => {
-              setShowLogin(false);
-              if (features.enableUserRegistration) {
-                setShowRegister(true);
-              }
-            }}
-            onLoginSuccess={(user) => setUser(user)}
+            onSuccess={handleLoginSuccess}
           />
-          
-          {features.enableUserRegistration && (
-            <RegisterDialog 
-              open={showRegister} 
-              onOpenChange={setShowRegister}
-              onSwitchToLogin={() => {
-                setShowRegister(false);
-                setShowLogin(true);
-              }}
-              onRegisterSuccess={(user) => setUser(user)}
-            />
-          )}
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>

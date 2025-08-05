@@ -8,13 +8,14 @@ import { MapPin, ArrowLeft, ChevronLeft, ChevronRight, Building, TrendingUp, Cal
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import type { Property } from "@shared/schema";
-import { ImageCarousel } from "@/components/ui/image-carousel";
+import { PropertyImageCarousel } from "@/components/property-image-carousel";
 import { useRealtimeUpdates } from "@/hooks/use-realtime-updates";
 
 export default function PropertyDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showImageCarousel, setShowImageCarousel] = useState(false);
   
   // Enable real-time updates
   useRealtimeUpdates();
@@ -111,11 +112,81 @@ export default function PropertyDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <ImageCarousel 
-              images={property.imageUrls} 
-              alt={property.name}
-              className="w-full h-96"
-            />
+            <div className="relative group cursor-pointer">
+              <img
+                src={property.imageUrls[currentImageIndex]}
+                alt={`${property.name} - Image ${currentImageIndex + 1}`}
+                data-testid={`img-property-main-${currentImageIndex}`}
+                className="w-full h-96 object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105"
+                onClick={() => setShowImageCarousel(true)}
+              />
+              
+              {/* Image Counter */}
+              <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                {currentImageIndex + 1} / {property.imageUrls.length}
+              </div>
+              
+              {/* Navigation Arrows */}
+              {property.imageUrls.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="button-previous-main"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="button-next-main"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </>
+              )}
+              
+              {/* Click to expand hint */}
+              <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                Click to view gallery
+              </div>
+            </div>
+            
+            {/* Thumbnail Gallery */}
+            {property.imageUrls.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto">
+                {property.imageUrls.map((image, index) => (
+                  <button
+                    key={index}
+                    data-testid={`button-thumbnail-main-${index}`}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      index === currentImageIndex 
+                        ? "border-fractown-primary scale-110" 
+                        : "border-gray-200 hover:border-fractown-accent"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${property.name} - Thumbnail ${index + 1}`}
+                      data-testid={`img-thumbnail-main-${index}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Property Details */}
@@ -274,6 +345,15 @@ export default function PropertyDetail() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Image Carousel Modal */}
+        <PropertyImageCarousel
+          images={property.imageUrls}
+          propertyName={property.name}
+          isOpen={showImageCarousel}
+          onClose={() => setShowImageCarousel(false)}
+          initialIndex={currentImageIndex}
+        />
       </main>
 
       <Footer />

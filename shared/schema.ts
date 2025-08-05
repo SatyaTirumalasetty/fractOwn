@@ -42,14 +42,33 @@ export const adminUsers = pgTable("admin_users", {
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  phone: text("phone"),
+  name: text("name").notNull(),
+  countryCode: text("country_code").notNull(), // e.g., "+91"
+  phoneNumber: text("phone_number").notNull().unique(),
+  email: text("email"),
+  isVerified: boolean("is_verified").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// OTP verification table
+export const otpVerifications = pgTable("otp_verifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phoneNumber: text("phone_number").notNull(),
+  otp: text("otp").notNull(),
+  isUsed: boolean("is_used").notNull().default(false),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// User sessions table
+export const userSessions = pgTable("user_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  sessionToken: text("session_token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertPropertySchema = createInsertSchema(properties).omit({
@@ -74,6 +93,16 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertOtpSchema = createInsertSchema(otpVerifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const updatePropertySchema = createInsertSchema(properties).omit({
   id: true,
 }).partial();
@@ -87,4 +116,8 @@ export type InsertAdminUserDB = typeof adminUsers.$inferInsert;
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertOtp = z.infer<typeof insertOtpSchema>;
+export type OtpVerification = typeof otpVerifications.$inferSelect;
+export type InsertSession = z.infer<typeof insertSessionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;

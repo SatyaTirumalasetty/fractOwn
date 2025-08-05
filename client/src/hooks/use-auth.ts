@@ -1,102 +1,77 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from "@tanstack/react-query";
 
 interface User {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  name: string;
+  countryCode: string;
+  phoneNumber: string;
+  email?: string;
+  isVerified: boolean;
+  isActive: boolean;
 }
 
-interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
+export function useAuth() {
+  const [sessionToken, setSessionToken] = useState<string | null>(
+    localStorage.getItem('sessionToken')
+  );
 
-export function useAuthState() {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
+  // Query current user if we have a session token
+  const { data: user, isLoading } = useQuery<User>({
+    queryKey: ['/api/auth/user'],
+    enabled: !!sessionToken,
+    retry: false,
+    queryFn: async () => {
+      const response = await fetch('/api/auth/user', {
         headers: {
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`,
         },
       });
-
-      const data = await response.json();
-
+      
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        // Clear invalid session
+        localStorage.removeItem('sessionToken');
+        localStorage.removeItem('user');
+        setSessionToken(null);
+        throw new Error('Session expired');
       }
+      
+      return response.json();
+    },
+  });
 
-      if (data.token && data.user) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setToken(data.token);
-        setUser(data.user);
-      }
-    } catch (error) {
-      throw error;
-    }
+  const login = (userData: User, token: string) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('sessionToken', token);
+    setSessionToken(token);
   };
 
-  const register = async (userData: RegisterData) => {
+  const logout = async () => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(userData),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      if (data.token && data.user) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setToken(data.token);
-        setUser(data.user);
+      if (sessionToken) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
       }
     } catch (error) {
-      throw error;
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('sessionToken');
+      localStorage.removeItem('user');
+      setSessionToken(null);
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
   };
 
   return {
     user,
-    token,
+    isAuthenticated: !!user,
+    isLoading: isLoading && !!sessionToken,
+    sessionToken,
     login,
-    register,
     logout,
-    isLoading
   };
 }
