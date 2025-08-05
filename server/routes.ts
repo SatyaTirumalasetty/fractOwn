@@ -7,6 +7,18 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { db } from "./db";
 
+// WebSocket connections for real-time updates
+let wsConnections: Set<any> = new Set();
+
+function broadcastUpdate(type: string, data?: any) {
+  const message = JSON.stringify({ type, data, timestamp: new Date().toISOString() });
+  wsConnections.forEach(ws => {
+    if (ws.readyState === 1) { // WebSocket.OPEN
+      ws.send(message);
+    }
+  });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all active properties (public endpoint)
   app.get("/api/properties", async (req, res) => {
@@ -50,6 +62,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSchema.parse(req.body);
       const contact = await storage.createContact(validatedData);
+      broadcastUpdate('CONTACT_CREATED', contact);
       res.status(201).json(contact);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -103,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertPropertySchema.parse(req.body);
       const property = await storage.createProperty(validatedData);
+      broadcastUpdate('PROPERTY_CREATED', property);
       res.status(201).json(property);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -123,6 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!property) {
         return res.status(404).json({ message: "Property not found" });
       }
+      broadcastUpdate('PROPERTY_UPDATED', property);
       res.json(property);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -142,6 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!success) {
         return res.status(404).json({ message: "Property not found" });
       }
+      broadcastUpdate('PROPERTY_DELETED', { id: req.params.id });
       res.json({ message: "Property deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete property" });
@@ -212,5 +228,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Setup WebSocket server for real-time updates
+  const { WebSocketServer } = await import('ws');
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws: any) => {
+    console.log('Client connected to WebSocket');
+    wsConnections.add(ws);
+    
+    ws.on('close', () => {
+      console.log('Client disconnected from WebSocket');
+      wsConnections.delete(ws);
+    });
+    
+    ws.on('error', (error: any) => {
+      console.error('WebSocket error:', error);
+      wsConnections.delete(ws);
+    });
+  });
+  
   return httpServer;
 }

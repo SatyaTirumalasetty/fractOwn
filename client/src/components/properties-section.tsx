@@ -4,10 +4,14 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import PropertyCard from "./property-card";
 import type { Property } from "@shared/schema";
+import { useRealtimeUpdates } from "@/hooks/use-realtime-updates";
 
 export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [, setLocation] = useLocation();
+  
+  // Enable real-time updates
+  useRealtimeUpdates();
 
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ["/api/properties"],

@@ -8,11 +8,16 @@ import { MapPin, ArrowLeft, ChevronLeft, ChevronRight, Building, TrendingUp, Cal
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import type { Property } from "@shared/schema";
+import { ImageCarousel } from "@/components/ui/image-carousel";
+import { useRealtimeUpdates } from "@/hooks/use-realtime-updates";
 
 export default function PropertyDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Enable real-time updates
+  useRealtimeUpdates();
 
   const { data: property, isLoading } = useQuery<Property>({
     queryKey: ["/api/properties", id],
@@ -106,62 +111,11 @@ export default function PropertyDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="relative">
-              <img
-                src={property.imageUrls[currentImageIndex]}
-                alt={`${property.name} - Image ${currentImageIndex + 1}`}
-                className="w-full h-96 object-cover rounded-xl"
-              />
-              
-              {property.imageUrls.length > 1 && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-
-              {/* Image Counter */}
-              {property.imageUrls.length > 1 && (
-                <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-                  {currentImageIndex + 1} / {property.imageUrls.length}
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Navigation */}
-            {property.imageUrls.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto">
-                {property.imageUrls.map((url, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      index === currentImageIndex ? 'border-fractown-primary' : 'border-gray-200'
-                    }`}
-                  >
-                    <img
-                      src={url}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+            <ImageCarousel 
+              images={property.imageUrls} 
+              alt={property.name}
+              className="w-full h-96"
+            />
           </div>
 
           {/* Property Details */}
