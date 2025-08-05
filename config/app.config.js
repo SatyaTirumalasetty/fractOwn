@@ -5,7 +5,7 @@
  * Modify these settings according to your deployment environment.
  */
 
-module.exports = {
+export default {
   // Server Configuration
   server: {
     port: process.env.PORT || 5000,
@@ -126,11 +126,71 @@ module.exports = {
     }
   },
 
+  // Notification Templates
+  notifications: {
+    email: {
+      welcome: {
+        subject: 'Welcome to fractOWN',
+        template: 'welcome-email'
+      },
+      investmentConfirm: {
+        subject: 'Investment Confirmed',
+        template: 'investment-confirm'
+      },
+      propertyUpdate: {
+        subject: 'Property Update',
+        template: 'property-update'
+      }
+    },
+    sms: {
+      welcome: 'Welcome to fractOWN! Start investing in premium real estate.',
+      investmentConfirm: 'Your investment has been confirmed. Thank you!',
+      propertyUpdate: 'New property available for investment.'
+    }
+  },
+
+  // Security Configuration
+  security: {
+    helmet: {
+      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "ws:", "wss:"]
+        }
+      } : false, // Disable CSP in development
+    },
+    rateLimit: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // Limit each IP to 100 requests per windowMs
+      message: 'Too many requests from this IP'
+    }
+  },
+
+  // API Keys and External Services
   // Payment Gateway Configuration (if enabled)
   payments: {
     razorpay: {
       keyId: process.env.RAZORPAY_KEY_ID,
       keySecret: process.env.RAZORPAY_KEY_SECRET
+    }
+  },
+
+  // API Keys and External Services
+  integrations: {
+    sendgrid: {
+      apiKey: process.env.SENDGRID_API_KEY
+    },
+    razorpay: {
+      keyId: process.env.RAZORPAY_KEY_ID,
+      keySecret: process.env.RAZORPAY_KEY_SECRET
+    },
+    twilio: {
+      accountSid: process.env.TWILIO_ACCOUNT_SID,
+      authToken: process.env.TWILIO_AUTH_TOKEN,
+      phoneNumber: process.env.TWILIO_PHONE_NUMBER
     }
   },
 
@@ -140,17 +200,5 @@ module.exports = {
     file: process.env.LOG_FILE || './logs/app.log',
     maxFiles: 5,
     maxSize: '10m'
-  },
-
-  // Security Configuration
-  security: {
-    rateLimiting: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100 // limit each IP to 100 requests per windowMs
-    },
-    helmet: {
-      contentSecurityPolicy: false, // Disable for development
-      crossOriginEmbedderPolicy: false
-    }
   }
 };

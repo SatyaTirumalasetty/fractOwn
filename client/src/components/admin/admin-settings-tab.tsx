@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database } from "lucide-react";
+import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag } from "lucide-react";
+import FeatureFlagsTab from "./feature-flags-tab";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminSettingsTab() {
@@ -125,7 +126,7 @@ export default function AdminSettingsTab() {
       </div>
 
       <Tabs defaultValue="branding" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="branding" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
             Branding
@@ -137,6 +138,10 @@ export default function AdminSettingsTab() {
           <TabsTrigger value="content" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Content
+          </TabsTrigger>
+          <TabsTrigger value="features" className="flex items-center gap-2">
+            <Flag className="h-4 w-4" />
+            Features
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -567,6 +572,10 @@ export default function AdminSettingsTab() {
             <Save className="h-4 w-4 mr-2" />
             Save System Settings
           </Button>
+        </TabsContent>
+
+        <TabsContent value="features" className="space-y-4">
+          <FeatureFlagsTab />
         </TabsContent>
 
         <TabsContent value="database" className="space-y-4">

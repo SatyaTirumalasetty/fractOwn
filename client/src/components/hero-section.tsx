@@ -1,10 +1,38 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { LoginDialog } from "@/components/auth/login-dialog";
+import { RegisterDialog } from "@/components/auth/register-dialog";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
+import { useAuthState } from "@/hooks/use-auth";
 
 export default function HeroSection() {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const { features } = useFeatureFlags();
+  const { user, logout } = useAuthState();
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (user) {
+      scrollToSection('properties');
+    } else if (features.enableUserRegistration) {
+      setShowRegister(true);
+    } else {
+      scrollToSection('contact');
+    }
+  };
+
+  const handleLogin = () => {
+    if (user) {
+      logout();
+    } else {
+      setShowLogin(true);
     }
   };
 
@@ -42,19 +70,42 @@ export default function HeroSection() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button 
-              onClick={() => scrollToSection('properties')}
+              onClick={handleGetStarted}
               className="bg-fractown-accent text-gray-900 px-8 py-4 text-lg font-semibold hover:bg-fractown-accent/90 h-auto"
             >
-              Start Investing Today
+              {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'}
             </Button>
             <Button 
-              onClick={() => scrollToSection('properties')}
+              onClick={handleLogin}
               variant="outline"
               className="border border-white text-black bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-100 hover:text-fractown-primary h-auto"
             >
-              View Properties
+              {user ? 'Logout' : 'Login'}
             </Button>
           </div>
+
+          {/* Auth Dialogs */}
+          <LoginDialog 
+            open={showLogin} 
+            onOpenChange={setShowLogin}
+            onSwitchToRegister={() => {
+              setShowLogin(false);
+              if (features.enableUserRegistration) {
+                setShowRegister(true);
+              }
+            }}
+          />
+          
+          {features.enableUserRegistration && (
+            <RegisterDialog 
+              open={showRegister} 
+              onOpenChange={setShowRegister}
+              onSwitchToLogin={() => {
+                setShowRegister(false);
+                setShowLogin(true);
+              }}
+            />
+          )}
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>

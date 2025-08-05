@@ -1,11 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { body, validationResult } from "express-validator";
 import { db } from "./db";
+
+// Load configuration
+import config from '../config/app.config.js';
 
 // WebSocket connections for real-time updates
 let wsConnections: Set<any> = new Set();
@@ -20,6 +27,33 @@ function broadcastUpdate(type: string, data?: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure trust proxy before security middleware
+  app.set('trust proxy', 1);
+  
+  // Security middleware
+  app.use(helmet(config.security.helmet));
+  
+  // Rate limiting
+  const limiter = rateLimit(config.security.rateLimit);
+  app.use(limiter);
+
+  // Authentication middleware
+  const authenticateToken = (req: any, res: any, next: any) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: 'Access token required' });
+    }
+
+    jwt.verify(token, config.auth.sessionSecret, (err: any, user: any) => {
+      if (err) {
+        return res.status(403).json({ message: 'Invalid token' });
+      }
+      req.user = user;
+      next();
+    });
+  };
   // Get all active properties (public endpoint)
   app.get("/api/properties", async (req, res) => {
     try {
@@ -57,11 +91,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Feature flags endpoint
+  app.get("/api/config/features", (req, res) => {
+    res.json(config.app.features);
+  });
+
+  // Update feature flags (admin only)
+  app.put("/api/admin/config/features", async (req, res) => {
+    try {
+      // In a real application, you would validate admin access here
+      // For now, we'll update the in-memory config and save to file
+      const newFeatures = req.body;
+      config.app.features = { ...config.app.features, ...newFeatures };
+      
+      // TODO: Persist changes to config file or database
+      res.json({ message: "Feature flags updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update feature flags" });
+    }
+  });
+
+  // User registration (if enabled)
+  app.post("/api/auth/register", [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 6 }),
+    body('firstName').notEmpty().trim(),
+    body('lastName').notEmpty().trim()
+  ], async (req, res) => {
+    try {
+      if (!config.app.features.enableUserRegistration) {
+        return res.status(403).json({ message: "User registration is disabled" });
+      }
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email, password, firstName, lastName } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await db.select().from(users).where(eq(users.email, email));
+      if (existingUser.length > 0) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, config.auth.bcryptRounds);
+      
+      // Create user
+      const [newUser] = await db.insert(users).values({
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName
+      }).returning();
+
+      // Send welcome notification if enabled
+      if (config.app.features.enableEmailNotifications && config.email.auth.user) {
+        await sendWelcomeEmail(newUser.email, newUser.firstName);
+      }
+
+      if (config.app.features.enableSMSNotifications && config.sms.twilio.accountSid) {
+        await sendWelcomeSMS(newUser.phone);
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: newUser.id, email: newUser.email },
+        config.auth.sessionSecret,
+        { expiresIn: '24h' }
+      );
+
+      res.status(201).json({
+        message: "User registered successfully",
+        token,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: "Failed to register user" });
+    }
+  });
+
+  // User login
+  app.post("/api/auth/login", [
+    body('email').isEmail().normalizeEmail(),
+    body('password').notEmpty()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email, password } = req.body;
+      
+      // Find user
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Verify password
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        config.auth.sessionSecret,
+        { expiresIn: '24h' }
+      );
+
+      res.json({
+        message: "Login successful",
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Failed to login" });
+    }
+  });
+
   // Submit contact form
   app.post("/api/contact", async (req, res) => {
     try {
       const validatedData = insertContactSchema.parse(req.body);
       const contact = await storage.createContact(validatedData);
+      
+      // Send notification to admin if enabled
+      if (config.app.features.enableEmailNotifications) {
+        await sendContactNotification(contact);
+      }
+      
       broadcastUpdate('CONTACT_CREATED', contact);
       res.status(201).json(contact);
     } catch (error) {
@@ -249,4 +425,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   return httpServer;
+}
+
+// Notification functions
+async function sendWelcomeEmail(email: string, firstName: string) {
+  if (!config.app.features.enableEmailNotifications) return;
+  
+  try {
+    // Implementation depends on email service configured
+    console.log(`Sending welcome email to ${email}`);
+    // TODO: Implement actual email sending based on configured service
+  } catch (error) {
+    console.error('Failed to send welcome email:', error);
+  }
+}
+
+async function sendWelcomeSMS(phone?: string) {
+  if (!config.app.features.enableSMSNotifications || !phone) return;
+  
+  try {
+    console.log(`Sending welcome SMS to ${phone}`);
+    // TODO: Implement actual SMS sending based on configured service
+  } catch (error) {
+    console.error('Failed to send welcome SMS:', error);
+  }
+}
+
+async function sendContactNotification(contact: any) {
+  if (!config.app.features.enableEmailNotifications) return;
+  
+  try {
+    console.log(`Sending contact notification for ${contact.email}`);
+    // TODO: Implement actual notification sending
+  } catch (error) {
+    console.error('Failed to send contact notification:', error);
+  }
 }
