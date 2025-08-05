@@ -29,7 +29,7 @@ export default function Header() {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <img 
-                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
+                src="/attached_assets/image_1754379283931.png" 
                 alt="fractOWN Logo"
                 className="h-20 w-auto"
               />

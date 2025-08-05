@@ -24,7 +24,7 @@ export default function HeroSection() {
           <div className="mb-8 flex justify-start">
             <div className="logo-hero">
               <img 
-                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
+                src="/attached_assets/image_1754379283931.png" 
                 alt="fractOWN Logo"
                 className="h-48 w-auto logo-transparent"
               />
