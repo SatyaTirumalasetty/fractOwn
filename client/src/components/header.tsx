@@ -2,9 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -12,6 +16,20 @@ export default function Header() {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsOpen(false);
+  };
+
+  const handleLoginClick = () => {
+    if (isAuthenticated) {
+      logout();
+    } else {
+      setShowLoginDialog(true);
+    }
+    setIsOpen(false);
+  };
+
+  const handleLoginSuccess = (userData: any, sessionToken: string) => {
+    // The useAuth hook will handle the login state
+    setShowLoginDialog(false);
   };
 
   const navItems = [
@@ -54,13 +72,20 @@ export default function Header() {
           </div>
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary">
-                Login
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-fractown-primary"
+                onClick={handleLoginClick}
+              >
+                {isAuthenticated ? 'Logout' : 'Login'}
               </Button>
               <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
                 Admin
               </Button>
-              <Button className="bg-fractown-primary text-white hover:bg-fractown-primary/90">
+              <Button 
+                className="bg-fractown-primary text-white hover:bg-fractown-primary/90"
+                onClick={() => scrollToSection('properties')}
+              >
                 Get Started
               </Button>
             </div>
@@ -84,8 +109,12 @@ export default function Header() {
                     </button>
                   ))}
                   <div className="border-t pt-4 space-y-2">
-                    <Button variant="ghost" className="w-full justify-start">
-                      Login
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start"
+                      onClick={handleLoginClick}
+                    >
+                      {isAuthenticated ? 'Logout' : 'Login'}
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -97,7 +126,13 @@ export default function Header() {
                     >
                       Admin
                     </Button>
-                    <Button className="w-full bg-fractown-primary text-white hover:bg-fractown-primary/90">
+                    <Button 
+                      className="w-full bg-fractown-primary text-white hover:bg-fractown-primary/90"
+                      onClick={() => {
+                        scrollToSection('properties');
+                        setIsOpen(false);
+                      }}
+                    >
                       Get Started
                     </Button>
                   </div>
@@ -107,6 +142,12 @@ export default function Header() {
           </div>
         </div>
       </nav>
+
+      <OTPLoginDialog 
+        open={showLoginDialog} 
+        onOpenChange={setShowLoginDialog}
+        onSuccess={handleLoginSuccess}
+      />
     </header>
   );
 }
