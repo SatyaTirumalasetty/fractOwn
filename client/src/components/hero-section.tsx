@@ -161,18 +161,18 @@ export default function HeroSection() {
             onOpenChange={setShowLogin}
             onSuccess={handleLoginSuccess}
           />
-          {/* Enhanced statistics with proper visibility */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {/* Enhanced statistics with proper visibility - left aligned */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl">
             <div className="text-center bg-gray-900 bg-opacity-80 p-6 rounded-2xl border border-white/30 transform transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-2xl">
-              <div className="text-4xl md:text-5xl font-bold text-fractown-accent mb-2">₹10L+</div>
+              <div className="text-3xl md:text-4xl font-bold text-fractown-accent mb-2">₹10L+</div>
               <div className="text-white font-medium">Min Investment</div>
             </div>
             <div className="text-center bg-gray-900 bg-opacity-80 p-6 rounded-2xl border border-white/30 transform transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-2xl">
-              <div className="text-4xl md:text-5xl font-bold text-fractown-accent mb-2">8-12%</div>
+              <div className="text-3xl md:text-4xl font-bold text-fractown-accent mb-2">8-12%</div>
               <div className="text-white font-medium">Expected Returns</div>
             </div>
             <div className="text-center bg-gray-900 bg-opacity-80 p-6 rounded-2xl border border-white/30 transform transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-2xl">
-              <div className="text-4xl md:text-5xl font-bold text-fractown-accent mb-2">50+</div>
+              <div className="text-3xl md:text-4xl font-bold text-fractown-accent mb-2">50+</div>
               <div className="text-white font-medium">Properties Available</div>
             </div>
           </div>
