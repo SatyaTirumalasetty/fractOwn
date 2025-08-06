@@ -97,15 +97,23 @@ async function seedDatabase() {
     await db.insert(properties).values(sampleProperties);
     console.log("✓ Properties seeded");
     
-    // Add default admin user
-    const passwordHash = await bcrypt.hash("admin123", 10);
+    // Add default admin user with secure password
+    // Use environment variable or generate secure random password
+    const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || require('crypto').randomBytes(12).toString('hex');
+    const passwordHash = await bcrypt.hash(initialPassword, 12);
     await db.insert(adminUsers).values({
       username: "admin",
       email: "admin@fractown.com",
       passwordHash,
       role: "admin"
     });
-    console.log("✓ Admin user created (username: admin, password: admin123)");
+    
+    console.log("✓ Admin user created");
+    console.log("🔐 SECURITY: Change admin password immediately after first login");
+    if (!process.env.ADMIN_INITIAL_PASSWORD) {
+      console.log(`📝 Generated password: ${initialPassword}`);
+      console.log("⚠️  This password will only be shown once - save it securely");
+    }
     
     console.log("Database seeded successfully!");
   } catch (error) {

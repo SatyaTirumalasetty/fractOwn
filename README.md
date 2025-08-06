@@ -213,10 +213,10 @@ You should see:
 
 ### Admin Access
 1. Go to: `http://localhost:5000/admin`
-2. Login with:
+2. Login with the admin credentials created during setup:
    - Username: `admin`
-   - Password: `admin123`
-3. Change this password immediately after first login!
+   - Password: Check the setup/seed output for the generated secure password
+3. **IMPORTANT**: Change this password immediately after first login using the admin settings!
 
 ## 🔧 Configuration Options
 

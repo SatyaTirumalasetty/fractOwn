@@ -4,6 +4,7 @@ import { eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import { notificationService } from "./notification";
+import config from '../../config/app.config.js';
 
 export class AuthService {
   
@@ -111,7 +112,7 @@ export class AuthService {
 
       await db.insert(userSessions).values({
         userId: user.id,
-        token: sessionToken,
+        sessionToken: sessionToken,
         expiresAt
       });
 
@@ -174,7 +175,7 @@ export class AuthService {
   async logout(sessionToken: string): Promise<boolean> {
     try {
       await db.delete(userSessions)
-        .where(eq(userSessions.token, sessionToken));
+        .where(eq(userSessions.sessionToken, sessionToken));
       return true;
     } catch (error) {
       console.error("Logout error:", error);
@@ -216,6 +217,57 @@ export class AuthService {
     } catch (error) {
       console.error("Admin login error:", error);
       return { success: false, message: "Login failed" };
+    }
+  }
+
+  // Change admin password
+  async changeAdminPassword(currentPassword: string, newPassword: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      // Find admin user
+      const [adminUser] = await db.select()
+        .from(adminUsers)
+        .where(eq(adminUsers.username, "admin"));
+
+      if (!adminUser) {
+        return { success: false, message: "Admin user not found" };
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, adminUser.passwordHash);
+      if (!isCurrentPasswordValid) {
+        return { success: false, message: "Current password is incorrect" };
+      }
+
+      // Hash new password
+      const newPasswordHash = await bcrypt.hash(newPassword, 12);
+
+      // Update password in database
+      await db.update(adminUsers)
+        .set({ 
+          passwordHash: newPasswordHash
+        })
+        .where(eq(adminUsers.username, "admin"));
+
+      // Send notification if SMS is enabled
+      try {
+        if (config.app.features.enableSMSNotifications) {
+          await notificationService.sendSMS(
+            "+919999999999", // This should come from admin settings
+            "Your admin password has been successfully changed."
+          );
+        }
+      } catch (smsError) {
+        console.log("SMS notification failed:", smsError);
+        // Don't fail the password change if SMS fails
+      }
+
+      return { success: true, message: "Password changed successfully" };
+    } catch (error) {
+      console.error("Change password error:", error);
+      return { success: false, message: "Failed to change password" };
     }
   }
 }

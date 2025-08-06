@@ -70,10 +70,12 @@ export default {
     sessionSecret: process.env.SESSION_SECRET || 'fractown-session-secret-change-in-production',
     sessionMaxAge: 24 * 60 * 60 * 1000, // 24 hours
     bcryptRounds: 12,
-    defaultAdminCredentials: {
-      username: 'admin',
-      password: 'admin123',
-      email: 'admin@fractown.com'
+    // Admin credentials are stored in database - no hardcoded credentials
+    // Use the seed script to create initial admin user if needed
+    adminSettings: {
+      sessionTimeout: 60 * 60 * 1000, // 1 hour
+      maxLoginAttempts: 5,
+      lockoutDuration: 15 * 60 * 1000 // 15 minutes
     }
   },
 
@@ -152,20 +154,64 @@ export default {
   // Security Configuration
   security: {
     helmet: {
-      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+      contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "ws:", "wss:"]
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          imgSrc: ["'self'", "data:", "https:", "blob:"],
+          connectSrc: ["'self'", "ws:", "wss:", "https:", "http:"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"]
         }
-      } : false, // Disable CSP in development
+      },
+      crossOriginEmbedderPolicy: false, // Allow cross-origin embeds for images
+      hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+      },
+      noSniff: true, // Prevent MIME sniffing
+      xssFilter: true, // Enable XSS filter
+      frameguard: { action: 'deny' }, // Prevent clickjacking
+      dnsPrefetchControl: { allow: false }, // Control DNS prefetching
+      referrerPolicy: { policy: ["no-referrer", "strict-origin-when-cross-origin"] }
     },
     rateLimit: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // Limit each IP to 100 requests per windowMs
-      message: 'Too many requests from this IP'
+      // More flexible rate limiting - allow high traffic but prevent abuse
+      windowMs: 1 * 60 * 1000, // 1 minute window
+      max: process.env.NODE_ENV === 'production' ? 1000 : 10000, // 1000 requests per minute in prod, 10000 in dev
+      message: {
+        error: 'Rate limit exceeded',
+        retryAfter: 'Please try again in a minute'
+      },
+      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+      // Skip rate limiting for static assets and health checks
+      skip: (req) => {
+        return req.path.startsWith('/assets/') || 
+               req.path.startsWith('/static/') || 
+               req.path === '/health' ||
+               req.path === '/favicon.ico';
+      },
+      // Fix trust proxy issue - use default key generator for better IPv6 support
+      trustProxy: false // Disable trust proxy check for rate limiter
+    },
+    // Additional security measures
+    additionalSecurity: {
+      trustProxy: 1, // Trust first proxy only to prevent IP spoofing
+      enableCors: true,
+      corsOptions: {
+        origin: process.env.NODE_ENV === 'production' 
+          ? [process.env.FRONTEND_URL] 
+          : true, // Allow all origins in development
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+      }
     }
   },
 

@@ -37,6 +37,20 @@ export class NotificationService {
       return false;
     }
   }
+
+  // Send SMS notification
+  async sendSMS(phoneNumber: string, message: string): Promise<boolean> {
+    try {
+      console.log(`📱 SMS sent to ${phoneNumber}: ${message}`);
+      
+      // In a real implementation, you would use Twilio or other SMS service
+      // For development, we just log the message
+      return true;
+    } catch (error) {
+      console.error("Failed to send SMS:", error);
+      return false;
+    }
+  }
 }
 
 export const notificationService = new NotificationService();

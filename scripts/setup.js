@@ -235,7 +235,8 @@ async function main() {
     console.log('1. Review the .env file and adjust settings as needed');
     console.log('2. Start the application: npm run dev (development) or npm start (production)');
     console.log('3. Access admin dashboard at: http://localhost:5000/admin');
-    console.log('4. Login with: admin / admin123');
+    console.log('4. Login with username "admin" and the secure password generated during database seeding');
+    console.log('5. IMPORTANT: Change the admin password immediately after first login!');
     console.log('\nFor production deployment, refer to the README.md file.');
     
   } catch (error) {

@@ -8,6 +8,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import slowDown from "express-slow-down";
+import mongoSanitize from "express-mongo-sanitize";
+import cors from "cors";
 import { body, validationResult } from "express-validator";
 import { db } from "./db";
 import { authService } from "./services/auth";
@@ -30,14 +33,114 @@ function broadcastUpdate(type: string, data?: any) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure trust proxy before security middleware
-  app.set('trust proxy', 1);
+  app.set('trust proxy', config.security.additionalSecurity.trustProxy);
   
-  // Security middleware
+  // CORS middleware - must be before other middleware
+  if (config.security.additionalSecurity.enableCors) {
+    app.use(cors(config.security.additionalSecurity.corsOptions));
+  }
+
+  // Security middleware - comprehensive protection
   app.use(helmet(config.security.helmet));
   
-  // Rate limiting
+  // Data sanitization against NoSQL injection attacks
+  app.use(mongoSanitize({
+    replaceWith: '_', // Replace prohibited characters with underscore
+    onSanitize: ({ req, key }) => {
+      console.log(`Sanitized field '${key}' in ${req.method} ${req.path}`);
+    }
+  }));
+
+  // Rate limiting - flexible approach
   const limiter = rateLimit(config.security.rateLimit);
   app.use(limiter);
+
+  // Speed limiting - slow down repeated requests
+  const speedLimiter = slowDown({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    delayAfter: 100, // Allow 100 requests per windowMs at full speed
+    delayMs: () => 500, // Add 500ms delay per request after delayAfter
+    maxDelayMs: 20000, // Max delay of 20 seconds
+    skip: (req) => {
+      return req.path.startsWith('/assets/') || 
+             req.path.startsWith('/static/') || 
+             req.path === '/health' ||
+             req.path === '/favicon.ico';
+    }
+  });
+  app.use(speedLimiter);
+
+  // Additional XSS protection middleware
+  app.use((req: any, res: any, next: any) => {
+    // Set additional security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    // Remove server identification
+    res.removeHeader('X-Powered-By');
+    
+    next();
+  });
+
+  // Input sanitization middleware for XSS protection
+  const sanitizeInput = (req: any, res: any, next: any) => {
+    const sanitizeValue = (value: any): any => {
+      if (typeof value === 'string') {
+        // Basic XSS sanitization - remove script tags and potentially dangerous content
+        return value
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+          .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+          .replace(/javascript:/gi, '')
+          .replace(/on\w+\s*=/gi, '')
+          .replace(/data:\s*text\/html/gi, '')
+          .trim();
+      }
+      return value;
+    };
+
+    const sanitizeObject = (obj: any): any => {
+      if (obj && typeof obj === 'object') {
+        for (const key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            obj[key] = Array.isArray(obj[key]) 
+              ? obj[key].map(sanitizeValue)
+              : sanitizeObject(obj[key]);
+          }
+        }
+      } else {
+        obj = sanitizeValue(obj);
+      }
+      return obj;
+    };
+
+    if (req.body) {
+      req.body = sanitizeObject({ ...req.body });
+    }
+    if (req.query) {
+      req.query = sanitizeObject({ ...req.query });
+    }
+    if (req.params) {
+      req.params = sanitizeObject({ ...req.params });
+    }
+
+    next();
+  };
+
+  // Apply input sanitization to all routes
+  app.use(sanitizeInput);
+
+  // Health check endpoint (before rate limiting)
+  app.get('/health', (req: any, res: any) => {
+    res.status(200).json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: config.server.nodeEnv
+    });
+  });
 
   // Authentication middleware
   const authenticateToken = (req: any, res: any, next: any) => {
@@ -56,6 +159,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     });
   };
+
+  // Error handling middleware
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error('Global error handler:', err);
+    
+    // Handle specific error types
+    if (err.type === 'entity.parse.failed') {
+      return res.status(400).json({ 
+        message: 'Invalid JSON payload',
+        error: 'Bad Request'
+      });
+    }
+    
+    if (err.type === 'entity.too.large') {
+      return res.status(413).json({ 
+        message: 'Request entity too large',
+        error: 'Payload Too Large'
+      });
+    }
+
+    // Default server error
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: config.server.nodeEnv === 'development' ? err.message : 'Server Error',
+      requestId: req.headers['x-request-id'] || 'unknown'
+    });
+  });
+
   // Get all active properties (public endpoint)
   app.get("/api/properties", async (req, res) => {
     try {
@@ -518,7 +649,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send mobile notification if enabled
       if (notifyMobile && config.app.features.enableSMSNotifications) {
-        await sendPasswordChangeNotification(adminResult.user);
+        try {
+          await notificationService.sendSMS(
+            "+919999999999", // This should come from admin settings
+            "Your admin password has been successfully changed."
+          );
+        } catch (smsError) {
+          console.log("SMS notification failed:", smsError);
+        }
       }
 
       res.json({ 
