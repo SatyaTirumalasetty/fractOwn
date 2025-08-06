@@ -530,23 +530,123 @@ export function AdminPropertiesTab() {
           <p className="text-sm text-gray-600 mt-1">Property images and supporting documents</p>
         </div>
         
-        <div className="space-y-3">
-          <Label htmlFor="imageUrls" className="text-sm font-medium text-gray-700">
-            Image URLs
-          </Label>
-          <Textarea 
-            {...form.register("imageUrls")} 
-            placeholder="https://example.com/property-exterior.jpg&#10;https://example.com/property-interior.jpg&#10;https://example.com/property-amenities.jpg"
-            className="min-h-[80px] bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors resize-none"
-          />
-          <p className="text-xs text-gray-500">Enter one image URL per line. Supported formats: JPG, PNG, WebP</p>
-          {form.formState.errors.imageUrls && (
-            <p className="text-sm text-red-500 flex items-center gap-1">
-              <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-              {form.formState.errors.imageUrls.message}
-            </p>
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label htmlFor="imageUrls" className="text-sm font-medium text-gray-700">
+              Image URLs
+            </Label>
+            <Textarea 
+              {...form.register("imageUrls")} 
+              placeholder="https://example.com/property-exterior.jpg&#10;https://example.com/property-interior.jpg&#10;https://example.com/property-amenities.jpg"
+              className="min-h-[100px] bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors resize-none"
+            />
+            <p className="text-xs text-gray-500">Enter one image URL per line. Supported formats: JPG, PNG, WebP</p>
+            {form.formState.errors.imageUrls && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.imageUrls.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-700">
+              File Uploads
+            </Label>
+            <div className="space-y-4">
+              {/* File Upload Section */}
+              <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-center">
+                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                    <Input
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf,.doc,.docx"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                      className="h-9 px-4 text-sm"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Choose Files
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Images, PDFs, or Documents</p>
+                </div>
+              </div>
+
+              {/* Google Drive Link Section */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">
+                  Or add Google Drive link
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://drive.google.com/..."
+                    value={googleDriveLink}
+                    onChange={(e) => setGoogleDriveLink(e.target.value)}
+                    className="flex-1 h-9 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleGoogleDriveLink}
+                    className="h-9 px-3"
+                  >
+                    <Link className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Attached Files Display */}
+        {attachments.length > 0 && (
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-700">
+              Attached Files ({attachments.length})
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {attachments.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex-shrink-0">
+                      {file.type === "image" ? (
+                        <Image className="w-5 h-5 text-green-600" />
+                      ) : file.type === "pdf" ? (
+                        <FileText className="w-5 h-5 text-red-600" />
+                      ) : (
+                        <FileIcon className="w-5 h-5 text-blue-600" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                      <Badge variant="outline" className="text-xs">
+                        {file.type}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAttachment(index)}
+                    className="flex-shrink-0 h-8 w-8 p-0 text-gray-400 hover:text-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Submit Section */}
