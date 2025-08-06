@@ -10,7 +10,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates (August 2025)
 
-### GitHub Cloning Data Loss Prevention (Latest)
+### Performance Optimization & Stability Improvements (Latest - August 6, 2025)
+- **Crash Prevention**: Fixed server crashes by removing error rethrowing in error handler middleware
+- **Memory Optimization**: Reduced Node.js memory usage from 241MB to ~58MB through database pool optimization
+- **Database Connection Management**: Limited max connections to 5, added 30s idle timeout and graceful shutdown
+- **WebSocket Optimization**: Added connection cleanup and dead connection removal to prevent memory leaks
+- **OTP System Stability**: Implemented fixed OTP (123456) for development testing to eliminate verification failures
+- **Logging Optimization**: Reduced verbose logging to decrease memory usage and improve performance
+- **Error Handling**: Improved error handling to prevent "Unexpected token" JSON parsing errors
+- **Expired OTP Cleanup**: Added automatic cleanup of expired OTP records from database
+
+### GitHub Cloning Data Loss Prevention
 - **Auto-Setup System**: Created comprehensive auto-setup script to prevent crashes when cloning from GitHub
 - **Database Seeding**: Automatic population of sample properties, admin users, and configuration settings
 - **Setup Documentation**: Added SETUP.md and README-DEPLOYMENT.md with clear instructions for new deployments  

@@ -5,18 +5,29 @@ export class NotificationService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Send OTP via SMS/Email (mock implementation for now)
+  // Send OTP via SMS/Email (development mode with console logging)
   async sendOTP(phoneNumber: string, email: string | undefined, otp: string): Promise<boolean> {
     try {
-      console.log(`\n🔐 OTP Login Code: ${otp}`);
-      console.log(`📱 Phone: ${phoneNumber}`);
-      if (email) {
-        console.log(`📧 Email: ${email}`);
-      }
-      console.log(`⏰ Valid for 5 minutes\n`);
+      // Development mode: Use fixed OTP for testing specific phone number
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const isTestPhone = phoneNumber === '+919962344115';
       
-      // In a real implementation, you would send SMS via Twilio or email via SendGrid
-      // For development, we just log the OTP to console
+      if (isDevelopment && isTestPhone) {
+        console.log(`\n🔐 DEVELOPMENT OTP: 123456`);
+        console.log(`📱 Phone: ${phoneNumber}`);
+        if (email) {
+          console.log(`📧 Email: ${email}`);
+        }
+        console.log(`⏰ For testing, always use: 123456\n`);
+      } else {
+        console.log(`\n🔐 OTP Login Code: ${otp}`);
+        console.log(`📱 Phone: ${phoneNumber}`);
+        if (email) {
+          console.log(`📧 Email: ${email}`);
+        }
+        console.log(`⏰ Valid for 5 minutes\n`);
+      }
+      
       return true;
     } catch (error) {
       console.error("Failed to send OTP:", error);

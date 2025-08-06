@@ -24,12 +24,14 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      
+      // Only log response body for errors or short responses to reduce memory usage
+      if (capturedJsonResponse && (res.statusCode >= 400 || JSON.stringify(capturedJsonResponse).length < 200)) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+      if (logLine.length > 100) {
+        logLine = logLine.slice(0, 99) + "…";
       }
 
       log(logLine);
@@ -46,8 +48,13 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    console.error("Server error:", err);
+    
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    
+    // Don't rethrow - this was causing crashes
   });
 
   // importantly only setup vite in development and after

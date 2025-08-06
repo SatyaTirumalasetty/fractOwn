@@ -11,5 +11,19 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Optimize pool for better memory management
+const poolConfig = {
+  connectionString: process.env.DATABASE_URL,
+  max: 5, // Reduce max connections to save memory
+  idleTimeoutMillis: 30000, // Close idle connections after 30s
+  connectionTimeoutMillis: 10000, // Timeout connection attempts after 10s
+};
+
+export const pool = new Pool(poolConfig);
 export const db = drizzle({ client: pool, schema });
+
+// Graceful shutdown handling
+process.on('SIGTERM', async () => {
+  console.log('Closing database pool...');
+  await pool.end();
+});

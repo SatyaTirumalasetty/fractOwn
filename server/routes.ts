@@ -19,16 +19,29 @@ import { seedProperties } from "./seed-properties";
 // Load configuration
 import config from '../config/app.config.js';
 
-// WebSocket connections for real-time updates
+// WebSocket connections for real-time updates - optimized memory management
 let wsConnections: Set<any> = new Set();
 
 function broadcastUpdate(type: string, data?: any) {
+  if (wsConnections.size === 0) return; // Skip if no connections
+  
   const message = JSON.stringify({ type, data, timestamp: new Date().toISOString() });
+  const deadConnections: any[] = [];
+  
   wsConnections.forEach(ws => {
     if (ws.readyState === 1) { // WebSocket.OPEN
-      ws.send(message);
+      try {
+        ws.send(message);
+      } catch (error) {
+        deadConnections.push(ws);
+      }
+    } else {
+      deadConnections.push(ws);
     }
   });
+  
+  // Clean up dead connections
+  deadConnections.forEach(ws => wsConnections.delete(ws));
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
