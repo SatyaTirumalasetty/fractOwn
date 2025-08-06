@@ -918,7 +918,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication middleware for protected routes
   const requireAuth = async (req: any, res: any, next: any) => {
     try {
-      const sessionToken = req.cookies.adminSessionToken || req.headers.authorization?.replace('Bearer ', '');
+      // Check both cookies and Authorization header
+      let sessionToken = null;
+      
+      if (req.cookies && req.cookies.adminSessionToken) {
+        sessionToken = req.cookies.adminSessionToken;
+      } else if (req.headers.authorization) {
+        sessionToken = req.headers.authorization.replace('Bearer ', '');
+      }
       
       if (!sessionToken) {
         console.log("No session token found in cookies or headers");
