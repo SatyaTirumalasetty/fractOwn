@@ -51,7 +51,7 @@ export default function AdminDashboard() {
               <img 
                 src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
                 alt="fractOWN Logo" 
-                className="h-16 w-16 rounded-xl object-cover shadow-md"
+                className="h-16 w-16 object-contain"
               />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
