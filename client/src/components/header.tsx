@@ -60,13 +60,19 @@ export default function Header() {
     <header className="bg-gray-50 shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <div className="flex-shrink-0 cursor-pointer" onClick={() => scrollToSection('home')}>
               <img 
-                src="/attached_assets/image_1754379283931.png" 
+                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
                 alt="fractOWN Logo"
-                className="h-20 w-auto hover:opacity-80 transition-opacity"
+                className="h-16 w-16 object-contain hover:opacity-80 transition-opacity"
               />
+            </div>
+            <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
+              <h1 className="text-2xl font-bold text-gray-900">
+                fractOWN
+              </h1>
+              <p className="text-sm text-gray-600">Real Estate Investment</p>
             </div>
             <div className="hidden md:block ml-10">
               <div className="flex items-baseline space-x-4">
