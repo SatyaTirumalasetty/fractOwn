@@ -21,6 +21,7 @@ import { SecurityValidator, validationMiddleware } from "./security/validator";
 import { performanceMonitor, databaseMonitor } from "./performance/monitor";
 import { sessionCache, propertyCache, configCache } from "./performance/cache";
 import { totpSecurityManager, TOTP_CONFIG } from "./security/totp-security";
+import securePropertiesRouter from "./routes/secureProperties";
 
 // Load configuration
 import config from '../config/app.config.js';
@@ -1267,6 +1268,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to load security dashboard" });
     }
   });
+
+  // Mount secure properties router for encrypted data handling
+  app.use(securePropertiesRouter);
 
   const httpServer = createServer(app);
   

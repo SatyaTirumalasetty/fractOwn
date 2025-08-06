@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPropertiesTab } from "@/components/admin/admin-properties-tab";
 import { AdminContactsTab } from "@/components/admin/admin-contacts-tab";
 import AdminSettingsTab from "@/components/admin/admin-settings-tab";
-import { LogOut, Building, MessageSquare, Settings } from "lucide-react";
+import { EnhancedAdminDashboard } from "@/components/admin/enhanced-admin-dashboard";
+import { LogOut, Building, MessageSquare, Settings, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -75,8 +76,12 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        <Tabs defaultValue="properties" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Dashboard</span>
+            </TabsTrigger>
             <TabsTrigger value="properties" className="flex items-center space-x-2">
               <Building className="h-4 w-4" />
               <span>Properties</span>
@@ -90,6 +95,10 @@ export default function AdminDashboard() {
               <span>Settings</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <EnhancedAdminDashboard />
+          </TabsContent>
 
           <TabsContent value="properties">
             <Card>

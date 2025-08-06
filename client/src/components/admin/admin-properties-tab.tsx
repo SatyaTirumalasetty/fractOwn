@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
@@ -39,6 +40,9 @@ export function AdminPropertiesTab() {
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [googleDriveLink, setGoogleDriveLink] = useState("");
   const [attachments, setAttachments] = useState<Array<{name: string, url: string, type: "image" | "document" | "pdf"}>>([]);
+  const [fileValidationMessage, setFileValidationMessage] = useState<string>("");
+  const [showFileValidation, setShowFileValidation] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const { toast } = useToast();
@@ -71,24 +75,97 @@ export function AdminPropertiesTab() {
     resolver: zodResolver(propertyFormSchema),
   });
 
-  // File handling functions
+  // Enhanced file validation function
+  const validateFiles = (files: FileList): { valid: boolean; errors: string[]; validFiles: File[] } => {
+    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const allowedDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const maxFileSize = 10 * 1024 * 1024; // 10MB
+    const maxFiles = 10;
+
+    const errors: string[] = [];
+    const validFiles: File[] = [];
+
+    if (files.length > maxFiles) {
+      errors.push(`Too many files selected. Maximum ${maxFiles} files allowed.`);
+    }
+
+    if (attachments.length + files.length > maxFiles) {
+      errors.push(`Total files would exceed limit of ${maxFiles}. Currently have ${attachments.length} files.`);
+    }
+
+    Array.from(files).forEach((file) => {
+      const allAllowedTypes = [...allowedImageTypes, ...allowedDocTypes];
+      
+      if (file.size > maxFileSize) {
+        errors.push(`File "${file.name}" exceeds 10MB size limit.`);
+        return;
+      }
+
+      if (!allAllowedTypes.includes(file.type)) {
+        errors.push(`File "${file.name}" has unsupported format "${file.type}".`);
+        return;
+      }
+
+      if (file.name.length > 255) {
+        errors.push(`File "${file.name}" name is too long (max 255 characters).`);
+        return;
+      }
+
+      // Check for suspicious extensions
+      const suspiciousExts = ['.exe', '.bat', '.cmd', '.scr', '.js', '.php'];
+      const hasSupiciousExt = suspiciousExts.some(ext => file.name.toLowerCase().endsWith(ext));
+      if (hasSupiciousExt) {
+        errors.push(`File "${file.name}" has a suspicious extension and cannot be uploaded.`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    return { valid: errors.length === 0, errors, validFiles };
+  };
+
+  // File handling functions with validation
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach((file) => {
-        const fileType = file.type.startsWith('image/') ? 'image' : 
-                        file.type === 'application/pdf' ? 'pdf' : 'document';
-        
-        // Create a URL for the file (in a real app, you'd upload to a server)
-        const url = URL.createObjectURL(file);
-        
-        setAttachments(prev => [...prev, {
-          name: file.name,
-          url: url,
-          type: fileType
-        }]);
+    if (!files || files.length === 0) return;
+
+    const validation = validateFiles(files);
+    
+    if (!validation.valid) {
+      setValidationErrors(validation.errors);
+      setFileValidationMessage(
+        `Upload failed for some files:\n\n${validation.errors.join('\n')}\n\nAllowed formats: JPG, PNG, WebP, PDF, DOC, DOCX\nMax file size: 10MB\nMax files per property: 10`
+      );
+      setShowFileValidation(true);
+      
+      // Clear the file input
+      e.target.value = '';
+      return;
+    }
+
+    // Process valid files
+    validation.validFiles.forEach(file => {
+      const fileType = file.type.startsWith('image/') ? 'image' : 
+                      file.type === 'application/pdf' ? 'pdf' : 'document';
+      
+      setAttachments(prev => [...prev, {
+        name: file.name,
+        url: URL.createObjectURL(file),
+        type: fileType
+      }]);
+    });
+
+    // Show success message
+    if (validation.validFiles.length > 0) {
+      toast({
+        title: "Files uploaded successfully",
+        description: `${validation.validFiles.length} file(s) added to property.`,
       });
     }
+
+    // Clear the file input
+    e.target.value = '';
   };
 
   const handleGoogleDriveLink = () => {
@@ -553,6 +630,38 @@ export function AdminPropertiesTab() {
             <Label className="text-sm font-medium text-gray-700">
               File Uploads
             </Label>
+            
+            {/* File Validation Alert */}
+            {showFileValidation && (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  <div className="space-y-2">
+                    <p className="font-medium">File validation failed:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {validationErrors.map((error, index) => (
+                        <li key={index} className="text-sm">{error}</li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 text-sm">
+                      <p><strong>Allowed formats:</strong> JPG, PNG, WebP, PDF, DOC, DOCX</p>
+                      <p><strong>Max file size:</strong> 10MB</p>
+                      <p><strong>Max files per property:</strong> 10</p>
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowFileValidation(false)}
+                      className="mt-2"
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-4">
               {/* File Upload Section */}
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
@@ -577,7 +686,10 @@ export function AdminPropertiesTab() {
                       Choose Files
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Images, PDFs, or Documents</p>
+                  <p className="text-xs text-gray-500 mt-2">Images, PDFs, or Documents (Max 10MB, 10 files)</p>
+                  <div className="mt-2 text-xs text-gray-400">
+                    Allowed: JPG, PNG, WebP, PDF, DOC, DOCX
+                  </div>
                 </div>
               </div>
 
