@@ -26,38 +26,47 @@ export default function PropertyDetail() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
 
-  const { data: property, isLoading } = useQuery<Property>({
+  const { data: property, isLoading, error } = useQuery<Property>({
     queryKey: ["/api/properties", id],
     enabled: !!id,
   });
+  
+  // Debug logging
+  React.useEffect(() => {
+    console.log("Property Detail Debug:", { id, property, isLoading, error });
+  }, [id, property, isLoading, error]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="h-96 bg-gray-200 rounded mb-6"></div>
-            <div className="space-y-4">
-              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-6 bg-gray-200 rounded w-2/3"></div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+
 
   if (!property) {
+    if (isLoading) {
+      return (
+        <div className="min-h-screen">
+          <Header />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+              <div className="h-96 bg-gray-200 rounded mb-6"></div>
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-6 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      );
+    }
+    
     return (
       <div className="min-h-screen">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Property Not Found</h1>
+            <p className="text-gray-600 mb-4">Property ID: {id}</p>
+            {error && <p className="text-red-600 mb-4">Error: {String(error)}</p>}
             <Button onClick={() => setLocation("/")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
