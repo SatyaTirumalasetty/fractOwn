@@ -778,6 +778,17 @@ export default function AdminSettingsTab() {
               </CardContent>
             </Card>
           </div>
+          
+          <div className="flex gap-4">
+            <Button onClick={() => handleSaveSettings("Business Settings")} className="flex-1">
+              <Save className="h-4 w-4 mr-2" />
+              Save Business Settings
+            </Button>
+            <Button onClick={() => handleSaveSettings("Upload Settings")} className="flex-1">
+              <Save className="h-4 w-4 mr-2" />
+              Save Upload Settings
+            </Button>
+          </div>
 
           <Card>
             <CardHeader>
@@ -822,6 +833,11 @@ export default function AdminSettingsTab() {
                   />
                 </div>
               </div>
+              
+              <Button onClick={() => handleSaveSettings("Feature Flags")} className="w-full">
+                <Save className="h-4 w-4 mr-2" />
+                Save Feature Settings
+              </Button>
             </CardContent>
           </Card>
 
