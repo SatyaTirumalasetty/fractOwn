@@ -109,15 +109,13 @@ export default function HeroSection() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="max-w-4xl">
-          {/* Animated logo entrance */}
+          {/* fractOWN Logo */}
           <div className="mb-8 flex justify-start">
-            <div className="logo-hero transform transition-all duration-1000 hover:scale-110 hover:rotate-2">
-              <img 
-                src="/attached_assets/image_1754379283931.png" 
-                alt="fractOWN Logo"
-                className="h-48 w-auto logo-transparent drop-shadow-2xl animate-pulse"
-              />
-            </div>
+            <img 
+              src="/attached_assets/fractOWN_logo_1754209748656.jpg" 
+              alt="fractOWN Logo"
+              className="h-20 w-auto object-contain logo-transparent"
+            />
           </div>
           
           {/* Enhanced title with proper visibility */}
