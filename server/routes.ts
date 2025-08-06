@@ -804,6 +804,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin password reset - request OTP
+  app.post("/api/admin/forgot-password", async (req, res) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const admin = await storage.getAdminUserByUsername(username);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin user not found" });
+      }
+
+      if (!admin.phoneNumber) {
+        return res.status(400).json({ message: "No phone number registered for this admin account" });
+      }
+
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      await storage.createPasswordResetOtp(admin.id, admin.phoneNumber, otp, expiresAt);
+
+      // In a real app, send SMS here
+      console.log(`Password reset OTP for ${admin.username}: ${otp}`);
+      
+      res.json({ 
+        message: "OTP sent successfully", 
+        phoneNumber: admin.phoneNumber.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') // masked phone number
+      });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process password reset request" });
+    }
+  });
+
+  // Admin password reset - verify OTP and reset password
+  app.post("/api/admin/reset-password", async (req, res) => {
+    try {
+      const { username, otp, newPassword } = req.body;
+      
+      if (!username || !otp || !newPassword) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      const admin = await storage.getAdminUserByUsername(username);
+      if (!admin || !admin.phoneNumber) {
+        return res.status(404).json({ message: "Admin user not found" });
+      }
+
+      const adminId = await storage.validatePasswordResetOtp(admin.phoneNumber, otp);
+      if (!adminId || adminId !== admin.id) {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+
+      // Hash the new password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password and mark OTP as used
+      await storage.updateAdminPassword(admin.id, hashedPassword);
+      await storage.markPasswordResetOtpAsUsed(admin.phoneNumber, otp);
+
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Setup WebSocket server for real-time updates

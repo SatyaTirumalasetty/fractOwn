@@ -5,6 +5,7 @@ import {
   adminUsers,
   adminSettings,
   adminSessions,
+  adminPasswordResetOtps,
   users,
   type InsertProperty,
   type InsertContact,
@@ -12,7 +13,9 @@ import {
   type AdminUser,
   type User,
   type InsertUser,
-  type UpdateProperty
+  type UpdateProperty,
+  type InsertAdminPasswordResetOtp,
+  type AdminPasswordResetOtp
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt } from "drizzle-orm";
@@ -32,6 +35,7 @@ export interface IStorage {
   
   // Admin operations
   getAdminUsers(): Promise<AdminUser[]>;
+  getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
   
   // Admin settings operations
   getAdminSetting(key: string): Promise<string | null>;
@@ -42,6 +46,12 @@ export interface IStorage {
   createAdminSession(adminId: string, sessionToken: string, expiresAt: Date): Promise<void>;
   validateAdminSession(sessionToken: string): Promise<string | null>; // returns adminId if valid
   deleteAdminSession(sessionToken: string): Promise<void>;
+  
+  // Password reset operations
+  createPasswordResetOtp(adminId: string, phoneNumber: string, otp: string, expiresAt: Date): Promise<void>;
+  validatePasswordResetOtp(phoneNumber: string, otp: string): Promise<string | null>; // returns adminId if valid
+  markPasswordResetOtpAsUsed(phoneNumber: string, otp: string): Promise<void>;
+  updateAdminPassword(adminId: string, passwordHash: string): Promise<void>;
   
   // User operations
   getUser(id: string): Promise<User | undefined>;
@@ -101,20 +111,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Admin Users
-  async createAdminUser(insertAdminUser: InsertAdminUserDB): Promise<AdminUser> {
+  async createAdminUser(insertAdminUser: any): Promise<AdminUser> {
     const [adminUser] = await db
       .insert(adminUsers)
       .values(insertAdminUser)
       .returning();
     return adminUser;
-  }
-
-  async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
-    const [adminUser] = await db
-      .select()
-      .from(adminUsers)
-      .where(eq(adminUsers.username, username));
-    return adminUser || undefined;
   }
 
   async getAdminUsers(): Promise<AdminUser[]> {
@@ -188,6 +190,45 @@ export class DatabaseStorage implements IStorage {
     await db.delete(adminSessions)
       .where(eq(adminSessions.sessionToken, sessionToken));
   }
+
+  // Password reset operations
+  async createPasswordResetOtp(adminId: string, phoneNumber: string, otp: string, expiresAt: Date): Promise<void> {
+    await db.insert(adminPasswordResetOtps).values({
+      adminId,
+      phoneNumber,
+      otp,
+      expiresAt
+    });
+  }
+
+  async validatePasswordResetOtp(phoneNumber: string, otp: string): Promise<string | null> {
+    const [otpRecord] = await db.select()
+      .from(adminPasswordResetOtps)
+      .where(and(
+        eq(adminPasswordResetOtps.phoneNumber, phoneNumber),
+        eq(adminPasswordResetOtps.otp, otp),
+        eq(adminPasswordResetOtps.isUsed, false),
+        gt(adminPasswordResetOtps.expiresAt, new Date())
+      ));
+    return otpRecord?.adminId || null;
+  }
+
+  async markPasswordResetOtpAsUsed(phoneNumber: string, otp: string): Promise<void> {
+    await db.update(adminPasswordResetOtps)
+      .set({ isUsed: true })
+      .where(and(
+        eq(adminPasswordResetOtps.phoneNumber, phoneNumber),
+        eq(adminPasswordResetOtps.otp, otp)
+      ));
+  }
+
+  async updateAdminPassword(adminId: string, passwordHash: string): Promise<void> {
+    await db.update(adminUsers)
+      .set({ passwordHash })
+      .where(eq(adminUsers.id, adminId));
+  }
+
+
 
   // User operations
   async getUser(id: string): Promise<User | undefined> {

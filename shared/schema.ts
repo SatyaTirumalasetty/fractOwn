@@ -62,6 +62,17 @@ export const adminSessions = pgTable("admin_sessions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Admin password reset OTP table
+export const adminPasswordResetOtps = pgTable("admin_password_reset_otps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminId: varchar("admin_id").references(() => adminUsers.id, { onDelete: "cascade" }).notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  otp: text("otp").notNull(),
+  isUsed: boolean("is_used").notNull().default(false),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -136,6 +147,11 @@ export const insertAdminSessionSchema = createInsertSchema(adminSessions).omit({
   createdAt: true,
 });
 
+export const insertAdminPasswordResetOtpSchema = createInsertSchema(adminPasswordResetOtps).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const updatePropertySchema = createInsertSchema(properties).omit({
   id: true,
 }).partial();
@@ -157,4 +173,6 @@ export type InsertAdminSetting = z.infer<typeof insertAdminSettingSchema>;
 export type AdminSetting = typeof adminSettings.$inferSelect;
 export type InsertAdminSession = z.infer<typeof insertAdminSessionSchema>;
 export type AdminSession = typeof adminSessions.$inferSelect;
+export type InsertAdminPasswordResetOtp = z.infer<typeof insertAdminPasswordResetOtpSchema>;
+export type AdminPasswordResetOtp = typeof adminPasswordResetOtps.$inferSelect;
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;

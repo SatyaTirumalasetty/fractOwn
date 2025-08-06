@@ -11,7 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, Key } from "lucide-react";
+import ForgotPasswordDialog from "@/components/admin/forgot-password-dialog";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -24,6 +25,7 @@ export default function AdminLogin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -138,6 +140,18 @@ export default function AdminLogin() {
             </Button>
           </form>
           
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              size="sm"
+              className="text-sm text-blue-600 hover:text-blue-800"
+              onClick={() => setShowForgotPassword(true)}
+            >
+              <Key className="h-4 w-4 mr-1" />
+              Forgot Password?
+            </Button>
+          </div>
+          
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
               <Button
@@ -159,6 +173,11 @@ export default function AdminLogin() {
 
         </CardContent>
       </Card>
+      
+      <ForgotPasswordDialog 
+        open={showForgotPassword}
+        onOpenChange={setShowForgotPassword}
+      />
     </div>
   );
 }
