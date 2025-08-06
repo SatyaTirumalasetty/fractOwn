@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail, RefreshCw, Download, Search, Filter, TrendingUp, Activity, CheckCircle, Clock } from "lucide-react";
+import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail, RefreshCw, Download, Search, Filter, TrendingUp, Activity, CheckCircle, Clock, DollarSign } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
 import AdminContactSettings from "./admin-contact-settings";
 import AdminSecurityTab from "./admin-security-tab";

@@ -249,13 +249,7 @@ export function AdminPropertiesTab() {
         attachments: attachments
       };
       
-      return apiRequest("/api/admin/properties", {
-        method: "POST",
-        body: JSON.stringify(propertyData),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      return apiRequest("/api/admin/properties", "POST", propertyData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] });
@@ -316,9 +310,7 @@ export function AdminPropertiesTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/admin/properties/${id}`, {
-        method: "DELETE",
-      });
+      return apiRequest(`/api/admin/properties/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] });
