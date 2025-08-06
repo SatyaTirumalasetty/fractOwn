@@ -4,87 +4,101 @@ import bcrypt from "bcrypt";
 
 const sampleProperties = [
   {
-    name: "Oberoi Sky Heights",
-    description: "Premium 3BHK apartments in Goregaon with world-class amenities",
-    location: "Goregaon",
-    city: "Mumbai",
-    state: "Maharashtra",
-    totalValue: 25000000, // ₹2.5 Cr
-    minInvestment: 25000,
-    expectedReturn: "11.20",
-    fundingProgress: 72,
+    name: "Marina Bay Residences",
+    description: "Luxury waterfront apartments with sea views and premium amenities near Marina Beach",
+    location: "Marina Beach Road",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    totalValue: 45000000, // ₹4.5 Cr
+    minInvestment: 45000,
+    expectedReturn: "12.50",
+    fundingProgress: 68,
     imageUrls: ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600", "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "residential",
     isActive: true,
   },
   {
-    name: "Tech Park Plaza",
-    description: "Grade A commercial office space in Electronic City with IT giants as tenants",
-    location: "Electronic City",
-    city: "Bangalore",
-    state: "Karnataka",
+    name: "IT Park Central",
+    description: "Grade A commercial office space in OMR with tech giants as tenants",
+    location: "Old Mahabalipuram Road",
+    city: "Chennai",
+    state: "Tamil Nadu",
     totalValue: 52000000, // ₹5.2 Cr
     minInvestment: 50000,
-    expectedReturn: "13.50",
-    fundingProgress: 45,
+    expectedReturn: "13.80",
+    fundingProgress: 42,
     imageUrls: ["https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "commercial",
     isActive: true,
   },
   {
-    name: "Emerald Gardens",
-    description: "Luxury villa community in Baner with club house and recreational facilities",
-    location: "Baner",
-    city: "Pune",
-    state: "Maharashtra",
+    name: "Emerald Heights",
+    description: "Premium residential towers with modern amenities in heart of Chennai",
+    location: "T. Nagar",
+    city: "Chennai",
+    state: "Tamil Nadu",
     totalValue: 38000000, // ₹3.8 Cr
     minInvestment: 38000,
-    expectedReturn: "10.80",
-    fundingProgress: 95,
+    expectedReturn: "11.20",
+    fundingProgress: 85,
     imageUrls: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "residential",
     isActive: true,
   },
   {
-    name: "Marina Bay Towers",
-    description: "Luxury waterfront apartments with sea views and premium amenities",
-    location: "Marine Drive",
-    city: "Mumbai",
-    state: "Maharashtra",
-    totalValue: 45000000, // ₹4.5 Cr
-    minInvestment: 45000,
-    expectedReturn: "12.50",
-    fundingProgress: 28,
-    imageUrls: ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
-    propertyType: "residential",
-    isActive: true,
-  },
-  {
-    name: "Business Central Hub",
-    description: "Prime commercial space in Cyber City with multinational tenants",
-    location: "Cyber City",
-    city: "Gurgaon",
-    state: "Haryana",
-    totalValue: 68000000, // ₹6.8 Cr
-    minInvestment: 68000,
+    name: "Tech Valley Plaza",
+    description: "Modern commercial complex in HITEC City with multinational companies",
+    location: "HITEC City",
+    city: "Hyderabad",
+    state: "Telangana",
+    totalValue: 60000000, // ₹6.0 Cr
+    minInvestment: 60000,
     expectedReturn: "14.20",
-    fundingProgress: 63,
+    fundingProgress: 55,
     imageUrls: ["https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "commercial",
     isActive: true,
   },
   {
-    name: "Green Valley Residences",
-    description: "Eco-friendly apartments with solar panels and rainwater harvesting",
-    location: "Whitefield",
-    city: "Bangalore",
-    state: "Karnataka",
-    totalValue: 32000000, // ₹3.2 Cr
-    minInvestment: 32000,
-    expectedReturn: "10.50",
-    fundingProgress: 55,
+    name: "Cyber Towers",
+    description: "Premium residential apartments in Gachibowli with world-class facilities",
+    location: "Gachibowli",
+    city: "Hyderabad",
+    state: "Telangana",
+    totalValue: 42000000, // ₹4.2 Cr
+    minInvestment: 42000,
+    expectedReturn: "12.80",
+    fundingProgress: 73,
     imageUrls: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
     propertyType: "residential",
+    isActive: true,
+  },
+  {
+    name: "Mill Heritage Residences",
+    description: "Luxury villa community near textile mills with traditional and modern architecture",
+    location: "Peelamedu",
+    city: "Coimbatore",
+    state: "Tamil Nadu",
+    totalValue: 35000000, // ₹3.5 Cr
+    minInvestment: 35000,
+    expectedReturn: "11.50",
+    fundingProgress: 62,
+    imageUrls: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
+    propertyType: "residential",
+    isActive: true,
+  },
+  {
+    name: "Business Park Coimbatore",
+    description: "Commercial office spaces with IT and manufacturing companies as tenants",
+    location: "Saravanampatti",
+    city: "Coimbatore",
+    state: "Tamil Nadu",
+    totalValue: 28000000, // ₹2.8 Cr
+    minInvestment: 28000,
+    expectedReturn: "13.20",
+    fundingProgress: 48,
+    imageUrls: ["https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
+    propertyType: "commercial",
     isActive: true,
   }
 ];
@@ -98,8 +112,8 @@ async function seedDatabase() {
     console.log("✓ Properties seeded");
     
     // Add default admin user with secure password
-    // Use environment variable or generate secure random password
-    const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || require('crypto').randomBytes(12).toString('hex');
+    // Use environment variable or default password for development
+    const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'admin123';
     const passwordHash = await bcrypt.hash(initialPassword, 12);
     await db.insert(adminUsers).values({
       username: "admin",
