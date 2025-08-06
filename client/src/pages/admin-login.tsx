@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { Home, ArrowLeft } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -72,7 +73,16 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute left-0 top-0"
+            onClick={() => setLocation("/")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Button>
           <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
           <CardDescription>
             Sign in to access the fractOWN admin dashboard
@@ -128,8 +138,24 @@ export default function AdminLogin() {
             </Button>
           </form>
           
-
-          
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
+              <Button
+                variant="link"
+                size="sm"
+                className="p-0 h-auto text-gray-600 hover:text-gray-900"
+                onClick={() => setLocation("/")}
+              >
+                <Home className="h-4 w-4 mr-1" />
+                Visit as Guest
+              </Button>
+              <span>•</span>
+              <span>Admin Access Required</span>
+            </div>
+            <p className="text-xs text-center text-gray-500 mt-2">
+              Only authorized administrators can access the dashboard
+            </p>
+          </div>
 
         </CardContent>
       </Card>
