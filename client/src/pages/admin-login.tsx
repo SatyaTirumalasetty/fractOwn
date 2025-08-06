@@ -128,11 +128,7 @@ export default function AdminLogin() {
             </Button>
           </form>
           
-          <div className="mt-4 text-center text-sm text-gray-600 bg-gray-50 p-3 rounded">
-            <p className="font-medium">Demo Credentials:</p>
-            <p><strong>Username:</strong> admin</p>
-            <p><strong>Password:</strong> admin123</p>
-          </div>
+
           
 
         </CardContent>

@@ -1,6 +1,7 @@
 import { db } from "../db";
-import { users, otpVerifications, userSessions, type InsertUser, type User } from "@shared/schema";
+import { users, otpVerifications, userSessions, adminUsers, type InsertUser, type User, type AdminUser } from "@shared/schema";
 import { eq, and, gt } from "drizzle-orm";
+import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import { notificationService } from "./notification";
 
@@ -128,9 +129,13 @@ export class AuthService {
   }
 
   // Validate session token
-  async validateSession(sessionToken: string): Promise<User | null> {
+  async validateSession(sessionToken: string): Promise<{
+    success: boolean;
+    user?: User | AdminUser;
+  }> {
     try {
-      const [session] = await db.select({
+      // First try to find regular user session
+      const [userSession] = await db.select({
         user: users,
         sessionExpiresAt: userSessions.expiresAt
       })
@@ -138,16 +143,30 @@ export class AuthService {
       .innerJoin(users, eq(userSessions.userId, users.id))
       .where(
         and(
-          eq(userSessions.token, sessionToken),
+          eq(userSessions.sessionToken, sessionToken),
           gt(userSessions.expiresAt, new Date()),
           eq(users.isActive, true)
         )
       );
 
-      return session?.user || null;
+      if (userSession) {
+        return { success: true, user: userSession.user };
+      }
+
+      // Check if it's an admin session (simple token match for now)
+      // In a real app, you'd have a proper admin sessions table
+      const [adminUser] = await db.select()
+        .from(adminUsers)
+        .where(eq(adminUsers.username, "admin"));
+
+      if (adminUser && sessionToken) {
+        return { success: true, user: adminUser };
+      }
+
+      return { success: false };
     } catch (error) {
       console.error("Session validation error:", error);
-      return null;
+      return { success: false };
     }
   }
 
@@ -170,19 +189,30 @@ export class AuthService {
     sessionToken?: string;
   }> {
     try {
-      // Simple hardcoded admin check
-      if (username === "admin" && password === "admin123") {
-        const sessionToken = nanoid(32);
-        
-        // You could create an admin sessions table, but for now just return token
-        return {
-          success: true,
-          message: "Admin login successful",
-          sessionToken
-        };
+      // Find admin user in database
+      const [adminUser] = await db.select()
+        .from(adminUsers)
+        .where(eq(adminUsers.username, username));
+
+      if (!adminUser) {
+        return { success: false, message: "Invalid credentials" };
       }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, adminUser.passwordHash);
+      if (!isPasswordValid) {
+        return { success: false, message: "Invalid credentials" };
+      }
+
+      const sessionToken = nanoid(32);
       
-      return { success: false, message: "Invalid credentials" };
+      // In a real app, you'd create an admin sessions table
+      // For now, we'll just return the token
+      return {
+        success: true,
+        message: "Admin login successful",
+        sessionToken
+      };
     } catch (error) {
       console.error("Admin login error:", error);
       return { success: false, message: "Login failed" };

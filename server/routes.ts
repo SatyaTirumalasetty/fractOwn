@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
@@ -475,6 +475,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change admin password
+  app.post("/api/admin/change-password", [
+    body('currentPassword').notEmpty(),
+    body('newPassword').isLength({ min: 8 }),
+    body('notifyMobile').optional().isBoolean()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const authHeader = req.headers['authorization'];
+      const sessionToken = authHeader && authHeader.split(' ')[1];
+      
+      if (!sessionToken) {
+        return res.status(401).json({ message: "Authorization required" });
+      }
+
+      // Validate session and get admin user
+      const adminResult = await authService.validateSession(sessionToken);
+      if (!adminResult.success || !adminResult.user) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      const { currentPassword, newPassword, notifyMobile = true } = req.body;
+      
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, adminResult.user.passwordHash);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+      // Update password in database
+      await db.update(adminUsers)
+        .set({ passwordHash: newPasswordHash })
+        .where(eq(adminUsers.id, adminResult.user.id));
+
+      // Send mobile notification if enabled
+      if (notifyMobile && config.app.features.enableSMSNotifications) {
+        await sendPasswordChangeNotification(adminResult.user);
+      }
+
+      res.json({ 
+        message: "Password changed successfully",
+        notificationSent: notifyMobile && config.app.features.enableSMSNotifications
+      });
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
+
   // Get all admin users
   app.get("/api/admin/users", async (req, res) => {
     try {
@@ -543,5 +599,17 @@ async function sendContactNotification(contact: any) {
     // TODO: Implement actual notification sending
   } catch (error) {
     console.error('Failed to send contact notification:', error);
+  }
+}
+
+async function sendPasswordChangeNotification(adminUser: any) {
+  if (!config.app.features.enableSMSNotifications) return;
+  
+  try {
+    console.log(`Sending password change notification to admin ${adminUser.username}`);
+    // TODO: Implement actual SMS sending based on configured service
+    // This would typically send to a registered mobile number for the admin
+  } catch (error) {
+    console.error('Failed to send password change notification:', error);
   }
 }

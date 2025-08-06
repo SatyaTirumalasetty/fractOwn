@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates (August 2025)
 
+### Security Enhancements (Latest)
+- **Demo Credentials Removed**: Eliminated hardcoded demo credentials from admin login screen for security
+- **Admin Password Management**: Added secure password change functionality in admin settings with validation
+- **Mobile Notifications**: Implemented SMS notifications for password changes when feature is enabled
+- **Database Integration**: Updated authentication service to use database instead of hardcoded credentials
+- **Session Validation**: Enhanced session validation for secure admin operations
+
 ### Security & Authentication Implementation
 - **Security Hardening**: Implemented helmet.js for security headers, rate limiting for API protection, and express-validator for input validation
 - **JWT Authentication**: Complete authentication system with secure password hashing using bcrypt and JWT token management

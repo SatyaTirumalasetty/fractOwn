@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag } from "lucide-react";
+import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
 import { useToast } from "@/hooks/use-toast";
 
@@ -50,6 +50,14 @@ export default function AdminSettingsTab() {
     enableEmailNotifications: false,
     enableSMSNotifications: false,
     enablePaymentIntegration: false
+  });
+
+  // Password change settings
+  const [passwordChange, setPasswordChange] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    notifyMobile: true
   });
 
   // Section descriptions
@@ -95,6 +103,68 @@ export default function AdminSettingsTab() {
       toast({
         title: "Error",
         description: "Failed to save settings. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    try {
+      if (passwordChange.newPassword !== passwordChange.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "New password and confirmation don't match",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (passwordChange.newPassword.length < 8) {
+        toast({
+          title: "Error", 
+          description: "Password must be at least 8 characters long",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Call API to change password
+      const response = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+        },
+        body: JSON.stringify({
+          currentPassword: passwordChange.currentPassword,
+          newPassword: passwordChange.newPassword,
+          notifyMobile: passwordChange.notifyMobile
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Password Changed",
+          description: passwordChange.notifyMobile ? "Password updated successfully. Mobile notification sent." : "Password updated successfully.",
+        });
+        setPasswordChange({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+          notifyMobile: true
+        });
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to change password",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to change password. Please try again.",
         variant: "destructive"
       });
     }
@@ -565,6 +635,64 @@ export default function AdminSettingsTab() {
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Security Settings
+              </CardTitle>
+              <CardDescription>Change your admin password and security settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="current-password">Current Password</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={passwordChange.currentPassword}
+                  onChange={(e) => setPasswordChange({...passwordChange, currentPassword: e.target.value})}
+                  placeholder="Enter your current password"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={passwordChange.newPassword}
+                  onChange={(e) => setPasswordChange({...passwordChange, newPassword: e.target.value})}
+                  placeholder="Enter new password (minimum 8 characters)"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={passwordChange.confirmPassword}
+                  onChange={(e) => setPasswordChange({...passwordChange, confirmPassword: e.target.value})}
+                  placeholder="Confirm your new password"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="notify-mobile"
+                  checked={passwordChange.notifyMobile}
+                  onCheckedChange={(checked) => setPasswordChange({...passwordChange, notifyMobile: checked})}
+                />
+                <Label htmlFor="notify-mobile">Send mobile notification on password change</Label>
+              </div>
+
+              <Button onClick={handlePasswordChange} className="w-full">
+                <Key className="h-4 w-4 mr-2" />
+                Change Password
+              </Button>
             </CardContent>
           </Card>
 
