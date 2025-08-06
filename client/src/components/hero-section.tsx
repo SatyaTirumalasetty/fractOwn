@@ -59,8 +59,11 @@ export default function HeroSection() {
   const handleGetStarted = () => {
     if (user) {
       scrollToSection('properties');
-    } else {
+    } else if (features.enableUserRegistration) {
       setShowLogin(true);
+    } else {
+      // If registration is disabled, scroll to contact section
+      scrollToSection('contact');
     }
   };
 
