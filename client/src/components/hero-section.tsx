@@ -96,7 +96,7 @@ export default function HeroSection() {
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
             <span className="bg-gray-900 bg-opacity-40 text-white px-4 py-2 rounded-lg inline-block mb-2">
-              Own Prime Real Estate with
+              Own Premium Properties with
             </span>{" "}
             <br />
             <span className="text-fractown-accent">Fractional Investment</span>
