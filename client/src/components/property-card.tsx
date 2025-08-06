@@ -1,7 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Property } from "@shared/schema";
 
 interface PropertyCardProps {
@@ -22,14 +20,9 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
 
   const getFundingBadgeColor = (progress: number) => {
     if (progress >= 90) return "bg-red-500";
-    if (progress >= 70) return "bg-fractown-secondary";
-    if (progress >= 40) return "bg-fractown-accent";
+    if (progress >= 70) return "bg-green-600";
+    if (progress >= 40) return "bg-yellow-500";
     return "bg-blue-500";
-  };
-
-  const getFundingBadgeText = (progress: number) => {
-    if (progress >= 95) return "Nearly Sold Out";
-    return `${progress}% Funded`;
   };
 
   const isNearlyDone = property.fundingProgress >= 95;
@@ -58,7 +51,7 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
           </div>
           <div className="text-center">
             <div className="text-sm text-gray-500">Min Investment</div>
-            <div className="font-semibold text-fractown-primary">
+            <div className="font-semibold text-blue-600">
               ₹{property.minInvestment.toLocaleString('en-IN')}
             </div>
           </div>
@@ -66,7 +59,7 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
         
         <div className="text-center mb-4">
           <div className="text-sm text-gray-500">Expected Return</div>
-          <div className="font-semibold text-fractown-secondary">{property.expectedReturn}% p.a.</div>
+          <div className="font-semibold text-green-600">{property.expectedReturn}% p.a.</div>
         </div>
       
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
@@ -82,7 +75,7 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
           className={`w-full ${
             isNearlyDone
               ? "bg-gray-400 text-white cursor-not-allowed"
-              : "bg-fractown-primary text-white hover:bg-fractown-primary/90"
+              : "bg-blue-600 text-white hover:bg-blue-700"
           }`}
         >
           {isNearlyDone ? "Nearly Sold Out" : "View Details & Invest"}
