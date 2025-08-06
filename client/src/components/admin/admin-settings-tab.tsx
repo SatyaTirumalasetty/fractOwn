@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
 import AdminContactSettings from "./admin-contact-settings";
+import AdminSecurityTab from "./admin-security-tab";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -271,7 +272,7 @@ export default function AdminSettingsTab() {
       </div>
 
       <Tabs defaultValue="contact" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="contact" className="flex items-center gap-2">
             <Phone className="h-4 w-4" />
             Contact
@@ -295,6 +296,10 @@ export default function AdminSettingsTab() {
           <TabsTrigger value="features" className="flex items-center gap-2">
             <Flag className="h-4 w-4" />
             Features
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Security
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -886,6 +891,10 @@ export default function AdminSettingsTab() {
 
         <TabsContent value="features" className="space-y-4">
           <FeatureFlagsTab />
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-4">
+          <AdminSecurityTab />
         </TabsContent>
 
         <TabsContent value="database" className="space-y-4">

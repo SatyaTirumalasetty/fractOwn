@@ -1056,6 +1056,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Disable TOTP authentication
   app.post("/api/admin/totp/disable", requireAuth, async (req, res) => {
     try {
+      const { db } = await import("./db");
+      const { adminUsers } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+
       await db.update(adminUsers)
         .set({ 
           totpEnabled: false,
