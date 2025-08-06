@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface User {
   id: string;
@@ -12,6 +12,7 @@ interface User {
 }
 
 export function useAuth() {
+  const queryClient = useQueryClient();
   const [sessionToken, setSessionToken] = useState<string | null>(
     localStorage.getItem('sessionToken')
   );
@@ -45,6 +46,9 @@ export function useAuth() {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('sessionToken', token);
     setSessionToken(token);
+    
+    // Invalidate queries to refresh user data
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
   };
 
   const logout = async () => {
@@ -61,9 +65,14 @@ export function useAuth() {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear all authentication data
       localStorage.removeItem('sessionToken');
       localStorage.removeItem('user');
       setSessionToken(null);
+      
+      // Invalidate all queries to force refresh
+      queryClient.invalidateQueries();
+      queryClient.clear();
     }
   };
 
