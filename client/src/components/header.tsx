@@ -65,7 +65,7 @@ export default function Header() {
               <img 
                 src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
                 alt="fractOWN Logo"
-                className="h-16 w-16 object-contain hover:opacity-80 transition-opacity"
+                className="h-20 w-20 object-contain hover:opacity-80 transition-opacity"
               />
             </div>
             <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
