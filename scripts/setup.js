@@ -191,8 +191,8 @@ async function setupDatabase() {
       execSync('npm run seed', { stdio: 'inherit' });
       console.log('✓ Database seeded with sample data');
       console.log('  Default admin credentials:');
-      console.log('  Username: admin');
-      console.log('  Password: admin123');
+      console.log('🔐 Admin credentials must be set via environment variables:');
+      console.log('   ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_INITIAL_PASSWORD');
     }
   } catch (error) {
     console.error('❌ Error setting up database:', error.message);

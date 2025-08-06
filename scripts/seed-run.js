@@ -9,9 +9,9 @@ console.log('🌱 Seeding database with sample data...');
 try {
   execSync('tsx server/seed.ts', { stdio: 'inherit' });
   console.log('✅ Database seeded successfully!');
-  console.log('Default admin credentials:');
-  console.log('Username: admin');
-  console.log('Password: admin123');
+  console.log('🔐 All user data is stored in database. No hardcoded credentials.');
+  console.log('📝 To create admin user, set environment variables:');
+  console.log('   ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_INITIAL_PASSWORD');
 } catch (error) {
   console.error('❌ Seeding failed:', error.message);
   process.exit(1);

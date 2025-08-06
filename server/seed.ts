@@ -111,23 +111,21 @@ async function seedDatabase() {
     await db.insert(properties).values(sampleProperties);
     console.log("✓ Properties seeded");
     
-    // Add default admin user with secure password
-    // Use environment variable or default password for development
-    const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'admin123';
-    const passwordHash = await bcrypt.hash(initialPassword, 12);
-    await db.insert(adminUsers).values({
-      username: "admin",
-      email: "admin@fractown.com",
-      passwordHash,
-      role: "admin"
-    });
-    
-    console.log("✓ Admin user created");
-    console.log("🔐 SECURITY: Change admin password immediately after first login");
-    if (!process.env.ADMIN_INITIAL_PASSWORD) {
-      console.log(`📝 Generated password: ${initialPassword}`);
-      console.log("⚠️  This password will only be shown once - save it securely");
+    // Only create admin user if ADMIN_INITIAL_PASSWORD is provided
+    if (process.env.ADMIN_INITIAL_PASSWORD) {
+      const passwordHash = await bcrypt.hash(process.env.ADMIN_INITIAL_PASSWORD, 12);
+      await db.insert(adminUsers).values({
+        username: process.env.ADMIN_USERNAME || "admin",
+        email: process.env.ADMIN_EMAIL || "admin@fractown.com",
+        passwordHash,
+        role: "admin"
+      });
+      console.log("✓ Admin user created from environment variables");
+    } else {
+      console.log("⚠️  No admin user created. Set ADMIN_INITIAL_PASSWORD environment variable to create admin user.");
     }
+    
+    console.log("🔐 SECURITY: All user data is stored in database. No hardcoded credentials.")
     
     console.log("Database seeded successfully!");
   } catch (error) {

@@ -69,7 +69,7 @@ async function main() {
       console.log('\n📋 What was set up:');
       console.log('✅ Database schema created');
       console.log('✅ Sample properties added (Chennai, Coimbatore, Hyderabad)');
-      console.log('✅ Admin user created (admin/admin123)');
+      console.log('✅ Database configured (admin user via environment variables only)');
       console.log('✅ Contact settings configured');
       
       console.log('\n🚀 You can now:');
