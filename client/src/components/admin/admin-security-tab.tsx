@@ -15,8 +15,16 @@ export default function AdminSecurityTab() {
   const { data: adminStatus, isLoading, refetch } = useQuery({
     queryKey: ['/api/admin/totp/status'],
     queryFn: async () => {
+      const sessionToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('adminSessionToken='))
+        ?.split('=')[1];
+      
       const response = await fetch('/api/admin/totp/status', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`
+        }
       });
       if (!response.ok) throw new Error('Failed to fetch TOTP status');
       return response.json();

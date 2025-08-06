@@ -25,9 +25,17 @@ export default function TOTPSetupDialog({ open, onOpenChange }: TOTPSetupDialogP
   const generateTOTPSecret = async () => {
     setLoading(true);
     try {
+      const sessionToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('adminSessionToken='))
+        ?.split('=')[1];
+        
       const response = await fetch('/api/admin/totp/generate', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`
+        }
       });
 
       const data = await response.json();
@@ -66,10 +74,16 @@ export default function TOTPSetupDialog({ open, onOpenChange }: TOTPSetupDialogP
 
     setLoading(true);
     try {
+      const sessionToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('adminSessionToken='))
+        ?.split('=')[1];
+        
       const response = await fetch('/api/admin/totp/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`
         },
         credentials: 'include',
         body: JSON.stringify({ token: verificationCode })

@@ -191,12 +191,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async validateAdminSession(sessionToken: string): Promise<string | null> {
+    console.log("Validating session token in storage:", sessionToken.substring(0, 10) + "...");
+    
     const [session] = await db.select()
       .from(adminSessions)
       .where(and(
         eq(adminSessions.sessionToken, sessionToken),
         gt(adminSessions.expiresAt, new Date())
       ));
+    
+    console.log("Session found:", session ? "Yes" : "No");
+    if (session) {
+      console.log("Session admin ID:", session.adminId);
+      console.log("Session expires:", session.expiresAt);
+    }
+    
     return session?.adminId || null;
   }
 

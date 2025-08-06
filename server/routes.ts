@@ -589,17 +589,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password required" });
       }
       
-      // Use the auth service for admin login
-      const result = await authService.adminLogin(username, password);
-      
-      if (result.success) {
-        res.json({
-          message: result.message,
-          sessionToken: result.sessionToken
-        });
-      } else {
-        res.status(401).json({ message: result.message });
+      // Get admin user
+      const admin = await storage.getAdminUserByUsername(username);
+      if (!admin) {
+        return res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      // Verify password
+      const bcrypt = await import('bcrypt');
+      const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Create session
+      const crypto = await import('crypto');
+      const sessionToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await storage.createAdminSession(admin.id, sessionToken, expiresAt);
+
+      // Set HTTP-only cookie
+      res.cookie('adminSessionToken', sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
+      res.json({
+        message: "Admin login successful",
+        sessionToken: sessionToken
+      });
     } catch (error) {
       console.error("Admin login error:", error);
       res.status(500).json({ message: "Login failed" });
@@ -885,18 +906,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const requireAuth = async (req: any, res: any, next: any) => {
     try {
       const sessionToken = req.cookies.adminSessionToken || req.headers.authorization?.replace('Bearer ', '');
+      
       if (!sessionToken) {
+        console.log("No session token found in cookies or headers");
         return res.status(401).json({ message: "Authentication required" });
       }
 
+      console.log("Validating session token:", sessionToken.substring(0, 10) + "...");
       const adminId = await storage.validateAdminSession(sessionToken);
+      
       if (!adminId) {
+        console.log("Session token validation failed");
         return res.status(401).json({ message: "Invalid or expired session" });
       }
 
+      console.log("Authentication successful for admin:", adminId);
       req.user = { id: adminId };
       next();
     } catch (error) {
+      console.error("Authentication middleware error:", error);
       res.status(500).json({ message: "Authentication error" });
     }
   };
@@ -1036,16 +1064,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get TOTP status for admin dashboard
   app.get("/api/admin/totp/status", requireAuth, async (req, res) => {
     try {
-      const admin = await storage.getAdminUsers();
-      const currentAdmin = admin.find(a => a.id === req.user.id);
+      const { adminUsers } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      const { db } = await import("./db");
       
-      if (!currentAdmin) {
+      const [admin] = await db.select()
+        .from(adminUsers)
+        .where(eq(adminUsers.id, req.user.id));
+      
+      if (!admin) {
         return res.status(404).json({ message: "Admin not found" });
       }
 
       res.json({
-        totpEnabled: currentAdmin.totpEnabled || false,
-        backupCodesCount: currentAdmin.backupCodes?.length || 0
+        totpEnabled: admin.totpEnabled || false,
+        backupCodesCount: admin.backupCodes?.length || 0
       });
     } catch (error) {
       console.error("TOTP status error:", error);
