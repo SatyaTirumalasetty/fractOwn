@@ -47,10 +47,18 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                fractOWN Admin Dashboard
-              </h1>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
+                alt="fractOWN Logo" 
+                className="h-10 w-10 rounded-lg object-cover shadow-sm"
+              />
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  fractOWN
+                </h1>
+                <p className="text-xs text-gray-600">Admin Dashboard</p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
