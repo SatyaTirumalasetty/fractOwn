@@ -291,198 +291,293 @@ export function AdminPropertiesTab() {
     submitText: string;
     isSubmitting: boolean;
   }) => (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Property Name</Label>
-          <Input {...form.register("name")} placeholder="Property name" />
-          {form.formState.errors.name && (
-            <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-          )}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      {/* Basic Information Section */}
+      <div className="space-y-6">
+        <div className="border-b border-gray-200 pb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-blue-600" />
+            Basic Information
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Essential property details and classification</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="propertyType">Property Type</Label>
-          <Select onValueChange={(value) => form.setValue("propertyType", value)} defaultValue={form.getValues("propertyType")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select property type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="residential">Residential</SelectItem>
-              <SelectItem value="commercial">Commercial</SelectItem>
-            </SelectContent>
-          </Select>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+              Property Name <span className="text-red-500">*</span>
+            </Label>
+            <Input 
+              {...form.register("name")} 
+              placeholder="Enter property name (e.g., Luxury Apartments Mumbai)"
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+            />
+            {form.formState.errors.name && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.name.message}
+              </p>
+            )}
+          </div>
+          
+          <div className="space-y-3">
+            <Label htmlFor="propertyType" className="text-sm font-medium text-gray-700">
+              Property Type <span className="text-red-500">*</span>
+            </Label>
+            <Select onValueChange={(value) => form.setValue("propertyType", value)} defaultValue={form.getValues("propertyType")}>
+              <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500">
+                <SelectValue placeholder="Choose property type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="residential">🏠 Residential</SelectItem>
+                <SelectItem value="commercial">🏢 Commercial</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea {...form.register("description")} placeholder="Property description" />
-        {form.formState.errors.description && (
-          <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="location">Location</Label>
-          <Input {...form.register("location")} placeholder="Area/Locality" />
-          {form.formState.errors.location && (
-            <p className="text-sm text-red-500">{form.formState.errors.location.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="state">State</Label>
-          <Select value={form.watch("state")} onValueChange={(value) => handleStateChange(value, form)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select state" />
-            </SelectTrigger>
-            <SelectContent>
-              {getStates().map((state) => (
-                <SelectItem key={state} value={state}>
-                  {state}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {form.formState.errors.state && (
-            <p className="text-sm text-red-500">{form.formState.errors.state.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Select value={form.watch("city")} onValueChange={(value) => form.setValue("city", value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select city" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableCities.map((city) => (
-                <SelectItem key={city} value={city}>
-                  {city}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {form.formState.errors.city && (
-            <p className="text-sm text-red-500">{form.formState.errors.city.message}</p>
+        <div className="space-y-3">
+          <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+            Property Description <span className="text-red-500">*</span>
+          </Label>
+          <Textarea 
+            {...form.register("description")} 
+            placeholder="Provide a detailed description of the property, including key features, amenities, and unique selling points..."
+            className="min-h-[100px] bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors resize-none"
+          />
+          {form.formState.errors.description && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+              {form.formState.errors.description.message}
+            </p>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="totalValue">Total Value (₹)</Label>
-          <Input type="number" {...form.register("totalValue")} placeholder="25000000" />
-          {form.formState.errors.totalValue && (
-            <p className="text-sm text-red-500">{form.formState.errors.totalValue.message}</p>
-          )}
+      {/* Location Information Section */}
+      <div className="space-y-6">
+        <div className="border-b border-gray-200 pb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <span className="text-blue-600">📍</span>
+            Location Details
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Specify the exact location and geographic details</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="minInvestment">Minimum Investment (₹)</Label>
-          <Input type="number" {...form.register("minInvestment")} placeholder="25000" />
-          {form.formState.errors.minInvestment && (
-            <p className="text-sm text-red-500">{form.formState.errors.minInvestment.message}</p>
-          )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="space-y-3">
+            <Label htmlFor="location" className="text-sm font-medium text-gray-700">
+              Area/Locality <span className="text-red-500">*</span>
+            </Label>
+            <Input 
+              {...form.register("location")} 
+              placeholder="e.g., Bandra West, Koramangala"
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+            />
+            {form.formState.errors.location && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.location.message}
+              </p>
+            )}
+          </div>
+          
+          <div className="space-y-3">
+            <Label htmlFor="state" className="text-sm font-medium text-gray-700">
+              State <span className="text-red-500">*</span>
+            </Label>
+            <Select value={form.watch("state")} onValueChange={(value) => handleStateChange(value, form)}>
+              <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                {getStates().map((state) => (
+                  <SelectItem key={state} value={state}>
+                    {state}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {form.formState.errors.state && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.state.message}
+              </p>
+            )}
+          </div>
+          
+          <div className="space-y-3">
+            <Label htmlFor="city" className="text-sm font-medium text-gray-700">
+              City <span className="text-red-500">*</span>
+            </Label>
+            <Select value={form.watch("city")} onValueChange={(value) => form.setValue("city", value)}>
+              <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500">
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCities.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {form.formState.errors.city && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.city.message}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="expectedReturn">Expected Return (%)</Label>
-          <Input {...form.register("expectedReturn")} placeholder="11.20" />
-          {form.formState.errors.expectedReturn && (
-            <p className="text-sm text-red-500">{form.formState.errors.expectedReturn.message}</p>
-          )}
+      {/* Financial Information Section */}
+      <div className="space-y-6">
+        <div className="border-b border-gray-200 pb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <span className="text-green-600">💰</span>
+            Investment Details
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Property valuation and investment parameters</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="fundingProgress">Funding Progress (%)</Label>
-          <Input type="number" min="0" max="100" {...form.register("fundingProgress")} placeholder="0" />
-          {form.formState.errors.fundingProgress && (
-            <p className="text-sm text-red-500">{form.formState.errors.fundingProgress.message}</p>
-          )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label htmlFor="totalValue" className="text-sm font-medium text-gray-700">
+              Total Value <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₹</span>
+              <Input 
+                {...form.register("totalValue", { valueAsNumber: true })} 
+                type="number" 
+                placeholder="10,00,00,000"
+                className="pl-8 h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+              />
+            </div>
+            {form.formState.errors.totalValue && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.totalValue.message}
+              </p>
+            )}
+          </div>
+          
+          <div className="space-y-3">
+            <Label htmlFor="minInvestment" className="text-sm font-medium text-gray-700">
+              Minimum Investment <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₹</span>
+              <Input 
+                {...form.register("minInvestment", { valueAsNumber: true })} 
+                type="number" 
+                placeholder="10,00,000"
+                className="pl-8 h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+              />
+            </div>
+            {form.formState.errors.minInvestment && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                {form.formState.errors.minInvestment.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label htmlFor="expectedReturn" className="text-sm font-medium text-gray-700">
+              Expected Return (Annual)
+            </Label>
+            <div className="relative">
+              <Input 
+                {...form.register("expectedReturn")} 
+                placeholder="12.5"
+                className="pr-8 h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+              />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">%</span>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <Label htmlFor="fundingProgress" className="text-sm font-medium text-gray-700">
+              Funding Progress
+            </Label>
+            <div className="relative">
+              <Input 
+                {...form.register("fundingProgress", { valueAsNumber: true })} 
+                type="number" 
+                placeholder="0" 
+                min="0" 
+                max="100"
+                className="pr-8 h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors"
+              />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">%</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
+      {/* Media & Documentation Section */}
+      <div className="space-y-6">
+        <div className="border-b border-gray-200 pb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Image className="h-5 w-5 text-purple-600" />
+            Media & Documentation
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Property images and supporting documents</p>
+        </div>
+        
+        <div className="space-y-3">
+          <Label htmlFor="imageUrls" className="text-sm font-medium text-gray-700">
+            Image URLs
+          </Label>
           <Textarea 
             {...form.register("imageUrls")} 
-            placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-            className="min-h-[80px]"
+            placeholder="https://example.com/property-exterior.jpg&#10;https://example.com/property-interior.jpg&#10;https://example.com/property-amenities.jpg"
+            className="min-h-[80px] bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-colors resize-none"
           />
+          <p className="text-xs text-gray-500">Enter one image URL per line. Supported formats: JPG, PNG, WebP</p>
           {form.formState.errors.imageUrls && (
-            <p className="text-sm text-red-500">{form.formState.errors.imageUrls.message}</p>
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+              {form.formState.errors.imageUrls.message}
+            </p>
           )}
         </div>
-
-        <div>
-          <Label>File Attachments</Label>
-          <div className="space-y-2">
-            <div className="flex space-x-2">
-              <Input
-                type="file"
-                multiple
-                accept="image/*,.pdf,.doc,.docx"
-                onChange={handleFileUpload}
-                className="flex-1"
-              />
-              <Button type="button" variant="outline" onClick={() => document.querySelector('input[type="file"]')?.click()}>
-                <Upload className="w-4 h-4 mr-2" />
-                Browse Files
-              </Button>
-            </div>
-            
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Google Drive link (https://drive.google.com/...)"
-                value={googleDriveLink}
-                onChange={(e) => setGoogleDriveLink(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="button" variant="outline" onClick={handleGoogleDriveLink}>
-                <Link className="w-4 h-4 mr-2" />
-                Add Link
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {attachments.length > 0 && (
-          <div>
-            <Label>Attached Files</Label>
-            <div className="space-y-2 mt-2">
-              {attachments.map((file, index) => (
-                <div key={index} className="flex items-center justify-between p-2 border rounded">
-                  <div className="flex items-center space-x-2">
-                    {file.type === "image" ? (
-                      <Image className="w-4 h-4" />
-                    ) : file.type === "pdf" ? (
-                      <FileText className="w-4 h-4" />
-                    ) : (
-                      <FileIcon className="w-4 h-4" />
-                    )}
-                    <span className="text-sm">{file.name}</span>
-                    <Badge variant="outline">{file.type}</Badge>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeAttachment(index)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : submitText}
-        </Button>
+      {/* Submit Section */}
+      <div className="pt-6 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button 
+            type="submit" 
+            disabled={isSubmitting} 
+            className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Creating Property...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                {submitText}
+              </div>
+            )}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => form.reset()}
+            className="h-12 px-6 border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Reset Form
+          </Button>
+        </div>
       </div>
     </form>
   );
@@ -502,14 +597,23 @@ export function AdminPropertiesTab() {
               Add Property
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Property</DialogTitle>
-              <DialogDescription>
-                Add a new property to the fractOWN platform
-              </DialogDescription>
+          <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden">
+            <DialogHeader className="pb-6 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Plus className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-semibold text-gray-900">
+                    Create New Property
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-600 mt-1">
+                    Add a new investment opportunity to the fractOWN platform
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <div className="max-h-[75vh] overflow-y-auto py-6 px-1 -mx-1">
               <PropertyForm
                 form={createForm}
                 onSubmit={(data) => createMutation.mutate(data)}
