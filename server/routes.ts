@@ -647,13 +647,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .set({ passwordHash: newPasswordHash })
         .where(eq(adminUsers.id, adminResult.user.id));
 
-      // Send mobile notification if enabled
+      // Send mobile notification if enabled and phone number is configured
       if (notifyMobile && config.app.features.enableSMSNotifications) {
         try {
-          await notificationService.sendSMS(
-            "+919999999999", // This should come from admin settings
-            "Your admin password has been successfully changed."
-          );
+          const adminProfile = await authService.getAdminProfile();
+          if (adminProfile.success && adminProfile.user?.phoneNumber) {
+            const phoneNumber = `${adminProfile.user.countryCode || '+91'}${adminProfile.user.phoneNumber}`;
+            await notificationService.sendSMS(
+              phoneNumber,
+              "Your admin password has been successfully changed."
+            );
+          }
         } catch (smsError) {
           console.log("SMS notification failed:", smsError);
         }
@@ -669,13 +673,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all admin users
+  // Get admin profile
+  app.get("/api/admin/profile", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const sessionToken = authHeader && authHeader.split(' ')[1];
+      
+      if (!sessionToken) {
+        return res.status(401).json({ message: "Authorization required" });
+      }
+
+      // Validate session
+      const sessionResult = await authService.validateSession(sessionToken);
+      if (!sessionResult.success) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      const profileResult = await authService.getAdminProfile();
+      if (profileResult.success) {
+        res.json(profileResult.user);
+      } else {
+        res.status(404).json({ message: "Admin profile not found" });
+      }
+    } catch (error) {
+      console.error("Get admin profile error:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  // Update admin profile (including mobile number)
+  app.put("/api/admin/profile", [
+    body('email').optional().isEmail(),
+    body('phoneNumber').optional().isMobilePhone(),
+    body('countryCode').optional().trim()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const authHeader = req.headers['authorization'];
+      const sessionToken = authHeader && authHeader.split(' ')[1];
+      
+      if (!sessionToken) {
+        return res.status(401).json({ message: "Authorization required" });
+      }
+
+      // Validate session
+      const sessionResult = await authService.validateSession(sessionToken);
+      if (!sessionResult.success) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      const { email, phoneNumber, countryCode } = req.body;
+      const updates: any = {};
+
+      if (email !== undefined) updates.email = email;
+      if (phoneNumber !== undefined) updates.phoneNumber = phoneNumber;
+      if (countryCode !== undefined) updates.countryCode = countryCode;
+
+      const result = await authService.updateAdminProfile(updates);
+      
+      if (result.success) {
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Update admin profile error:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Get all admin users (legacy endpoint)
   app.get("/api/admin/users", async (req, res) => {
     try {
-      const adminUsers = await storage.getAdminUsers();
-      // Don't return password hashes
-      const safeUsers = adminUsers.map(({ passwordHash, ...user }) => user);
-      res.json(safeUsers);
+      const profileResult = await authService.getAdminProfile();
+      if (profileResult.success) {
+        res.json([profileResult.user]);
+      } else {
+        res.json([]);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch admin users" });
     }

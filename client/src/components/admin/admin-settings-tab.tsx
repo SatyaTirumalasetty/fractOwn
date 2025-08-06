@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key } from "lucide-react";
+import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function AdminSettingsTab() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("/attached_assets/image_1754379283931.png");
+
+  // Fetch admin profile
+  const { data: adminProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ['/api/admin/profile'],
+    queryFn: () => apiRequest('/api/admin/profile'),
+  });
   
   // Application settings
   const [appSettings, setAppSettings] = useState({
@@ -51,6 +60,24 @@ export default function AdminSettingsTab() {
     enableSMSNotifications: false,
     enablePaymentIntegration: false
   });
+
+  // Admin profile form settings
+  const [profileForm, setProfileForm] = useState({
+    email: "",
+    phoneNumber: "",
+    countryCode: "+91"
+  });
+
+  // Update form when profile data is loaded
+  useEffect(() => {
+    if (adminProfile) {
+      setProfileForm({
+        email: adminProfile.email || "",
+        phoneNumber: adminProfile.phoneNumber || "",
+        countryCode: adminProfile.countryCode || "+91"
+      });
+    }
+  }, [adminProfile]);
 
   // Password change settings
   const [passwordChange, setPasswordChange] = useState({
@@ -91,8 +118,37 @@ export default function AdminSettingsTab() {
     }
   };
 
+  // Admin profile update mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: (profileData: { email?: string; phoneNumber?: string; countryCode?: string }) =>
+      apiRequest('/api/admin/profile', {
+        method: 'PUT',
+        body: JSON.stringify(profileData),
+        headers: { 'Content-Type': 'application/json' }
+      }),
+    onSuccess: () => {
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/profile'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleSaveSettings = async (section: string) => {
     try {
+      if (section === "Profile") {
+        updateProfileMutation.mutate(profileForm);
+        return;
+      }
+
       // Here you would typically send the settings to your API
       // For now, we'll just show a success message
       toast({
@@ -196,10 +252,14 @@ export default function AdminSettingsTab() {
       </div>
 
       <Tabs defaultValue="branding" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="branding" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
             Branding
+          </TabsTrigger>
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            Profile
           </TabsTrigger>
           <TabsTrigger value="theme" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
@@ -289,6 +349,101 @@ export default function AdminSettingsTab() {
                 <Save className="h-4 w-4 mr-2" />
                 Save Branding Settings
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="profile" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Admin Profile
+              </CardTitle>
+              <CardDescription>
+                Configure admin contact details for notifications
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {profileLoading && (
+                <div className="text-center py-4">Loading profile...</div>
+              )}
+              
+              {!profileLoading && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="admin-email">Email Address</Label>
+                      <Input
+                        id="admin-email"
+                        type="email"
+                        value={profileForm.email}
+                        onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
+                        placeholder="admin@fractown.com"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Used for email notifications and system alerts
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="admin-phone">Mobile Number (for SMS notifications)</Label>
+                      <div className="flex space-x-2">
+                        <Select value={profileForm.countryCode} onValueChange={(value) => setProfileForm({...profileForm, countryCode: value})}>
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                            <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                            <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                            <SelectItem value="+61">🇦🇺 +61</SelectItem>
+                            <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          id="admin-phone"
+                          type="tel"
+                          value={profileForm.phoneNumber}
+                          onChange={(e) => setProfileForm({...profileForm, phoneNumber: e.target.value})}
+                          placeholder="9999999999"
+                          className="flex-1"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Required for password change notifications via SMS
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+                  
+                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-start gap-3">
+                      <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-blue-900 dark:text-blue-100">Mobile Notifications</h4>
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                          When SMS notifications are enabled, you'll receive alerts for:
+                        </p>
+                        <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
+                          <li>• Password changes and security alerts</li>
+                          <li>• System maintenance notifications</li>
+                          <li>• Important user activity updates</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={() => handleSaveSettings("Profile")} 
+                    className="w-full"
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {updateProfileMutation.isPending ? "Saving..." : "Save Profile Settings"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -4,6 +4,7 @@ import { eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import { notificationService } from "./notification";
+// @ts-ignore
 import config from '../../config/app.config.js';
 
 export class AuthService {
@@ -253,9 +254,10 @@ export class AuthService {
 
       // Send notification if SMS is enabled
       try {
-        if (config.app.features.enableSMSNotifications) {
+        if (config.app.features.enableSMSNotifications && adminUser.phoneNumber) {
+          const phoneNumber = `${adminUser.countryCode || '+91'}${adminUser.phoneNumber}`;
           await notificationService.sendSMS(
-            "+919999999999", // This should come from admin settings
+            phoneNumber,
             "Your admin password has been successfully changed."
           );
         }
@@ -268,6 +270,60 @@ export class AuthService {
     } catch (error) {
       console.error("Change password error:", error);
       return { success: false, message: "Failed to change password" };
+    }
+  }
+
+  // Update admin profile (including mobile number)
+  async updateAdminProfile(updates: {
+    email?: string;
+    phoneNumber?: string;
+    countryCode?: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      // Find admin user
+      const [adminUser] = await db.select()
+        .from(adminUsers)
+        .where(eq(adminUsers.username, "admin"));
+
+      if (!adminUser) {
+        return { success: false, message: "Admin user not found" };
+      }
+
+      // Update admin profile
+      await db.update(adminUsers)
+        .set(updates)
+        .where(eq(adminUsers.username, "admin"));
+
+      return { success: true, message: "Profile updated successfully" };
+    } catch (error) {
+      console.error("Update profile error:", error);
+      return { success: false, message: "Failed to update profile" };
+    }
+  }
+
+  // Get admin profile
+  async getAdminProfile(): Promise<{
+    success: boolean;
+    user?: AdminUser;
+  }> {
+    try {
+      const [adminUser] = await db.select()
+        .from(adminUsers)
+        .where(eq(adminUsers.username, "admin"));
+
+      if (!adminUser) {
+        return { success: false };
+      }
+
+      // Don't return password hash
+      const { passwordHash, ...safeUser } = adminUser;
+      return { success: true, user: safeUser as AdminUser };
+    } catch (error) {
+      console.error("Get admin profile error:", error);
+      return { success: false };
     }
   }
 }

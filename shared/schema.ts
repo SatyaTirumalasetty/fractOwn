@@ -37,6 +37,8 @@ export const adminUsers = pgTable("admin_users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("admin"),
+  phoneNumber: text("phone_number"), // Optional phone number for notifications
+  countryCode: text("country_code").default("+91"), // Default to India
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
