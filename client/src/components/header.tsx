@@ -46,11 +46,11 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 cursor-pointer" onClick={() => scrollToSection('home')}>
               <img 
                 src="/attached_assets/image_1754379283931.png" 
                 alt="fractOWN Logo"
-                className="h-20 w-auto"
+                className="h-20 w-auto hover:opacity-80 transition-opacity"
               />
             </div>
             <div className="hidden md:block ml-10">
