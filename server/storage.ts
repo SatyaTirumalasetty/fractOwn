@@ -53,6 +53,12 @@ export interface IStorage {
   markPasswordResetOtpAsUsed(phoneNumber: string, otp: string): Promise<void>;
   updateAdminPassword(adminId: string, passwordHash: string): Promise<void>;
   
+  // TOTP operations
+  updateAdminTOTPSecret(adminId: string, secret: string): Promise<void>;
+  enableAdminTOTP(adminId: string, backupCodes: string[]): Promise<void>;
+  getAdminTOTPSecret(adminId: string): Promise<string | null>;
+  validateBackupCode(adminId: string, code: string): Promise<boolean>;
+  
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByPhone(phoneNumber: string): Promise<User | undefined>;
@@ -234,6 +240,47 @@ export class DatabaseStorage implements IStorage {
     await db.update(adminUsers)
       .set({ passwordHash })
       .where(eq(adminUsers.id, adminId));
+  }
+
+  // TOTP operations
+  async updateAdminTOTPSecret(adminId: string, secret: string): Promise<void> {
+    await db.update(adminUsers)
+      .set({ totpSecret: secret })
+      .where(eq(adminUsers.id, adminId));
+  }
+
+  async enableAdminTOTP(adminId: string, backupCodes: string[]): Promise<void> {
+    await db.update(adminUsers)
+      .set({ 
+        totpEnabled: true,
+        backupCodes: backupCodes
+      })
+      .where(eq(adminUsers.id, adminId));
+  }
+
+  async getAdminTOTPSecret(adminId: string): Promise<string | null> {
+    const [admin] = await db.select({ totpSecret: adminUsers.totpSecret })
+      .from(adminUsers)
+      .where(eq(adminUsers.id, adminId));
+    return admin?.totpSecret || null;
+  }
+
+  async validateBackupCode(adminId: string, code: string): Promise<boolean> {
+    const [admin] = await db.select({ backupCodes: adminUsers.backupCodes })
+      .from(adminUsers)
+      .where(eq(adminUsers.id, adminId));
+    
+    if (!admin?.backupCodes) return false;
+    
+    const isValid = admin.backupCodes.includes(code);
+    if (isValid) {
+      // Remove used backup code
+      const updatedCodes = admin.backupCodes.filter(c => c !== code);
+      await db.update(adminUsers)
+        .set({ backupCodes: updatedCodes })
+        .where(eq(adminUsers.id, adminId));
+    }
+    return isValid;
   }
 
 

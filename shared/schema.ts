@@ -39,6 +39,9 @@ export const adminUsers = pgTable("admin_users", {
   role: text("role").notNull().default("admin"),
   phoneNumber: text("phone_number"), // Optional phone number for notifications
   countryCode: text("country_code").default("+91"), // Default to India
+  totpSecret: text("totp_secret"), // For authenticator app
+  totpEnabled: boolean("totp_enabled").notNull().default(false),
+  backupCodes: text("backup_codes").array(), // Emergency backup codes
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

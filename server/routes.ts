@@ -879,6 +879,198 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // TOTP Routes for Authenticator-based Password Reset
+  
+  // Authentication middleware for protected routes
+  const requireAuth = async (req: any, res: any, next: any) => {
+    try {
+      const sessionToken = req.cookies.adminSessionToken || req.headers.authorization?.replace('Bearer ', '');
+      if (!sessionToken) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const adminId = await storage.validateAdminSession(sessionToken);
+      if (!adminId) {
+        return res.status(401).json({ message: "Invalid or expired session" });
+      }
+
+      req.user = { id: adminId };
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Authentication error" });
+    }
+  };
+
+  // Generate TOTP secret and QR code for setup
+  app.post("/api/admin/totp/generate", requireAuth, async (req, res) => {
+    try {
+      const speakeasy = await import('speakeasy');
+      const qrcode = await import('qrcode');
+      
+      const secret = speakeasy.generateSecret({
+        name: 'fractOWN Admin',
+        issuer: 'fractOWN',
+        length: 32
+      });
+
+      // Store temporary secret (not enabled yet)
+      await storage.updateAdminTOTPSecret(req.user.id, secret.base32);
+
+      // Generate QR code
+      const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url);
+
+      res.json({
+        secret: secret.base32,
+        qrCode: qrCodeDataURL
+      });
+    } catch (error) {
+      console.error("TOTP generation error:", error);
+      res.status(500).json({ message: "Failed to generate TOTP secret" });
+    }
+  });
+
+  // Verify TOTP token and enable TOTP authentication
+  app.post("/api/admin/totp/verify", requireAuth, async (req, res) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token || token.length !== 6) {
+        return res.status(400).json({ message: "Valid 6-digit token required" });
+      }
+
+      const secret = await storage.getAdminTOTPSecret(req.user.id);
+      if (!secret) {
+        return res.status(400).json({ message: "No TOTP secret found. Please generate first." });
+      }
+
+      const speakeasy = await import('speakeasy');
+      const verified = speakeasy.totp.verify({
+        secret: secret,
+        encoding: 'base32',
+        token: token,
+        window: 2 // Allow 2 steps of time drift
+      });
+
+      if (!verified) {
+        return res.status(400).json({ message: "Invalid verification code" });
+      }
+
+      // Generate backup codes
+      const crypto = await import('crypto');
+      const backupCodes = Array.from({ length: 8 }, () => 
+        crypto.randomBytes(4).toString('hex').toUpperCase()
+      );
+
+      // Enable TOTP
+      await storage.enableAdminTOTP(req.user.id, backupCodes);
+
+      res.json({
+        message: "TOTP authentication enabled successfully",
+        backupCodes
+      });
+    } catch (error) {
+      console.error("TOTP verification error:", error);
+      res.status(500).json({ message: "Failed to verify TOTP token" });
+    }
+  });
+
+  // TOTP-based password reset (alternative to SMS OTP)
+  app.post("/api/admin/forgot-password-totp", async (req, res) => {
+    try {
+      const { username, totpCode, backupCode, newPassword } = req.body;
+      
+      if (!username || !newPassword) {
+        return res.status(400).json({ message: "Username and new password are required" });
+      }
+
+      if (!totpCode && !backupCode) {
+        return res.status(400).json({ message: "TOTP code or backup code is required" });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      const admin = await storage.getAdminUserByUsername(username);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin user not found" });
+      }
+
+      // Check if TOTP is enabled
+      const secret = await storage.getAdminTOTPSecret(admin.id);
+      if (!secret && !admin.backupCodes) {
+        return res.status(400).json({ message: "TOTP authentication not set up for this account" });
+      }
+
+      let isValid = false;
+
+      // Verify TOTP code or backup code
+      if (totpCode) {
+        const speakeasy = await import('speakeasy');
+        isValid = speakeasy.totp.verify({
+          secret: secret,
+          encoding: 'base32',
+          token: totpCode,
+          window: 2
+        });
+      } else if (backupCode) {
+        isValid = await storage.validateBackupCode(admin.id, backupCode);
+      }
+
+      if (!isValid) {
+        return res.status(400).json({ message: "Invalid authentication code" });
+      }
+
+      // Hash and update password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateAdminPassword(admin.id, hashedPassword);
+
+      res.json({ message: "Password reset successfully using authenticator" });
+    } catch (error) {
+      console.error("TOTP password reset error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
+  // Get TOTP status for admin dashboard
+  app.get("/api/admin/totp/status", requireAuth, async (req, res) => {
+    try {
+      const admin = await storage.getAdminUsers();
+      const currentAdmin = admin.find(a => a.id === req.user.id);
+      
+      if (!currentAdmin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      res.json({
+        totpEnabled: currentAdmin.totpEnabled || false,
+        backupCodesCount: currentAdmin.backupCodes?.length || 0
+      });
+    } catch (error) {
+      console.error("TOTP status error:", error);
+      res.status(500).json({ message: "Failed to get TOTP status" });
+    }
+  });
+
+  // Disable TOTP authentication
+  app.post("/api/admin/totp/disable", requireAuth, async (req, res) => {
+    try {
+      await db.update(adminUsers)
+        .set({ 
+          totpEnabled: false,
+          totpSecret: null,
+          backupCodes: []
+        })
+        .where(eq(adminUsers.id, req.user.id));
+
+      res.json({ message: "TOTP authentication disabled successfully" });
+    } catch (error) {
+      console.error("TOTP disable error:", error);
+      res.status(500).json({ message: "Failed to disable TOTP" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Setup WebSocket server for real-time updates

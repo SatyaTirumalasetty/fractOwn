@@ -11,8 +11,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { Home, ArrowLeft, Key } from "lucide-react";
+import { Home, ArrowLeft, Key, Smartphone } from "lucide-react";
 import ForgotPasswordDialog from "@/components/admin/forgot-password-dialog";
+import TOTPPasswordResetDialog from "@/components/admin/totp-password-reset-dialog";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -26,6 +27,7 @@ export default function AdminLogin() {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showTOTPReset, setShowTOTPReset] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -140,16 +142,27 @@ export default function AdminLogin() {
             </Button>
           </form>
           
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              size="sm"
-              className="text-sm text-blue-600 hover:text-blue-800"
-              onClick={() => setShowForgotPassword(true)}
-            >
-              <Key className="h-4 w-4 mr-1" />
-              Forgot Password?
-            </Button>
+          <div className="mt-4 text-center space-y-2">
+            <div className="flex flex-col items-center gap-2">
+              <Button
+                variant="link"
+                size="sm"
+                className="text-sm text-blue-600 hover:text-blue-800"
+                onClick={() => setShowForgotPassword(true)}
+              >
+                <Key className="h-4 w-4 mr-1" />
+                Forgot Password? (SMS)
+              </Button>
+              <Button
+                variant="link"
+                size="sm"
+                className="text-sm text-green-600 hover:text-green-800"
+                onClick={() => setShowTOTPReset(true)}
+              >
+                <Smartphone className="h-4 w-4 mr-1" />
+                Reset with Authenticator
+              </Button>
+            </div>
           </div>
           
           <div className="mt-6 pt-4 border-t border-gray-200">
@@ -177,6 +190,11 @@ export default function AdminLogin() {
       <ForgotPasswordDialog 
         open={showForgotPassword}
         onOpenChange={setShowForgotPassword}
+      />
+      
+      <TOTPPasswordResetDialog 
+        open={showTOTPReset}
+        onOpenChange={setShowTOTPReset}
       />
     </div>
   );
