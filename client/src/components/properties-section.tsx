@@ -66,13 +66,11 @@ export default function PropertiesSection() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-fractown-primary via-fractown-secondary to-fractown-accent bg-clip-text text-transparent">
-              Featured Investment Properties
-            </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Featured Investment Properties
           </h2>
-          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
-            Handpicked premium properties across major Indian cities with verified returns
+          <p className="text-xl text-gray-600">
+            Handpicked premium properties across major Indian cities
           </p>
         </div>
         
@@ -83,10 +81,10 @@ export default function PropertiesSection() {
               key={city}
               onClick={() => handleCityFilter(city)}
               variant={selectedCity === (city === "All Properties" ? "all" : city.toLowerCase()) ? "default" : "outline"}
-              className={`px-8 py-4 rounded-2xl text-base font-semibold transform transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+              className={`px-6 py-3 rounded-full text-sm font-medium transform transition-all duration-300 hover:scale-105 ${
                 selectedCity === (city === "All Properties" ? "all" : city.toLowerCase())
-                  ? "bg-gradient-to-r from-fractown-primary to-fractown-secondary text-white shadow-lg scale-105"
-                  : "bg-white/80 backdrop-blur-sm text-gray-700 border-2 border-gray-200 hover:bg-gradient-to-r hover:from-fractown-primary hover:to-fractown-secondary hover:text-white hover:border-fractown-primary"
+                  ? "bg-fractown-primary text-white shadow-lg"
+                  : "bg-white text-gray-600 border hover:bg-fractown-primary hover:text-white hover:border-fractown-primary"
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
             >

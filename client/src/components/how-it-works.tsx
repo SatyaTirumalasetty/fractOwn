@@ -56,14 +56,12 @@ export default function HowItWorks() {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-fractown-primary via-fractown-secondary to-fractown-accent bg-clip-text text-transparent">
-              How Fractional Ownership Works
-            </span>
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            How Fractional Ownership Works
           </h2>
-          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
-            Simple steps to start your real estate investment journey with confidence
+          <p className="text-xl text-gray-600">
+            Simple steps to start your real estate investment journey
           </p>
         </div>
         
@@ -93,24 +91,21 @@ export default function HowItWorks() {
         </div>
         
         {/* Enhanced Benefits Section */}
-        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 shadow-2xl">
-          <h3 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            <span className="bg-gradient-to-r from-fractown-primary to-fractown-accent bg-clip-text text-transparent">
-              Why Choose Fractional Ownership?
-            </span>
+        <div className="bg-gray-50 rounded-2xl p-8 transform transition-all duration-300 hover:shadow-lg">
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+            Why Choose Fractional Ownership?
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {benefits.map((benefit, index) => (
               <div 
                 key={index} 
-                className="group text-center p-6 bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-200/50 transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:bg-white/90"
-                style={{ animationDelay: `${index * 150}ms` }}
+                className="text-center p-4 bg-white rounded-xl transform transition-all duration-300 hover:scale-105 hover:shadow-md"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-fractown-primary to-fractown-accent rounded-full mx-auto mb-4 flex items-center justify-center group-hover:animate-pulse">
-                  <div className="w-6 h-6 bg-white rounded-full"></div>
+                <div className="w-10 h-10 bg-fractown-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded-full"></div>
                 </div>
-                <h4 className="font-bold text-gray-900 mb-3 text-lg group-hover:text-fractown-primary transition-colors duration-300">{benefit.title}</h4>
-                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">{benefit.description}</p>
+                <h4 className="font-semibold text-gray-900 mb-2">{benefit.title}</h4>
+                <p className="text-gray-600 text-sm">{benefit.description}</p>
               </div>
             ))}
           </div>

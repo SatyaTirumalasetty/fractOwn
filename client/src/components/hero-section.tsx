@@ -120,19 +120,19 @@ export default function HeroSection() {
             </div>
           </div>
           
-          {/* Enhanced title with typewriter effect styling */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-gray-900/60 to-gray-800/60 backdrop-blur-sm text-white px-3 sm:px-4 py-3 rounded-2xl inline-block mb-2 whitespace-nowrap transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+          {/* Enhanced title with proper visibility */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <span className="bg-gray-900 bg-opacity-80 text-white px-3 sm:px-4 py-3 rounded-2xl inline-block mb-2 whitespace-nowrap transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-white/20">
               Own Premium Properties with
             </span>{" "}
             <br />
-            <span className="text-fractown-accent drop-shadow-lg animate-pulse bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent">
+            <span className="text-fractown-accent drop-shadow-lg font-extrabold">
               Fractional Investment
             </span>
           </h1>
           
-          {/* Enhanced description with modern styling */}
-          <p className="text-xl md:text-2xl lg:text-3xl mb-8 text-blue-100 bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-md px-6 sm:px-8 py-6 rounded-2xl shadow-2xl border border-white/10 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl">
+          {/* Enhanced description with better visibility */}
+          <p className="text-xl md:text-2xl mb-8 text-white bg-gray-900 bg-opacity-80 px-6 sm:px-8 py-6 rounded-2xl shadow-2xl border border-white/20 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl">
             Start your real estate journey with as little as <span className="text-fractown-accent font-bold">₹10L</span>. Own a fraction of premium properties across India and watch your wealth grow.
           </p>
           {/* Enhanced CTA buttons with modern effects */}
@@ -161,19 +161,19 @@ export default function HeroSection() {
             onOpenChange={setShowLogin}
             onSuccess={handleLoginSuccess}
           />
-          {/* Enhanced statistics with modern card design */}
+          {/* Enhanced statistics with proper visibility */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent mb-2">₹10L+</div>
-              <div className="text-blue-100 font-medium">Min Investment</div>
+            <div className="text-center bg-gray-900 bg-opacity-80 p-6 rounded-2xl border border-white/30 transform transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-2xl">
+              <div className="text-4xl md:text-5xl font-bold text-fractown-accent mb-2">₹10L+</div>
+              <div className="text-white font-medium">Min Investment</div>
             </div>
-            <div className="text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent mb-2">8-12%</div>
-              <div className="text-blue-100 font-medium">Expected Returns</div>
+            <div className="text-center bg-gray-900 bg-opacity-80 p-6 rounded-2xl border border-white/30 transform transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-2xl">
+              <div className="text-4xl md:text-5xl font-bold text-fractown-accent mb-2">8-12%</div>
+              <div className="text-white font-medium">Expected Returns</div>
             </div>
-            <div className="text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent mb-2">50+</div>
-              <div className="text-blue-100 font-medium">Properties Available</div>
+            <div className="text-center bg-gray-900 bg-opacity-80 p-6 rounded-2xl border border-white/30 transform transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-2xl">
+              <div className="text-4xl md:text-5xl font-bold text-fractown-accent mb-2">50+</div>
+              <div className="text-white font-medium">Properties Available</div>
             </div>
           </div>
         </div>

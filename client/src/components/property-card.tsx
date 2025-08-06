@@ -68,24 +68,24 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
           <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 group-hover:text-fractown-primary transition-colors duration-300">{property.name}</h3>
           <p className="text-gray-600 mb-6 leading-relaxed">{property.description}</p>
           
-          {/* Enhanced stats grid */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div className="text-center p-4 bg-gray-50/80 rounded-2xl group-hover:bg-fractown-primary/5 transition-colors duration-300">
-              <div className="text-xs text-gray-500 mb-1 group-hover:text-fractown-primary transition-colors duration-300">Total Value</div>
-              <div className="font-bold text-lg text-gray-900">{formatCurrency(property.totalValue)}</div>
+          {/* Enhanced stats grid with proper colors */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-sm text-gray-500">Total Value</div>
+              <div className="font-semibold text-lg">{formatCurrency(property.totalValue)}</div>
             </div>
-            <div className="text-center p-4 bg-fractown-primary/10 rounded-2xl group-hover:bg-fractown-primary/20 transition-colors duration-300">
-              <div className="text-xs text-gray-500 mb-1 group-hover:text-fractown-primary transition-colors duration-300">Min Investment</div>
-              <div className="font-bold text-lg text-fractown-primary">
+            <div className="text-center">
+              <div className="text-sm text-gray-500">Min Investment</div>
+              <div className="font-semibold text-lg text-fractown-primary">
                 ₹{property.minInvestment.toLocaleString('en-IN')}
               </div>
             </div>
           </div>
           
-          {/* Enhanced return display */}
-          <div className="text-center mb-6 p-4 bg-gradient-to-r from-fractown-secondary/10 to-fractown-accent/10 rounded-2xl border border-fractown-secondary/20">
-            <div className="text-sm text-gray-600 mb-1">Expected Return</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-fractown-secondary to-fractown-accent bg-clip-text text-transparent">{property.expectedReturn}% p.a.</div>
+          {/* Enhanced return display with proper colors */}
+          <div className="text-center mb-4">
+            <div className="text-sm text-gray-500">Expected Return</div>
+            <div className="font-semibold text-fractown-secondary">{property.expectedReturn}% p.a.</div>
           </div>
         
           {/* Enhanced progress bar */}
@@ -106,10 +106,10 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
           <Button
             onClick={() => onViewDetails(property.id)}
             disabled={isNearlyDone}
-            className={`w-full py-4 font-bold text-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl rounded-2xl ${
+            className={`w-full py-3 font-medium transform transition-all duration-300 hover:scale-105 ${
               isNearlyDone
                 ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-gradient-to-r from-fractown-primary to-fractown-secondary text-white hover:from-fractown-secondary hover:to-fractown-primary hover:shadow-fractown-primary/30"
+                : "bg-fractown-primary text-white hover:bg-fractown-primary/90 hover:shadow-lg"
             }`}
           >
             {isNearlyDone ? "Nearly Sold Out" : "View Details & Invest"}
