@@ -96,9 +96,11 @@ export default function Header() {
                   Login
                 </Button>
               )}
-              <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
-                Admin
-              </Button>
+              {!isAuthenticated && (
+                <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
+                  Admin
+                </Button>
+              )}
               <Button 
                 className="bg-fractown-primary text-white hover:bg-fractown-primary/90"
                 onClick={() => scrollToSection('properties')}
@@ -148,16 +150,18 @@ export default function Header() {
                         Login
                       </Button>
                     )}
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-gray-600 hover:text-fractown-primary" 
-                      onClick={() => {
-                        window.location.href = '/admin/login';
-                        setIsOpen(false);
-                      }}
-                    >
-                      Admin
-                    </Button>
+                    {!isAuthenticated && (
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-gray-600 hover:text-fractown-primary" 
+                        onClick={() => {
+                          window.location.href = '/admin/login';
+                          setIsOpen(false);
+                        }}
+                      >
+                        Admin
+                      </Button>
+                    )}
                     <Button 
                       className="w-full bg-fractown-primary text-white hover:bg-fractown-primary/90"
                       onClick={() => {
