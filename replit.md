@@ -25,6 +25,16 @@ The application uses a centralized configuration system (`config/app.config.js`)
 
 ## External Dependencies
 
+### Security and Authentication
+- **Speakeasy**: TOTP (Time-based One-Time Password) authentication.
+- **QRCode**: QR code generation for TOTP setup.
+- **Bcrypt**: Password hashing with salt.
+- **Helmet**: Security headers middleware.
+- **CORS**: Cross-origin request security.
+- **Express Rate Limit**: API rate limiting.
+- **Express Mongo Sanitize**: NoSQL injection protection.
+- **DOMPurify**: XSS protection and input sanitization.
+
 ### Database and ORM
 - **Drizzle ORM**: Type-safe ORM for PostgreSQL.
 - **PostgreSQL**: Primary database (configured).
@@ -42,7 +52,35 @@ The application uses a centralized configuration system (`config/app.config.js`)
 - **PostCSS**: CSS processing.
 - **TypeScript**: Static type checking.
 
+### Performance and Monitoring
+- **Custom Performance Monitor**: Request timing and memory tracking.
+- **LRU Cache**: In-memory caching for improved performance.
+- **Database Query Monitor**: Tracks slow queries and optimization.
+
 ### Third-party Integrations
 - **Unsplash**: External image hosting (development/demo).
 - **Date-fns**: Date manipulation and formatting utilities.
 - **Embla Carousel**: Carousel component.
+
+## Security Implementation
+
+### TOTP Authentication
+- AES-256-GCM encryption for TOTP secrets at rest
+- Cryptographically secure backup code generation
+- Comprehensive security event logging
+- Rate limiting on authentication endpoints
+- Session token validation and secure cookie handling
+
+### Performance Optimizations
+- Request performance monitoring and alerting
+- Memory usage tracking and garbage collection
+- Database query performance analysis
+- Multi-layer caching system (session, property, config)
+- Endpoint-specific performance metrics
+
+### Industry Compliance
+- OWASP Top 10 security measures implemented
+- NIST Cybersecurity Framework alignment
+- RFC 6238 TOTP specification compliance
+- Enhanced input validation and sanitization
+- Comprehensive security audit documentation

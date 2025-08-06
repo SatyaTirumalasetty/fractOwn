@@ -15,6 +15,12 @@ import { body, validationResult } from "express-validator";
 import { db } from "./db";
 import { authService } from "./services/auth";
 import { seedProperties } from "./seed-properties";
+import { cryptoService } from "./security/crypto";
+import { authRateLimiter, totpRateLimiter, adminRateLimiter, generalRateLimiter } from "./security/rate-limiter";
+import { SecurityValidator, validationMiddleware } from "./security/validator";
+import { performanceMonitor, databaseMonitor } from "./performance/monitor";
+import { sessionCache, propertyCache, configCache } from "./performance/cache";
+import { totpSecurityManager, TOTP_CONFIG } from "./security/totp-security";
 
 // Load configuration
 import config from '../config/app.config.js';
@@ -56,6 +62,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Security middleware - comprehensive protection
   app.use(helmet(config.security.helmet));
   
+  // Enhanced input validation and sanitization
+  app.use(validationMiddleware);
+  
   // Data sanitization against NoSQL injection attacks
   app.use(mongoSanitize({
     replaceWith: '_', // Replace prohibited characters with underscore
@@ -64,9 +73,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Rate limiting - flexible approach
-  const limiter = rateLimit(config.security.rateLimit);
-  app.use(limiter);
+  // Performance monitoring middleware
+  app.use(performanceMonitor.createMiddleware());
+
+  // Enhanced rate limiting with security focus
+  app.use('/api/admin/login', authRateLimiter);
+  app.use('/api/admin/totp', totpRateLimiter);
+  app.use('/api/admin', adminRateLimiter);
+  app.use('/api', generalRateLimiter);
 
   // Speed limiting - slow down repeated requests
   const speedLimiter = slowDown({
@@ -915,10 +929,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // TOTP Routes for Authenticator-based Password Reset
   
-  // Authentication middleware for protected routes
+  // Enhanced authentication middleware with security hardening
   const requireAuth = async (req: any, res: any, next: any) => {
     try {
-      // Check both cookies and Authorization header
+      // Check both cookies and Authorization header with validation
       let sessionToken = null;
       
       if (req.cookies && req.cookies.adminSessionToken) {
@@ -932,6 +946,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
+      // Validate session token format for security
+      if (!SecurityValidator.validateSessionToken(sessionToken)) {
+        console.log("Invalid session token format");
+        return res.status(401).json({ message: "Invalid session format" });
+      }
+
       console.log("Validating session token:", sessionToken.substring(0, 10) + "...");
       const adminId = await storage.validateAdminSession(sessionToken);
       
@@ -942,6 +962,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Authentication successful for admin:", adminId);
       req.user = { id: adminId };
+      
+      // Set security headers
+      res.setHeader('X-Admin-Session', 'active');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      
       next();
     } catch (error) {
       console.error("Authentication middleware error:", error);
@@ -949,27 +974,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Generate TOTP secret and QR code for setup
+  // Generate TOTP secret and QR code for setup - Enhanced Security
   app.post("/api/admin/totp/generate", requireAuth, async (req, res) => {
     try {
       const speakeasy = await import('speakeasy');
       const qrcode = await import('qrcode');
       
+      // Generate cryptographically secure secret
       const secret = speakeasy.generateSecret({
-        name: 'fractOWN Admin',
+        name: `fractOWN Admin (${req.user.id.substring(0, 8)})`,
         issuer: 'fractOWN',
         length: 32
       });
 
-      // Store temporary secret (not enabled yet)
-      await storage.updateAdminTOTPSecret(req.user.id, secret.base32);
+      // Encrypt the secret before storing
+      const encryptedSecret = cryptoService.encrypt(secret.base32);
+      await storage.updateAdminTOTPSecret(req.user.id, encryptedSecret);
 
-      // Generate QR code
-      const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url);
+      // Generate QR code with enhanced options
+      const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url, {
+        errorCorrectionLevel: 'H',
+        type: 'image/png',
+        quality: 0.92,
+        margin: 1,
+        width: 256
+      });
+
+      // Enhanced security validation
+      const setupValidation = totpSecurityManager.validateTOTPSetup(req.user.id, req.ip || 'unknown');
+      if (!setupValidation.allowed) {
+        return res.status(429).json({ message: setupValidation.reason });
+      }
+
+      // Log security event
+      totpSecurityManager.logSecurityEvent({
+        adminId: req.user.id,
+        ip: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+        action: 'generate',
+        success: true
+      });
+
+      console.log(`TOTP secret generated for admin: ${req.user.id.substring(0, 8)}... from IP: ${req.ip}`);
 
       res.json({
-        secret: secret.base32,
-        qrCode: qrCodeDataURL
+        secret: secret.base32, // Return unencrypted for QR setup only
+        qrCode: qrCodeDataURL,
+        backupInstructions: 'Save this secret in a secure location. You can also scan the QR code with your authenticator app.'
       });
     } catch (error) {
       console.error("TOTP generation error:", error);
@@ -977,44 +1028,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Verify TOTP token and enable TOTP authentication
+  // Verify TOTP token and enable TOTP authentication - Enhanced Security
   app.post("/api/admin/totp/verify", requireAuth, async (req, res) => {
     try {
       const { token } = req.body;
       
-      if (!token || token.length !== 6) {
+      // Enhanced token validation
+      if (!SecurityValidator.validateTOTPToken(token)) {
+        console.log(`Invalid TOTP token format from IP: ${req.ip}`);
         return res.status(400).json({ message: "Valid 6-digit token required" });
       }
 
-      const secret = await storage.getAdminTOTPSecret(req.user.id);
-      if (!secret) {
+      const encryptedSecret = await storage.getAdminTOTPSecret(req.user.id);
+      if (!encryptedSecret) {
         return res.status(400).json({ message: "No TOTP secret found. Please generate first." });
       }
+
+      // Decrypt the secret for verification
+      const secret = cryptoService.decrypt(encryptedSecret);
 
       const speakeasy = await import('speakeasy');
       const verified = speakeasy.totp.verify({
         secret: secret,
         encoding: 'base32',
         token: token,
-        window: 2 // Allow 2 steps of time drift
+        window: 1 // Reduced window for better security (30 seconds)
       });
 
       if (!verified) {
+        // Log failed security event
+        totpSecurityManager.logSecurityEvent({
+          adminId: req.user.id,
+          ip: req.ip || 'unknown',
+          userAgent: req.get('User-Agent') || 'unknown',
+          action: 'verify',
+          success: false
+        });
+        
+        console.log(`TOTP verification failed for admin: ${req.user.id.substring(0, 8)}... from IP: ${req.ip}`);
         return res.status(400).json({ message: "Invalid verification code" });
       }
 
-      // Generate backup codes
-      const crypto = await import('crypto');
-      const backupCodes = Array.from({ length: 8 }, () => 
-        crypto.randomBytes(4).toString('hex').toUpperCase()
+      // Generate secure backup codes using security manager
+      const backupCodes = totpSecurityManager.generateSecureBackupCodes();
+      
+      // Hash backup codes before storage
+      const hashedBackupCodes = await Promise.all(
+        backupCodes.map(code => cryptoService.hashBackupCode(code))
       );
 
-      // Enable TOTP
-      await storage.enableAdminTOTP(req.user.id, backupCodes);
+      // Enable TOTP with hashed backup codes
+      await storage.enableAdminTOTP(req.user.id, hashedBackupCodes);
+
+      // Log successful security event
+      totpSecurityManager.logSecurityEvent({
+        adminId: req.user.id,
+        ip: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+        action: 'verify',
+        success: true
+      });
+
+      console.log(`TOTP enabled for admin: ${req.user.id.substring(0, 8)}... from IP: ${req.ip}`);
+
+      // Clear the plain secret from memory (security best practice)
+      cryptoService.secureWipe(secret);
 
       res.json({
         message: "TOTP authentication enabled successfully",
-        backupCodes
+        backupCodes, // Return plain codes for user to save
+        securityNotice: "Save these backup codes in a secure location. They can be used if you lose access to your authenticator app."
       });
     } catch (error) {
       console.error("TOTP verification error:", error);
@@ -1106,12 +1189,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Disable TOTP authentication
+  // Disable TOTP authentication with enhanced security
   app.post("/api/admin/totp/disable", requireAuth, async (req, res) => {
     try {
+      const { password } = req.body;
+      
+      // Require password confirmation for disabling TOTP
+      if (!password) {
+        return res.status(400).json({ message: "Password confirmation required to disable TOTP" });
+      }
+
+      // Validate password
       const { db } = await import("./db");
       const { adminUsers } = await import("@shared/schema");
       const { eq } = await import("drizzle-orm");
+      
+      const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.id, req.user.id));
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      const bcrypt = await import('bcrypt');
+      const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+      
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Invalid password" });
+      }
 
       await db.update(adminUsers)
         .set({ 
@@ -1121,10 +1224,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .where(eq(adminUsers.id, req.user.id));
 
-      res.json({ message: "TOTP authentication disabled successfully" });
+      // Log security event
+      totpSecurityManager.logSecurityEvent({
+        adminId: req.user.id,
+        ip: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+        action: 'disabled',
+        success: true
+      });
+
+      console.log(`TOTP disabled for admin: ${req.user.id.substring(0, 8)}... from IP: ${req.ip}`);
+
+      res.json({ 
+        message: "TOTP authentication disabled successfully",
+        securityNotice: "Two-factor authentication has been disabled. Your account security has been reduced."
+      });
     } catch (error) {
       console.error("TOTP disable error:", error);
       res.status(500).json({ message: "Failed to disable TOTP" });
+    }
+  });
+
+  // Admin security dashboard - View security events and performance metrics
+  app.get("/api/admin/security/dashboard", requireAuth, async (req, res) => {
+    try {
+      const securityStats = totpSecurityManager.getSecurityStats();
+      const adminSecurityEvents = totpSecurityManager.getAdminSecurityEvents(req.user.id, 20);
+      const performanceStats = performanceMonitor.getStats();
+      const memoryStats = performanceMonitor.getMemoryStats();
+      
+      res.json({
+        security: {
+          stats: securityStats,
+          recentEvents: adminSecurityEvents
+        },
+        performance: performanceStats,
+        memory: memoryStats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Security dashboard error:", error);
+      res.status(500).json({ message: "Failed to load security dashboard" });
     }
   });
 

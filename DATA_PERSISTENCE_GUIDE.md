@@ -1,181 +1,186 @@
-# Data Persistence & Deployment Safety Guide
+# Data Persistence and Security Implementation Guide
 
-## 🛡️ Customer Data Protection Guarantee
+## Overview
+This document outlines the secure data persistence implementation for the fractOWN platform, focusing on TOTP authentication security and performance optimization.
 
-### Current Database Status
-- ✅ **Database Type**: PostgreSQL (Neon Serverless)
-- ✅ **Users**: 2 registered customers
-- ✅ **Properties**: 7 investment properties
-- ✅ **Contacts**: Customer inquiries stored
-- ✅ **Data Location**: External database (persists across deployments)
+## Database Security Implementation
 
-### Deployment Safety Measures
+### 1. TOTP Secret Encryption
+All TOTP secrets are encrypted at rest using AES-256-GCM encryption:
 
-#### 1. Database Separation from Application Code
-```
-APPLICATION CODE ↔ EXTERNAL DATABASE
-     (Replit)         (Neon/PostgreSQL)
-        ↓                    ↓
-   Can be updated       Data persists
-   without data loss    independently
+```typescript
+// Encryption process
+const encryptedSecret = cryptoService.encrypt(secret.base32);
+await storage.updateAdminTOTPSecret(adminId, encryptedSecret);
+
+// Decryption process
+const encryptedSecret = await storage.getAdminTOTPSecret(adminId);
+const secret = cryptoService.decrypt(encryptedSecret);
 ```
 
-#### 2. Zero Data Loss Deployment Process
-- **Application updates**: Only code changes, database remains untouched
-- **Database migrations**: Use `npm run db:push` (additive only, no data deletion)
-- **Schema changes**: Always backward compatible
-- **Rollbacks**: Application code only, database data preserved
+### 2. Backup Code Security
+Backup codes are generated cryptographically and hashed before storage:
 
-#### 3. Protected Data Tables
-```sql
--- Customer Data (NEVER DELETED)
-users              -- Customer accounts & authentication
-contacts           -- Customer inquiries & communications
-user_sessions      -- Customer login sessions
-otp_verifications  -- Customer authentication codes
-
--- Business Data (NEVER DELETED)  
-properties         -- Investment property listings
-admin_settings     -- Business configuration
-
--- Admin Data (PROTECTED)
-admin_users        -- Admin accounts
-admin_sessions     -- Admin login sessions
+```typescript
+// Generation and hashing
+const backupCodes = cryptoService.generateBackupCodes(8);
+const hashedBackupCodes = await Promise.all(
+  backupCodes.map(code => cryptoService.hashBackupCode(code))
+);
 ```
 
-### Data Backup & Recovery
+### 3. Session Management
+Enhanced session security with:
+- Cryptographically secure session tokens
+- Session validation middleware
+- Secure cookie configuration
+- Session caching for performance
 
-#### Automatic Protections
-- **Database Provider**: Neon automatically backs up data
-- **Connection Pooling**: Prevents connection-related data corruption
-- **Transaction Safety**: All writes are atomic and consistent
-- **Environment Variables**: Database credentials separate from code
+## Performance Optimizations
 
-#### Manual Backup Commands
+### 1. Database Query Monitoring
+Real-time monitoring of database performance:
+- Query execution time tracking
+- Slow query detection and logging
+- Performance metrics collection
+
+### 2. Multi-Layer Caching
+- **Session Cache**: 1-hour TTL for active sessions
+- **Property Cache**: 10-minute TTL for property listings
+- **Config Cache**: 30-minute TTL for configuration data
+- **Query Cache**: 5-minute TTL for frequently accessed queries
+
+### 3. Rate Limiting
+Security-focused rate limiting:
+- Authentication endpoints: 5 attempts per 15 minutes
+- TOTP endpoints: 3 attempts per 5 minutes
+- Admin operations: 100 requests per 10 minutes
+- General API: 60 requests per minute
+
+## Security Event Logging
+
+### 1. TOTP Security Events
+All TOTP-related activities are logged:
+```typescript
+totpSecurityManager.logSecurityEvent({
+  adminId: req.user.id,
+  ip: req.ip || 'unknown',
+  userAgent: req.get('User-Agent') || 'unknown',
+  action: 'generate' | 'verify' | 'backup_used' | 'disabled',
+  success: boolean
+});
+```
+
+### 2. Suspicious Activity Detection
+- Multiple failed authentication attempts
+- Unusual IP address patterns
+- Rapid TOTP setup attempts
+- Automated alerts for security events
+
+## Industry Compliance
+
+### 1. OWASP Top 10 Protection
+- **A1: Injection**: Input sanitization with DOMPurify
+- **A2: Broken Authentication**: Enhanced session management
+- **A3: Sensitive Data Exposure**: AES-256-GCM encryption
+- **A5: Security Misconfiguration**: Helmet security headers
+- **A6: Vulnerable Components**: Regular dependency updates
+- **A7: XSS**: Comprehensive input validation
+- **A10: Logging**: Security event monitoring
+
+### 2. NIST Cybersecurity Framework
+- **Identify**: Asset inventory and risk assessment
+- **Protect**: Access controls and data protection
+- **Detect**: Security monitoring and alerting
+- **Respond**: Incident response procedures
+- **Recover**: Backup and recovery systems
+
+### 3. RFC 6238 TOTP Compliance
+- Standard 30-second time windows
+- SHA-1 algorithm for compatibility
+- 6-digit token length
+- Proper secret key generation (256-bit entropy)
+
+## Data Backup and Recovery
+
+### 1. Backup Strategy
+- Encrypted backups of TOTP secrets
+- Regular database snapshots
+- Configuration backup procedures
+- Security event log archival
+
+### 2. Recovery Procedures
+- Emergency backup code access
+- TOTP secret recovery process
+- Database restoration procedures
+- Security event reconstruction
+
+## Monitoring and Alerting
+
+### 1. Real-Time Metrics
+- Response time monitoring
+- Memory usage tracking
+- Database performance metrics
+- Security event statistics
+
+### 2. Alert Thresholds
+- High memory usage (>100MB)
+- Slow queries (>1000ms)
+- Failed authentication attempts (>5 in 15 minutes)
+- System performance degradation
+
+## Best Practices
+
+### 1. Development
+- Use encrypted secrets in development
+- Test with realistic data volumes
+- Performance testing with load simulation
+- Security testing with penetration tools
+
+### 2. Production
+- Enable all security features
+- Monitor performance metrics
+- Regular security audits
+- Backup verification procedures
+
+### 3. Maintenance
+- Regular dependency updates
+- Security patch management
+- Performance optimization reviews
+- Backup testing procedures
+
+## Configuration Examples
+
+### Environment Variables
 ```bash
-# Export all customer data
-pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
+# Encryption
+MASTER_ENCRYPTION_KEY=your-256-bit-encryption-key
 
-# Export specific tables
-pg_dump $DATABASE_URL -t users -t contacts -t properties > customer_backup.sql
-```
-
-### Safe Deployment Checklist
-
-#### ✅ Before Each Deployment
-1. **Verify Database Connection**
-   ```bash
-   # Check database is accessible
-   psql $DATABASE_URL -c "SELECT COUNT(*) FROM users;"
-   ```
-
-2. **Run Schema Sync (Safe)**
-   ```bash
-   # Only adds new tables/columns, never deletes data
-   npm run db:push
-   ```
-
-3. **Verify Customer Data Intact**
-   ```bash
-   # Count records in critical tables
-   psql $DATABASE_URL -c "
-   SELECT 
-     'users' as table_name, COUNT(*) as record_count FROM users
-   UNION ALL
-   SELECT 'properties', COUNT(*) FROM properties
-   UNION ALL  
-   SELECT 'contacts', COUNT(*) FROM contacts;"
-   ```
-
-#### ✅ After Each Deployment
-1. **Test Database Connectivity**
-2. **Verify User Login Works**
-3. **Check Property Data Displays**
-4. **Confirm Contact Forms Function**
-
-### Environment Variables (Required)
-```bash
-# Database Connection (CRITICAL)
+# Database
 DATABASE_URL=postgresql://user:pass@host:port/db
 
-# Database Config (Replit Auto-Generated)
-PGHOST=your-db-host
-PGPORT=5432
-PGDATABASE=your-db-name
-PGUSER=your-db-user
-PGPASSWORD=your-db-password
-
-# Admin Access (Optional)
-ADMIN_USERNAME=admin_username
-ADMIN_EMAIL=admin@company.com
-ADMIN_INITIAL_PASSWORD=secure_password
+# Security
+SESSION_SECRET=your-session-secret-key
+NODE_ENV=production
 ```
 
-### Emergency Recovery Procedures
-
-#### If Data Appears Missing
-1. **Check Database Connection**
-   ```bash
-   echo $DATABASE_URL
-   psql $DATABASE_URL -c "\dt"  # List all tables
-   ```
-
-2. **Verify Table Structure**
-   ```bash
-   psql $DATABASE_URL -c "\d users"     # Check users table
-   psql $DATABASE_URL -c "\d properties" # Check properties table
-   ```
-
-3. **Count All Records**
-   ```bash
-   psql $DATABASE_URL -c "SELECT COUNT(*) FROM users;"
-   psql $DATABASE_URL -c "SELECT COUNT(*) FROM properties;"
-   ```
-
-#### If Application Won't Start
-1. **Database-only issue**: Data is safe, fix connection
-2. **Code issue**: Deploy previous version, data unaffected
-3. **Migration issue**: Rollback migration, data preserved
-
-### Prohibited Operations
-```sql
--- ❌ NEVER RUN THESE COMMANDS
-DROP TABLE users;
-DROP TABLE contacts;  
-DROP TABLE properties;
-DELETE FROM users;
-DELETE FROM contacts;
-DELETE FROM properties;
-TRUNCATE users;
-TRUNCATE contacts;
-TRUNCATE properties;
+### Security Headers
+```javascript
+helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    }
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+});
 ```
 
-### Development vs Production
-
-#### Development Database
-- **Location**: Same as production (external)
-- **Data Safety**: Same protections apply
-- **Testing**: Use separate test data, not customer data
-
-#### Production Database  
-- **Access**: Via Replit database panel only
-- **Modifications**: Through application only
-- **Direct Access**: Emergency situations with backup first
-
-### Monitoring & Alerts
-- **Connection Status**: Automated health checks
-- **Data Integrity**: Record count monitoring
-- **Performance**: Query execution time tracking
-- **Backup Status**: Daily backup verification
-
----
-
-## 📞 Emergency Contact
-If customer data appears lost or corrupted:
-1. **DO NOT** run any SQL commands
-2. **DO NOT** redeploy immediately  
-3. **Contact** database provider support immediately
-4. **Preserve** current application state for investigation
-
-**Remember**: Customer data is the most valuable asset. When in doubt, protect the data first, fix the application second.
+This implementation ensures enterprise-grade security and performance for the fractOWN platform while maintaining compliance with industry standards.
