@@ -84,50 +84,72 @@ export default function HeroSection() {
   };
 
   return (
-    <section id="home" className="relative bg-gradient-fractown text-white">
-      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+    <section id="home" className="relative bg-gradient-fractown text-white overflow-hidden min-h-screen flex items-center">
+      {/* Animated background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-fractown-primary/80 via-fractown-secondary/70 to-fractown-accent/60 animate-pulse"></div>
+      
+      {/* Parallax background image */}
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 bg-fixed transform transition-transform duration-1000 hover:scale-105"
         style={{
           backgroundImage: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       ></div>
+      
+      {/* Floating geometric shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-20 h-20 bg-fractown-accent/20 rounded-full animate-bounce"></div>
+        <div className="absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-lg rotate-45 animate-spin" style={{animationDuration: '8s'}}></div>
+        <div className="absolute bottom-32 left-1/4 w-12 h-12 bg-fractown-accent/30 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-20 right-1/3 w-8 h-8 bg-white/20 rounded-full animate-bounce" style={{animationDelay: '2s'}}></div>
+      </div>
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="max-w-3xl">
+        <div className="max-w-4xl">
+          {/* Animated logo entrance */}
           <div className="mb-8 flex justify-start">
-            <div className="logo-hero">
+            <div className="logo-hero transform transition-all duration-1000 hover:scale-110 hover:rotate-2">
               <img 
                 src="/attached_assets/image_1754379283931.png" 
                 alt="fractOWN Logo"
-                className="h-48 w-auto logo-transparent"
+                className="h-48 w-auto logo-transparent drop-shadow-2xl animate-pulse"
               />
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            <span className="bg-gray-900 bg-opacity-40 text-white px-2 sm:px-3 py-2 rounded-lg inline-block mb-2 whitespace-nowrap">
+          
+          {/* Enhanced title with typewriter effect styling */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-gray-900/60 to-gray-800/60 backdrop-blur-sm text-white px-3 sm:px-4 py-3 rounded-2xl inline-block mb-2 whitespace-nowrap transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
               Own Premium Properties with
             </span>{" "}
             <br />
-            <span className="text-fractown-accent">Fractional Investment</span>
+            <span className="text-fractown-accent drop-shadow-lg animate-pulse bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent">
+              Fractional Investment
+            </span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100 bg-gray-900 bg-opacity-40 px-6 py-4 rounded-lg">
-            Start your real estate journey with as little as ₹10L. Own a fraction of premium properties across India and watch your wealth grow.
+          
+          {/* Enhanced description with modern styling */}
+          <p className="text-xl md:text-2xl lg:text-3xl mb-8 text-blue-100 bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-md px-6 sm:px-8 py-6 rounded-2xl shadow-2xl border border-white/10 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl">
+            Start your real estate journey with as little as <span className="text-fractown-accent font-bold">₹10L</span>. Own a fraction of premium properties across India and watch your wealth grow.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          {/* Enhanced CTA buttons with modern effects */}
+          <div className="flex flex-col sm:flex-row gap-6 mb-12">
             <Button 
               onClick={handleGetStarted}
               data-testid="button-get-started"
-              className="bg-fractown-accent text-gray-900 px-8 py-4 text-lg font-semibold hover:bg-fractown-accent/90 h-auto"
+              className="bg-gradient-to-r from-fractown-accent to-yellow-400 text-gray-900 px-10 py-6 text-xl font-bold hover:from-yellow-400 hover:to-fractown-accent h-auto transform transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-fractown-accent/50 rounded-2xl"
             >
-              {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'}
+              {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'} 
+              <span className="ml-2">→</span>
             </Button>
             <Button 
               onClick={handleLogin}
               data-testid="button-login"
               variant="outline"
-              className="border border-white text-black bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-100 hover:text-fractown-primary h-auto"
+              className="border-2 border-white text-white bg-white/10 backdrop-blur-sm px-10 py-6 text-xl font-bold hover:bg-white hover:text-fractown-primary h-auto transform transition-all duration-300 hover:scale-105 hover:shadow-xl rounded-2xl"
             >
               {user ? 'Logout' : 'Login'}
             </Button>
@@ -139,18 +161,19 @@ export default function HeroSection() {
             onOpenChange={setShowLogin}
             onSuccess={handleLoginSuccess}
           />
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>
-              <div className="text-blue-200">Min Investment</div>
+          {/* Enhanced statistics with modern card design */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent mb-2">₹10L+</div>
+              <div className="text-blue-100 font-medium">Min Investment</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">8-12%</div>
-              <div className="text-blue-200">Expected Returns</div>
+            <div className="text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent mb-2">8-12%</div>
+              <div className="text-blue-100 font-medium">Expected Returns</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">50+</div>
-              <div className="text-blue-200">Properties Available</div>
+            <div className="text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-fractown-accent to-yellow-400 bg-clip-text text-transparent mb-2">50+</div>
+              <div className="text-blue-100 font-medium">Properties Available</div>
             </div>
           </div>
         </div>

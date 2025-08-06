@@ -48,59 +48,71 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            How Fractional Ownership Works
+    <section id="how-it-works" className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-10 w-64 h-64 bg-gradient-to-br from-fractown-primary/10 to-fractown-accent/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-20 w-48 h-48 bg-gradient-to-tr from-fractown-secondary/10 to-fractown-primary/10 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-fractown-primary via-fractown-secondary to-fractown-accent bg-clip-text text-transparent">
+              How Fractional Ownership Works
+            </span>
           </h2>
-          <p className="text-xl text-gray-600">
-            Simple steps to start your real estate investment journey
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
+            Simple steps to start your real estate investment journey with confidence
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* Enhanced steps with modern design and animations */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
-              <div key={index} className="text-center">
-                <div className={`w-16 h-16 ${step.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                  <IconComponent className="text-white text-2xl w-8 h-8" />
+              <div 
+                key={index} 
+                className="group text-center relative"
+                style={{ animationDelay: `${index * 200}ms` }}
+              >
+                {/* Connecting lines between steps */}
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-fractown-primary/30 to-fractown-accent/30 transform translate-x-4 -translate-y-1/2"></div>
+                )}
+                
+                <div className={`w-20 h-20 ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl`}>
+                  <IconComponent className="text-white w-10 h-10" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 group-hover:text-fractown-primary transition-colors duration-300">{step.title}</h3>
+                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">{step.description}</p>
               </div>
             );
           })}
         </div>
         
-        <div className="mt-16 bg-gray-50 rounded-2xl p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Choose Fractional Ownership?</h3>
-              <ul className="space-y-4">
-                {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start">
-                    <div className="flex-shrink-0 w-6 h-6 bg-fractown-secondary rounded-full flex items-center justify-center mr-3 mt-1">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{benefit.title}</h4>
-                      <p className="text-gray-600">{benefit.description}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="text-center">
-              <img
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-                alt="Investment analytics and charts"
-                className="rounded-xl shadow-lg w-full h-auto"
-              />
-            </div>
+        {/* Enhanced Benefits Section */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 shadow-2xl">
+          <h3 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            <span className="bg-gradient-to-r from-fractown-primary to-fractown-accent bg-clip-text text-transparent">
+              Why Choose Fractional Ownership?
+            </span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {benefits.map((benefit, index) => (
+              <div 
+                key={index} 
+                className="group text-center p-6 bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-200/50 transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:bg-white/90"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-fractown-primary to-fractown-accent rounded-full mx-auto mb-4 flex items-center justify-center group-hover:animate-pulse">
+                  <div className="w-6 h-6 bg-white rounded-full"></div>
+                </div>
+                <h4 className="font-bold text-gray-900 mb-3 text-lg group-hover:text-fractown-primary transition-colors duration-300">{benefit.title}</h4>
+                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">{benefit.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

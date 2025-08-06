@@ -57,29 +57,38 @@ export default function PropertiesSection() {
   }
 
   return (
-    <section id="properties" className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Featured Investment Properties
+    <section id="properties" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-fractown-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-fractown-accent/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-fractown-primary via-fractown-secondary to-fractown-accent bg-clip-text text-transparent">
+              Featured Investment Properties
+            </span>
           </h2>
-          <p className="text-xl text-gray-600">
-            Handpicked premium properties across major Indian cities
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
+            Handpicked premium properties across major Indian cities with verified returns
           </p>
         </div>
         
-        {/* Dynamic City Filters */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {availableCities.map((city) => (
+        {/* Enhanced City Filters with modern design */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {availableCities.map((city, index) => (
             <Button
               key={city}
               onClick={() => handleCityFilter(city)}
               variant={selectedCity === (city === "All Properties" ? "all" : city.toLowerCase()) ? "default" : "outline"}
-              className={`px-6 py-2 rounded-full text-sm font-medium ${
+              className={`px-8 py-4 rounded-2xl text-base font-semibold transform transition-all duration-300 hover:scale-105 hover:shadow-lg ${
                 selectedCity === (city === "All Properties" ? "all" : city.toLowerCase())
-                  ? "bg-fractown-primary text-white"
-                  : "bg-white text-gray-600 border hover:text-fractown-primary"
+                  ? "bg-gradient-to-r from-fractown-primary to-fractown-secondary text-white shadow-lg scale-105"
+                  : "bg-white/80 backdrop-blur-sm text-gray-700 border-2 border-gray-200 hover:bg-gradient-to-r hover:from-fractown-primary hover:to-fractown-secondary hover:text-white hover:border-fractown-primary"
               }`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               {city}
             </Button>
