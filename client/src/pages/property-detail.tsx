@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as React from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,11 @@ export default function PropertyDetail() {
   
   // Enable real-time updates
   useRealtimeUpdates();
+  
+  // Scroll to top when component mounts
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
 
   const { data: property, isLoading } = useQuery<Property>({
     queryKey: ["/api/properties", id],

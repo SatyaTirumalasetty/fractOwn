@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
 
@@ -9,6 +10,15 @@ import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
 
 export default function Home() {
+  // Scroll to top when component mounts (only if not navigating to a specific section)
+  useEffect(() => {
+    // Check if we need to scroll to a specific section (like properties)
+    const hash = window.location.hash;
+    if (!hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
   return (
     <div className="min-h-screen">
       <Header />

@@ -21,6 +21,9 @@ export default function AdminDashboard() {
       return;
     }
     setAdminUser(JSON.parse(storedUser));
+    
+    // Scroll to top when component mounts
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [setLocation]);
 
   const handleLogout = () => {

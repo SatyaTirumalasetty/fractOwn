@@ -33,6 +33,10 @@ export default function PropertiesSection() {
 
   const handleViewDetails = (id: string) => {
     setLocation(`/property/${id}`);
+    // Scroll to top when navigating to property detail page
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleCityFilter = (city: string) => {
