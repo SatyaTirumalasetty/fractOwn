@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
+import AdminContactSettings from "./admin-contact-settings";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -269,8 +270,12 @@ export default function AdminSettingsTab() {
         </div>
       </div>
 
-      <Tabs defaultValue="branding" className="space-y-4">
+      <Tabs defaultValue="contact" className="space-y-4">
         <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="contact" className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            Contact
+          </TabsTrigger>
           <TabsTrigger value="branding" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
             Branding
@@ -300,6 +305,10 @@ export default function AdminSettingsTab() {
             Database
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="contact" className="space-y-4">
+          <AdminContactSettings />
+        </TabsContent>
 
         <TabsContent value="branding" className="space-y-4">
           <Card>

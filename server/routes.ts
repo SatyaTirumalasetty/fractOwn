@@ -760,6 +760,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin settings endpoints
+  app.get("/api/admin/settings/:category", async (req, res) => {
+    try {
+      const { category } = req.params;
+      const settings = await storage.getAdminSettingsByCategory(category);
+      res.json(settings);
+    } catch (error) {
+      console.error("Failed to fetch admin settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/admin/settings", async (req, res) => {
+    try {
+      const { key, value, category = "contact", description } = req.body;
+      
+      if (!key || !value) {
+        return res.status(400).json({ message: "Key and value are required" });
+      }
+
+      await storage.setAdminSetting(key, value, category, description);
+      res.json({ message: "Setting updated successfully" });
+    } catch (error) {
+      console.error("Failed to update admin setting:", error);
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  // Get public contact information (for homepage)
+  app.get("/api/contact-info", async (req, res) => {
+    try {
+      const contactSettings = await storage.getAdminSettingsByCategory("contact");
+      const contactInfo = contactSettings.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {} as Record<string, string>);
+      
+      res.json(contactInfo);
+    } catch (error) {
+      console.error("Failed to fetch contact info:", error);
+      res.status(500).json({ message: "Failed to fetch contact information" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Setup WebSocket server for real-time updates

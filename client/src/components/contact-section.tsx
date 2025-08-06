@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Phone, Mail, MapPin, Linkedin, Twitter, Instagram, Youtube } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Linkedin, Twitter, Instagram, Youtube, Clock } from "lucide-react";
 import type { InsertContact } from "@shared/schema";
 
 export default function ContactSection() {
@@ -22,6 +22,19 @@ export default function ContactSection() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch contact information from admin settings
+  const { data: contactInfo } = useQuery({
+    queryKey: ['/api/contact-info'],
+    queryFn: async () => {
+      const response = await fetch('/api/contact-info');
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact info');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const submitContactMutation = useMutation({
     mutationFn: async (data: InsertContact) => {
@@ -91,14 +104,21 @@ export default function ContactSection() {
                 <Phone className="text-fractown-accent text-xl mr-4 w-6 h-6" />
                 <div>
                   <div className="font-medium">Phone</div>
-                  <div className="text-blue-100">+91 9876543210</div>
+                  <div className="text-blue-100">{contactInfo?.contact_phone || '+91-80-12345678'}</div>
                 </div>
               </div>
               <div className="flex items-center">
                 <Mail className="text-fractown-accent text-xl mr-4 w-6 h-6" />
                 <div>
                   <div className="font-medium">Email</div>
-                  <div className="text-blue-100">invest@fractown.in</div>
+                  <div className="text-blue-100">{contactInfo?.contact_email || 'info@fractown.com'}</div>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <MessageCircle className="text-fractown-accent text-xl mr-4 w-6 h-6" />
+                <div>
+                  <div className="font-medium">WhatsApp</div>
+                  <div className="text-blue-100">{contactInfo?.whatsapp_number || '+91-9876543210'}</div>
                 </div>
               </div>
               <div className="flex items-start">
@@ -106,12 +126,21 @@ export default function ContactSection() {
                 <div>
                   <div className="font-medium">Address</div>
                   <div className="text-blue-100">
-                    123 Business District,<br />
-                    Bandra Kurla Complex,<br />
-                    Mumbai, Maharashtra 400051
+                    {contactInfo?.office_address || 'Koramangala, Bangalore, Karnataka 560034'}
                   </div>
                 </div>
               </div>
+              {contactInfo?.business_hours && (
+                <div className="flex items-start">
+                  <Clock className="text-fractown-accent text-xl mr-4 mt-1 w-6 h-6" />
+                  <div>
+                    <div className="font-medium">Business Hours</div>
+                    <div className="text-blue-100">
+                      {contactInfo.business_hours}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="mt-8">

@@ -42,6 +42,26 @@ export const adminUsers = pgTable("admin_users", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Admin settings table for contact information and site configuration
+export const adminSettings = pgTable("admin_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(), // e.g., 'contact_phone', 'contact_email', 'support_hours'
+  value: text("value").notNull(),
+  category: text("category").notNull().default("contact"), // 'contact', 'site', 'business'
+  description: text("description"), // Human-readable description
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Admin sessions table for persistent session management
+export const adminSessions = pgTable("admin_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminId: varchar("admin_id").references(() => adminUsers.id, { onDelete: "cascade" }).notNull(),
+  sessionToken: text("session_token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -105,6 +125,17 @@ export const insertSessionSchema = createInsertSchema(userSessions).omit({
   createdAt: true,
 });
 
+export const insertAdminSettingSchema = createInsertSchema(adminSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAdminSessionSchema = createInsertSchema(adminSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const updatePropertySchema = createInsertSchema(properties).omit({
   id: true,
 }).partial();
@@ -122,4 +153,8 @@ export type InsertOtp = z.infer<typeof insertOtpSchema>;
 export type OtpVerification = typeof otpVerifications.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type UserSession = typeof userSessions.$inferSelect;
+export type InsertAdminSetting = z.infer<typeof insertAdminSettingSchema>;
+export type AdminSetting = typeof adminSettings.$inferSelect;
+export type InsertAdminSession = z.infer<typeof insertAdminSessionSchema>;
+export type AdminSession = typeof adminSessions.$inferSelect;
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;

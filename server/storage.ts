@@ -1,29 +1,56 @@
-import { type Property, type InsertProperty, type Contact, type InsertContact, type AdminUser, type InsertAdminUser, type InsertAdminUserDB, type UpdateProperty, properties, contacts, adminUsers } from "@shared/schema";
+import {
+  Property,
+  properties,
+  contacts,
+  adminUsers,
+  adminSettings,
+  adminSessions,
+  users,
+  type InsertProperty,
+  type InsertContact,
+  type Contact,
+  type AdminUser,
+  type User,
+  type InsertUser,
+  type UpdateProperty
+} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
-import { randomUUID } from "crypto";
+import { eq, and, gt } from "drizzle-orm";
 
 export interface IStorage {
-  // Properties
+  // Property operations
   getProperties(): Promise<Property[]>;
   getProperty(id: string): Promise<Property | undefined>;
   createProperty(property: InsertProperty): Promise<Property>;
   updateProperty(id: string, property: UpdateProperty): Promise<Property | undefined>;
   deleteProperty(id: string): Promise<boolean>;
   
-  // Contacts
-  createContact(contact: InsertContact): Promise<Contact>;
+  // Contact operations
   getContacts(): Promise<Contact[]>;
+  createContact(contact: InsertContact): Promise<Contact>;
   deleteContact(id: string): Promise<boolean>;
   
-  // Admin Users
-  createAdminUser(user: InsertAdminUserDB): Promise<AdminUser>;
-  getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
+  // Admin operations
   getAdminUsers(): Promise<AdminUser[]>;
+  
+  // Admin settings operations
+  getAdminSetting(key: string): Promise<string | null>;
+  setAdminSetting(key: string, value: string, category?: string, description?: string): Promise<void>;
+  getAdminSettingsByCategory(category: string): Promise<Array<{key: string, value: string, description?: string}>>;
+  
+  // Session operations
+  createAdminSession(adminId: string, sessionToken: string, expiresAt: Date): Promise<void>;
+  validateAdminSession(sessionToken: string): Promise<string | null>; // returns adminId if valid
+  deleteAdminSession(sessionToken: string): Promise<void>;
+  
+  // User operations
+  getUser(id: string): Promise<User | undefined>;
+  getUserByPhone(phoneNumber: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Properties
+  // Property operations
   async getProperties(): Promise<Property[]> {
     return await db.select().from(properties).where(eq(properties.isActive, true));
   }
@@ -51,7 +78,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProperty(id: string): Promise<boolean> {
-    // Hard delete instead of soft delete for admin
     const result = await db.delete(properties).where(eq(properties.id, id));
     return (result.rowCount ?? 0) > 0;
   }
@@ -93,6 +119,93 @@ export class DatabaseStorage implements IStorage {
 
   async getAdminUsers(): Promise<AdminUser[]> {
     return await db.select().from(adminUsers);
+  }
+
+  // Admin settings operations
+  async getAdminSetting(key: string): Promise<string | null> {
+    const [setting] = await db.select()
+      .from(adminSettings)
+      .where(eq(adminSettings.key, key));
+    return setting?.value || null;
+  }
+
+  async setAdminSetting(key: string, value: string, category: string = "contact", description?: string): Promise<void> {
+    await db.insert(adminSettings)
+      .values({
+        key,
+        value,
+        category,
+        description,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: adminSettings.key,
+        set: {
+          value,
+          category,
+          description,
+          updatedAt: new Date()
+        }
+      });
+  }
+
+  async getAdminSettingsByCategory(category: string): Promise<Array<{key: string, value: string, description?: string}>> {
+    const settings = await db.select({
+      key: adminSettings.key,
+      value: adminSettings.value,
+      description: adminSettings.description
+    })
+    .from(adminSettings)
+    .where(eq(adminSettings.category, category));
+    
+    return settings.map(setting => ({
+      key: setting.key,
+      value: setting.value,
+      description: setting.description || undefined
+    }));
+  }
+
+  // Session operations
+  async createAdminSession(adminId: string, sessionToken: string, expiresAt: Date): Promise<void> {
+    await db.insert(adminSessions).values({
+      adminId,
+      sessionToken,
+      expiresAt
+    });
+  }
+
+  async validateAdminSession(sessionToken: string): Promise<string | null> {
+    const [session] = await db.select()
+      .from(adminSessions)
+      .where(and(
+        eq(adminSessions.sessionToken, sessionToken),
+        gt(adminSessions.expiresAt, new Date())
+      ));
+    return session?.adminId || null;
+  }
+
+  async deleteAdminSession(sessionToken: string): Promise<void> {
+    await db.delete(adminSessions)
+      .where(eq(adminSessions.sessionToken, sessionToken));
+  }
+
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByPhone(phoneNumber: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.phoneNumber, phoneNumber));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
   }
 }
 
