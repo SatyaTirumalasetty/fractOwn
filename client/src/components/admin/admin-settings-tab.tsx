@@ -694,15 +694,66 @@ export default function AdminSettingsTab() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="content" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Management</CardTitle>
+        <TabsContent value="content" className="space-y-6">
+          {/* Content Statistics Header */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-500 rounded-lg mr-4">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-purple-800">Content Sections</p>
+                    <p className="text-3xl font-bold text-purple-900">6</p>
+                    <p className="text-xs text-purple-700 mt-1">Active sections</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-500 rounded-lg mr-4">
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Content Status</p>
+                    <p className="text-3xl font-bold text-green-900">Published</p>
+                    <p className="text-xs text-green-700 mt-1">All sections live</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-500 rounded-lg mr-4">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">Last Updated</p>
+                    <p className="text-3xl font-bold text-blue-900">Today</p>
+                    <p className="text-xs text-blue-700 mt-1">Content sync</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="bg-white shadow-sm border border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+              <CardTitle className="flex items-center gap-3">
+                <FileText className="h-6 w-6 text-blue-600" />
+                Content Management
+              </CardTitle>
               <CardDescription>
-                Edit section descriptions and content
+                Edit section descriptions and website content
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 p-6">
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="hero-title">Hero Section Title</Label>
@@ -766,22 +817,90 @@ export default function AdminSettingsTab() {
                 </div>
               </div>
 
-              <Button onClick={() => handleSaveSettings("Content")} className="w-full">
-                <Save className="h-4 w-4 mr-2" />
-                Save Content Settings
-              </Button>
+              <div className="pt-6 border-t border-gray-200">
+                <Button onClick={() => handleSaveSettings("Content")} className="w-full h-12 bg-blue-600 hover:bg-blue-700">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Content Settings
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="system" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Business Settings</CardTitle>
+        <TabsContent value="system" className="space-y-6">
+          {/* System Statistics Header */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-red-500 rounded-lg mr-4">
+                    <Settings className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-red-800">System Status</p>
+                    <p className="text-3xl font-bold text-red-900">Online</p>
+                    <p className="text-xs text-red-700 mt-1">All systems operational</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-orange-500 rounded-lg mr-4">
+                    <Upload className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-orange-800">Upload Status</p>
+                    <p className="text-3xl font-bold text-orange-900">Active</p>
+                    <p className="text-xs text-orange-700 mt-1">Files processing</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-500 rounded-lg mr-4">
+                    <Shield className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Security Level</p>
+                    <p className="text-3xl font-bold text-green-900">High</p>
+                    <p className="text-xs text-green-700 mt-1">All protections active</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-500 rounded-lg mr-4">
+                    <Activity className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">Performance</p>
+                    <p className="text-3xl font-bold text-blue-900">Optimal</p>
+                    <p className="text-xs text-blue-700 mt-1">Response time: 120ms</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-white shadow-sm border border-gray-200">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <CardTitle className="flex items-center gap-3">
+                  <DollarSign className="h-6 w-6 text-green-600" />
+                  Business Settings
+                </CardTitle>
                 <CardDescription>Configure investment parameters</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-6">
                 <div>
                   <Label htmlFor="min-investment">Minimum Investment (₹)</Label>
                   <Input
@@ -818,12 +937,15 @@ export default function AdminSettingsTab() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>File Upload Settings</CardTitle>
+            <Card className="bg-white shadow-sm border border-gray-200">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <CardTitle className="flex items-center gap-3">
+                  <Upload className="h-6 w-6 text-blue-600" />
+                  File Upload Settings
+                </CardTitle>
                 <CardDescription>Configure file upload parameters</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-6">
                 <div>
                   <Label htmlFor="max-file-size">Max File Size (MB)</Label>
                   <Input

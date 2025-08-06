@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ const propertyFormSchema = insertPropertySchema.extend({
   totalValue: z.coerce.number().min(1, "Total value must be greater than 0"),
   minInvestment: z.coerce.number().min(1, "Minimum investment must be greater than 0"),
   fundingProgress: z.coerce.number().min(0).max(100).default(0),
-  imageUrls: z.string().transform((val) => val.split('\n').filter(url => url.trim().length > 0)),
+  imageUrls: z.array(z.string()).default([]),
   attachments: z.array(z.object({
     name: z.string(),
     url: z.string(),
@@ -53,7 +53,7 @@ export function AdminPropertiesTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: properties = [], isLoading } = useQuery({
+  const { data: properties = [], isLoading } = useQuery<Property[]>({
     queryKey: ["/api/admin/properties"],
   });
 
@@ -69,7 +69,7 @@ export function AdminPropertiesTab() {
       minInvestment: 0,
       expectedReturn: "",
       fundingProgress: 0,
-      imageUrls: "",
+      imageUrls: [],
       propertyType: "residential",
       isActive: true,
       attachments: [],
@@ -249,9 +249,12 @@ export function AdminPropertiesTab() {
         attachments: attachments
       };
       
-      return await apiRequest("/api/admin/properties", {
+      return apiRequest("/api/admin/properties", {
         method: "POST",
         body: JSON.stringify(propertyData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     },
     onSuccess: () => {
@@ -313,7 +316,7 @@ export function AdminPropertiesTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/admin/properties/${id}`, {
+      return apiRequest(`/api/admin/properties/${id}`, {
         method: "DELETE",
       });
     },
@@ -346,7 +349,7 @@ export function AdminPropertiesTab() {
       minInvestment: property.minInvestment,
       expectedReturn: property.expectedReturn,
       fundingProgress: property.fundingProgress,
-      imageUrls: property.imageUrls.join('\n'),
+      imageUrls: Array.isArray(property.imageUrls) ? property.imageUrls : [property.imageUrls].filter(Boolean),
       propertyType: property.propertyType as "residential" | "commercial",
       isActive: property.isActive,
     });
@@ -408,8 +411,8 @@ export function AdminPropertiesTab() {
     // Sort logic
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
-        case 'newest': return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-        case 'oldest': return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+        case 'newest': return new Date(b.id).getTime() - new Date(a.id).getTime();
+        case 'oldest': return new Date(a.id).getTime() - new Date(b.id).getTime();
         case 'value-high': return (b.totalValue || 0) - (a.totalValue || 0);
         case 'value-low': return (a.totalValue || 0) - (b.totalValue || 0);
         case 'name': return a.name.localeCompare(b.name);
