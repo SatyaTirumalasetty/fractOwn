@@ -23,7 +23,16 @@ export default function AdminSettingsTab() {
   // Fetch admin profile
   const { data: adminProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['/api/admin/profile'],
-    queryFn: () => apiRequest('/api/admin/profile'),
+    queryFn: () => fetch('/api/admin/profile', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+      }
+    }).then(async res => {
+      if (!res.ok) {
+        throw new Error('Failed to fetch profile');
+      }
+      return res.json();
+    }),
   });
   
   // Application settings
@@ -120,11 +129,20 @@ export default function AdminSettingsTab() {
 
   // Admin profile update mutation
   const updateProfileMutation = useMutation({
-    mutationFn: (profileData: { email?: string; phoneNumber?: string; countryCode?: string }) =>
-      apiRequest('/api/admin/profile', {
+    mutationFn: (profileData: { email?: string; phoneNumber?: string; countryCode?: string }) => 
+      fetch('/api/admin/profile', {
         method: 'PUT',
-        body: JSON.stringify(profileData),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+        },
+        body: JSON.stringify(profileData)
+      }).then(async res => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || 'Failed to update profile');
+        }
+        return res.json();
       }),
     onSuccess: () => {
       toast({
@@ -133,10 +151,10 @@ export default function AdminSettingsTab() {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/profile'] });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.message || "Failed to update profile. Please try again.",
         variant: "destructive"
       });
     }
