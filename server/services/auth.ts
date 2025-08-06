@@ -16,10 +16,9 @@ export class AuthService {
       await db.delete(otpVerifications)
         .where(eq(otpVerifications.phoneNumber, phoneNumber));
 
-      // Development mode: Use fixed OTP for testing
+      // Development mode: Use fixed OTP for any phone number
       const isDevelopment = process.env.NODE_ENV === 'development';
-      const isTestPhone = phoneNumber === '+919962344115';
-      const otp = (isDevelopment && isTestPhone) ? '123456' : notificationService.generateOTP();
+      const otp = isDevelopment ? '123456' : notificationService.generateOTP();
       
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -34,7 +33,7 @@ export class AuthService {
       const sent = await notificationService.sendOTP(phoneNumber, email, otp);
       
       if (sent) {
-        const message = (isDevelopment && isTestPhone) 
+        const message = isDevelopment
           ? "OTP sent successfully. For testing, use code: 123456" 
           : "OTP sent successfully";
         return { success: true, message };

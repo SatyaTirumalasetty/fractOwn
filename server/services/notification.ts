@@ -8,11 +8,10 @@ export class NotificationService {
   // Send OTP via SMS/Email (development mode with console logging)
   async sendOTP(phoneNumber: string, email: string | undefined, otp: string): Promise<boolean> {
     try {
-      // Development mode: Use fixed OTP for testing specific phone number
+      // Development mode: Use fixed OTP for any phone number
       const isDevelopment = process.env.NODE_ENV === 'development';
-      const isTestPhone = phoneNumber === '+919962344115';
       
-      if (isDevelopment && isTestPhone) {
+      if (isDevelopment) {
         console.log(`\n🔐 DEVELOPMENT OTP: 123456`);
         console.log(`📱 Phone: ${phoneNumber}`);
         if (email) {
