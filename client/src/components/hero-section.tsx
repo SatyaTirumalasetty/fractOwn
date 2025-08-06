@@ -52,7 +52,15 @@ export default function HeroSection() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      // Add a small delay to ensure DOM is ready, then scroll with offset for header
+      setTimeout(() => {
+        const headerHeight = 80; // Account for sticky header
+        const elementPosition = element.offsetTop - headerHeight;
+        window.scrollTo({
+          top: elementPosition,
+          behavior: 'smooth'
+        });
+      }, 100);
     }
   };
 
