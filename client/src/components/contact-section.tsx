@@ -1,48 +1,49 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Phone, Mail, MessageCircle, MapPin, Linkedin, Twitter, Instagram, Youtube } from "lucide-react";
-import type { ContactInfo, ContactSubmission } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { Phone, Mail, MapPin, MessageCircle, Linkedin, Twitter, Instagram, Youtube, Clock } from "lucide-react";
+import type { InsertContact } from "@shared/schema";
 
 export default function ContactSection() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     investmentAmount: "",
-    message: "",
-    preferredContact: "email" as const,
+    message: ""
   });
 
-  const { data: contactInfo } = useQuery<ContactInfo>({
-    queryKey: ["/api/contact-info"],
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch contact information from admin settings
+  const { data: contactInfo } = useQuery({
+    queryKey: ['/api/contact-info'],
+    queryFn: async () => {
+      const response = await fetch('/api/contact-info');
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact info');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const submitContactMutation = useMutation({
-    mutationFn: async (data: ContactSubmission) => {
-      const response = await fetch("/api/contact-submissions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+    mutationFn: async (data: InsertContact) => {
+      const response = await apiRequest("POST", "/api/contact", data);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Message Sent Successfully!",
+        title: "Message Sent!",
         description: "Thank you for your interest. Our team will contact you within 24 hours.",
       });
       setFormData({
@@ -50,18 +51,16 @@ export default function ContactSection() {
         email: "",
         phone: "",
         investmentAmount: "",
-        message: "",
-        preferredContact: "email",
+        message: ""
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/contact-submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
-      console.error('Contact submission error:', error);
     },
   });
 
@@ -82,8 +81,15 @@ export default function ContactSection() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const socialLinks = [
+    { icon: Linkedin, href: "#", label: "LinkedIn" },
+    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Instagram, href: "#", label: "Instagram" },
+    { icon: Youtube, href: "#", label: "YouTube" }
+  ];
+
   return (
-    <section id="contact" className="py-16 bg-blue-600 text-white">
+    <section id="contact" className="py-16 bg-fractown-primary text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Investing?</h2>
@@ -95,154 +101,140 @@ export default function ContactSection() {
             <h3 className="text-2xl font-semibold mb-6">Contact Information</h3>
             <div className="space-y-4">
               <div className="flex items-center">
-                <Phone className="text-yellow-400 text-xl mr-4 w-6 h-6" />
+                <Phone className="text-fractown-accent text-xl mr-4 w-6 h-6" />
                 <div>
                   <div className="font-medium">Phone</div>
                   <div className="text-blue-100">{contactInfo?.contact_phone || '+91-80-12345678'}</div>
                 </div>
               </div>
               <div className="flex items-center">
-                <Mail className="text-yellow-400 text-xl mr-4 w-6 h-6" />
+                <Mail className="text-fractown-accent text-xl mr-4 w-6 h-6" />
                 <div>
                   <div className="font-medium">Email</div>
                   <div className="text-blue-100">{contactInfo?.contact_email || 'info@fractown.com'}</div>
                 </div>
               </div>
               <div className="flex items-center">
-                <MessageCircle className="text-yellow-400 text-xl mr-4 w-6 h-6" />
+                <MessageCircle className="text-fractown-accent text-xl mr-4 w-6 h-6" />
                 <div>
                   <div className="font-medium">WhatsApp</div>
                   <div className="text-blue-100">{contactInfo?.whatsapp_number || '+91-9876543210'}</div>
                 </div>
               </div>
               <div className="flex items-start">
-                <MapPin className="text-yellow-400 text-xl mr-4 mt-1 w-6 h-6" />
+                <MapPin className="text-fractown-accent text-xl mr-4 mt-1 w-6 h-6" />
                 <div>
                   <div className="font-medium">Address</div>
                   <div className="text-blue-100">
-                    {contactInfo?.office_address || (
-                      <>
-                        fractOWN Technologies<br />
-                        123 Business District<br />
-                        Bangalore, Karnataka 560001<br />
-                        India
-                      </>
-                    )}
+                    {contactInfo?.office_address || 'Koramangala, Bangalore, Karnataka 560034'}
                   </div>
                 </div>
               </div>
+              {contactInfo?.business_hours && (
+                <div className="flex items-start">
+                  <Clock className="text-fractown-accent text-xl mr-4 mt-1 w-6 h-6" />
+                  <div>
+                    <div className="font-medium">Business Hours</div>
+                    <div className="text-blue-100">
+                      {contactInfo.business_hours}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-
+            
             <div className="mt-8">
               <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
               <div className="flex space-x-4">
-                <Linkedin className="w-6 h-6 text-yellow-400 hover:text-white cursor-pointer" />
-                <Twitter className="w-6 h-6 text-yellow-400 hover:text-white cursor-pointer" />
-                <Instagram className="w-6 h-6 text-yellow-400 hover:text-white cursor-pointer" />
-                <Youtube className="w-6 h-6 text-yellow-400 hover:text-white cursor-pointer" />
+                {socialLinks.map((social, index) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <a
+                      key={index}
+                      href={social.href}
+                      className="w-10 h-10 bg-white text-fractown-primary rounded-full flex items-center justify-center hover:bg-fractown-accent hover:text-gray-900 transition-colors"
+                      aria-label={social.label}
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
-
-          <div className="bg-white text-gray-900 p-8 rounded-lg">
-            <h3 className="text-2xl font-semibold mb-6">Send us a Message</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <Card className="bg-white rounded-2xl text-gray-900">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-semibold mb-6">Get Started Today</h3>
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</Label>
                   <Input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full"
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder="Enter your full name"
                     required
                   />
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
-                  </label>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</Label>
                   <Input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full"
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    placeholder="Enter your email"
                     required
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</Label>
                   <Input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="w-full"
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    placeholder="+91 9876543210"
                     required
                   />
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Investment Amount *
-                  </label>
-                  <Select onValueChange={(value) => handleInputChange('investmentAmount', value)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select amount" />
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">Investment Amount *</Label>
+                  <Select value={formData.investmentAmount} onValueChange={(value) => handleInputChange("investmentAmount", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select investment range" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="10-25">₹10L - ₹25L</SelectItem>
-                      <SelectItem value="25-50">₹25L - ₹50L</SelectItem>
-                      <SelectItem value="50-100">₹50L - ₹1Cr</SelectItem>
-                      <SelectItem value="100+">₹1Cr+</SelectItem>
+                      <SelectItem value="5000-25000">₹5,000 - ₹25,000</SelectItem>
+                      <SelectItem value="25000-100000">₹25,000 - ₹1,00,000</SelectItem>
+                      <SelectItem value="100000-500000">₹1,00,000 - ₹5,00,000</SelectItem>
+                      <SelectItem value="500000+">₹5,00,000+</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Contact Method
-                </label>
-                <Select onValueChange={(value: "email" | "phone" | "whatsapp") => handleInputChange('preferredContact', value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Email" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="phone">Phone</SelectItem>
-                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message
-                </label>
-                <Textarea
-                  value={formData.message}
-                  onChange={(e) => handleInputChange('message', e.target.value)}
-                  rows={4}
-                  className="w-full"
-                  placeholder="Tell us about your investment goals..."
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={submitContactMutation.isPending}
-                className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3 text-lg font-semibold"
-              >
-                {submitContactMutation.isPending ? "Sending..." : "Send Message"}
-              </Button>
-            </form>
-          </div>
+                
+                <div>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">Message</Label>
+                  <Textarea
+                    value={formData.message}
+                    onChange={(e) => handleInputChange("message", e.target.value)}
+                    rows={4}
+                    placeholder="Tell us about your investment goals..."
+                  />
+                </div>
+                
+                <Button
+                  type="submit"
+                  disabled={submitContactMutation.isPending}
+                  className="w-full bg-fractown-primary text-white py-3 font-medium hover:bg-fractown-primary/90 transition-colors"
+                >
+                  {submitContactMutation.isPending ? "Sending..." : "Send Message"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

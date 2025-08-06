@@ -10,12 +10,14 @@ export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [, setLocation] = useLocation();
   
+  // Enable real-time updates
   useRealtimeUpdates();
 
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ["/api/properties"],
   });
 
+  // Dynamically generate city tabs based on actual property data
   const availableCities = useMemo(() => {
     if (!properties || properties.length === 0) return ["All Properties"];
     
@@ -31,6 +33,7 @@ export default function PropertiesSection() {
 
   const handleViewDetails = (id: string) => {
     setLocation(`/property/${id}`);
+    // Scroll to top when navigating to property detail page
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
@@ -42,10 +45,10 @@ export default function PropertiesSection() {
 
   if (isLoading) {
     return (
-      <section id="properties" className="py-16 bg-white">
+      <section id="properties" className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fractown-primary mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading properties...</p>
           </div>
         </div>
@@ -54,7 +57,7 @@ export default function PropertiesSection() {
   }
 
   return (
-    <section id="properties" className="py-16 bg-white">
+    <section id="properties" className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -64,26 +67,26 @@ export default function PropertiesSection() {
             Handpicked premium properties across major Indian cities
           </p>
         </div>
+        
+        {/* Dynamic City Filters */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          {availableCities.map((city) => (
+            <Button
+              key={city}
+              onClick={() => handleCityFilter(city)}
+              variant={selectedCity === (city === "All Properties" ? "all" : city.toLowerCase()) ? "default" : "outline"}
+              className={`px-6 py-2 rounded-full text-sm font-medium ${
+                selectedCity === (city === "All Properties" ? "all" : city.toLowerCase())
+                  ? "bg-fractown-primary text-white"
+                  : "bg-white text-gray-600 border hover:text-fractown-primary"
+              }`}
+            >
+              {city}
+            </Button>
+          ))}
+        </div>
 
-        {availableCities.length > 1 && (
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            {availableCities.map((city) => (
-              <Button
-                key={city}
-                variant={selectedCity === (city === "All Properties" ? "all" : city) ? "default" : "outline"}
-                className={`px-4 py-2 text-sm ${
-                  selectedCity === (city === "All Properties" ? "all" : city)
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-600 hover:text-blue-600"
-                }`}
-                onClick={() => handleCityFilter(city)}
-              >
-                {city}
-              </Button>
-            ))}
-          </div>
-        )}
-
+        {/* Properties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProperties.map((property) => (
             <PropertyCard
@@ -93,12 +96,21 @@ export default function PropertiesSection() {
             />
           ))}
         </div>
-
+        
         {filteredProperties.length === 0 && !isLoading && (
           <div className="text-center py-12">
-            <p className="text-xl text-gray-500">No properties found for {selectedCity === "all" ? "this filter" : selectedCity}.</p>
+            <p className="text-gray-600">No properties found for the selected city.</p>
           </div>
         )}
+        
+        <div className="text-center mt-12">
+          <Button
+            variant="outline"
+            className="bg-white text-fractown-primary border-fractown-primary px-8 py-4 text-lg font-semibold hover:bg-fractown-primary hover:text-white"
+          >
+            View All Properties
+          </Button>
+        </div>
       </div>
     </section>
   );
