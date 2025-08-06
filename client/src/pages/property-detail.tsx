@@ -102,7 +102,19 @@ export default function PropertyDetail() {
         {/* Back Button */}
         <Button 
           variant="outline" 
-          onClick={() => setLocation("/")}
+          onClick={() => {
+            setLocation("/");
+            // Small delay to ensure navigation completes before scrolling
+            setTimeout(() => {
+              const propertiesSection = document.getElementById('properties');
+              if (propertiesSection) {
+                propertiesSection.scrollIntoView({ 
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+              }
+            }, 100);
+          }}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
