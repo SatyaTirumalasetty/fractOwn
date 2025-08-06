@@ -89,15 +89,9 @@ export default function ContactSection() {
   ];
 
   return (
-    <section id="contact" className="py-16 bg-fractown-primary text-white relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-32 h-32 bg-fractown-accent/20 rounded-full blur-3xl animate-bounce"></div>
-        <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/10 rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2"></div>
-      </div>
+    <section id="contact" className="py-16 bg-fractown-primary text-white">
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Investing?</h2>
           <p className="text-xl text-blue-100">Get in touch with our investment experts</p>
