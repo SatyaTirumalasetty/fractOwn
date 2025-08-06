@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle, Search, Filter, Calendar, TrendingUp, BarChart3, RefreshCw, Download, Settings, Building, MapPin, DollarSign } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +46,10 @@ export function AdminPropertiesTab() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -361,6 +366,59 @@ export function AdminPropertiesTab() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  // Calculate property statistics
+  const propertyStats = useMemo(() => {
+    if (!properties.length) return { total: 0, active: 0, totalValue: 0, avgProgress: 0 };
+    
+    const active = properties.filter(p => p.isActive).length;
+    const totalValue = properties.reduce((sum, p) => sum + (p.totalValue || 0), 0);
+    const avgProgress = properties.reduce((sum, p) => sum + (p.fundingProgress || 0), 0) / properties.length;
+    
+    return {
+      total: properties.length,
+      active,
+      totalValue,
+      avgProgress: Math.round(avgProgress)
+    };
+  }, [properties]);
+
+  // Filtering logic
+  const filteredProperties = useMemo(() => {
+    let filtered = properties;
+
+    if (searchTerm) {
+      filtered = filtered.filter(property => 
+        property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.city.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterType !== "all") {
+      filtered = filtered.filter(property => property.propertyType === filterType);
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(property => 
+        statusFilter === "active" ? property.isActive : !property.isActive
+      );
+    }
+
+    // Sort logic
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest': return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        case 'oldest': return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+        case 'value-high': return (b.totalValue || 0) - (a.totalValue || 0);
+        case 'value-low': return (a.totalValue || 0) - (b.totalValue || 0);
+        case 'name': return a.name.localeCompare(b.name);
+        default: return 0;
+      }
+    });
+
+    return filtered;
+  }, [properties, searchTerm, filterType, statusFilter, sortBy]);
 
   const PropertyForm = ({ form, onSubmit, submitText, isSubmitting }: {
     form: any;
@@ -795,21 +853,47 @@ export function AdminPropertiesTab() {
   );
 
   if (isLoading) {
-    return <div>Loading properties...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading properties...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Properties ({properties.length})</h3>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Property
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <Building className="h-6 w-6 mr-3 text-blue-600" />
+            Property Management
+          </h2>
+          <p className="text-gray-600 mt-1">
+            Manage investment properties and track performance
+          </p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] })}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Property
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden">
             <DialogHeader className="pb-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -833,81 +917,239 @@ export function AdminPropertiesTab() {
                 isSubmitting={createMutation.isPending}
               />
             </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Property</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Total Value</TableHead>
-              <TableHead>Min Investment</TableHead>
-              <TableHead>Progress</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {properties.map((property: Property) => (
-              <TableRow key={property.id}>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{property.name}</div>
-                    <div className="text-sm text-gray-500">{property.description.slice(0, 50)}...</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div>{property.location}</div>
-                    <div className="text-sm text-gray-500">{property.city}, {property.state}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={property.propertyType === "residential" ? "default" : "secondary"}>
-                    {property.propertyType}
-                  </Badge>
-                </TableCell>
-                <TableCell>{formatCurrency(property.totalValue)}</TableCell>
-                <TableCell>{formatCurrency(property.minInvestment)}</TableCell>
-                <TableCell>{property.fundingProgress}%</TableCell>
-                <TableCell>
-                  <Badge variant={property.isActive ? "default" : "secondary"}>
-                    {property.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => togglePropertyStatus(property)}
-                      className={property.isActive ? "text-green-600 hover:text-green-700" : "text-gray-600 hover:text-gray-700"}
-                    >
-                      {property.isActive ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(property)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleDelete(property.id)}
-                      className="text-red-600 hover:text-red-700 hover:border-red-200"
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-500 rounded-lg mr-4">
+                <Building className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-blue-800">Total Properties</p>
+                <p className="text-3xl font-bold text-blue-900">{propertyStats.total}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-500 rounded-lg mr-4">
+                <CheckCircle className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-800">Active Properties</p>
+                <p className="text-3xl font-bold text-green-900">{propertyStats.active}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-500 rounded-lg mr-4">
+                <DollarSign className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-purple-800">Total Value</p>
+                <p className="text-2xl font-bold text-purple-900">{formatCurrency(propertyStats.totalValue)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-500 rounded-lg mr-4">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-orange-800">Avg Progress</p>
+                <p className="text-3xl font-bold text-orange-900">{propertyStats.avgProgress}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Search and Filters */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative flex-1">
+              <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+              <Input
+                placeholder="Search properties by name, location, or city..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="residential">Residential</SelectItem>
+                  <SelectItem value="commercial">Commercial</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="value-high">Highest Value</SelectItem>
+                  <SelectItem value="value-low">Lowest Value</SelectItem>
+                  <SelectItem value="name">Name A-Z</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Properties Table */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold">Property Details</TableHead>
+                  <TableHead className="font-semibold">Location</TableHead>
+                  <TableHead className="font-semibold">Type</TableHead>
+                  <TableHead className="font-semibold">Financial Info</TableHead>
+                  <TableHead className="font-semibold">Progress</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProperties.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="flex flex-col items-center">
+                        <Building className="h-12 w-12 text-gray-300 mb-4" />
+                        <p className="text-gray-500 text-lg font-medium">No properties found</p>
+                        <p className="text-gray-400 text-sm">Try adjusting your search or filters</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProperties.map((property: Property) => (
+                    <TableRow key={property.id} className="hover:bg-gray-50">
+                      <TableCell>
+                        <div className="flex items-center">
+                          <div className="p-2 bg-blue-100 rounded-full mr-3">
+                            <Building className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{property.name}</div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {property.description.slice(0, 60)}...
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 text-gray-400 mr-2" />
+                          <div>
+                            <div className="font-medium">{property.location}</div>
+                            <div className="text-sm text-gray-500">{property.city}, {property.state}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={property.propertyType === "residential" ? "default" : "secondary"} className="capitalize">
+                          {property.propertyType === "residential" ? "🏠 Residential" : "🏢 Commercial"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-semibold text-green-600">
+                            {formatCurrency(property.totalValue)}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Min: {formatCurrency(property.minInvestment)}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full" 
+                            style={{ width: `${property.fundingProgress}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-sm font-medium mt-1">{property.fundingProgress}%</p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={property.isActive ? "default" : "secondary"} className={
+                          property.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-600"
+                        }>
+                          {property.isActive ? "✓ Active" : "○ Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 justify-center">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => togglePropertyStatus(property)}
+                            className={property.isActive ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
+                          >
+                            {property.isActive ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(property)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDelete(property.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

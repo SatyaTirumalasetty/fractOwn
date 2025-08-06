@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Shield, Activity, Clock, Users, Globe, Database, Cpu } from 'lucide-react';
+import { AlertTriangle, Shield, Activity, Clock, Users, Globe, Database, Cpu, CheckCircle, Eye, Lock, TrendingUp, Server, RefreshCw, Search, Filter, Download } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 interface SecurityEvent {
   adminId: string;
@@ -56,6 +58,10 @@ interface DashboardData {
 }
 
 export function AdminSecurityDashboard() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  
   const { data: dashboardData, isLoading, error, refetch } = useQuery<DashboardData>({
     queryKey: ['/api/admin/security/dashboard'],
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -129,73 +135,140 @@ export function AdminSecurityDashboard() {
   const SecurityIcon = securityLevel.icon;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Shield className="h-6 w-6" />
-          <h2 className="text-2xl font-bold">Security Dashboard</h2>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <Shield className="h-6 w-6 mr-3 text-blue-600" />
+            Security Dashboard
+          </h2>
+          <p className="text-gray-600 mt-1">
+            Monitor authentication events and system security
+          </p>
         </div>
-        <div className="text-sm text-gray-500">
-          Last updated: {new Date(dashboardData.timestamp).toLocaleString()}
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <div className="text-sm text-gray-500 flex items-center">
+            <Clock className="h-4 w-4 mr-1" />
+            Updated: {new Date(dashboardData.timestamp).toLocaleString()}
+          </div>
         </div>
       </div>
 
       {/* Security Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Level</CardTitle>
-            <SecurityIcon className={`h-4 w-4 ${securityLevel.color}`} />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${securityLevel.color}`}>
-              {securityLevel.level}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-500 rounded-lg mr-4">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-blue-800">Total Events</p>
+                <p className="text-3xl font-bold text-blue-900">{security.stats.last24Hours.totalEvents}</p>
+                <p className="text-xs text-blue-700 mt-1">Last 24 hours</p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {security.stats.last24Hours.successRate.toFixed(1)}% success rate
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Auth Events (24h)</CardTitle>
-            <Activity className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{security.stats.last24Hours.totalEvents}</div>
-            <p className="text-xs text-muted-foreground">
-              {security.stats.last24Hours.failedAuth} failed attempts
-            </p>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-500 rounded-lg mr-4">
+                <CheckCircle className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-800">Success Rate</p>
+                <p className="text-3xl font-bold text-green-900">{security.stats.last24Hours.successRate.toFixed(1)}%</p>
+                <p className="text-xs text-green-700 mt-1">{security.stats.last24Hours.successfulAuth} successful</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique IPs</CardTitle>
-            <Globe className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{security.stats.last24Hours.uniqueIPs}</div>
-            <p className="text-xs text-muted-foreground">
-              {security.stats.last24Hours.uniqueAdmins} active admins
-            </p>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-500 rounded-lg mr-4">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-purple-800">Active Admins</p>
+                <p className="text-3xl font-bold text-purple-900">{security.stats.last24Hours.uniqueAdmins}</p>
+                <p className="text-xs text-purple-700 mt-1">{security.stats.last24Hours.uniqueIPs} unique IPs</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Response Time</CardTitle>
-            <Clock className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{performance.averageResponseTime}ms</div>
-            <p className="text-xs text-muted-foreground">
-              {performance.slowRequestPercentage}% slow requests
-            </p>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className={`p-2 ${securityLevel.level === 'High' ? 'bg-green-500' : securityLevel.level === 'Medium' ? 'bg-orange-500' : 'bg-red-500'} rounded-lg mr-4`}>
+                <SecurityIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-orange-800">Security Level</p>
+                <p className={`text-3xl font-bold ${securityLevel.color}`}>{securityLevel.level}</p>
+                <p className="text-xs text-orange-700 mt-1">{security.stats.last24Hours.failedAuth} failed attempts</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Search and Filters */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative flex-1">
+              <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+              <Input
+                placeholder="Search events by admin ID, IP, or action..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <Select value={actionFilter} onValueChange={setActionFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Actions</SelectItem>
+                  <SelectItem value="generate">Generated</SelectItem>
+                  <SelectItem value="verify">Verified</SelectItem>
+                  <SelectItem value="backup_used">Backup Used</SelectItem>
+                  <SelectItem value="disabled">Disabled</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="security" className="space-y-4">
         <TabsList>

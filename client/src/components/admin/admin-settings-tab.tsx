@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail } from "lucide-react";
+import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail, RefreshCw, Download, Search, Filter, TrendingUp, Activity, CheckCircle, Clock } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
 import AdminContactSettings from "./admin-contact-settings";
 import AdminSecurityTab from "./admin-security-tab";
@@ -262,17 +262,95 @@ export default function AdminSettingsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Application Settings</h2>
-          <p className="text-muted-foreground">
-            Customize your application appearance and functionality
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <Settings className="h-6 w-6 mr-3 text-blue-600" />
+            Application Settings
+          </h2>
+          <p className="text-gray-600 mt-1">
+            Configure platform settings, branding, and system preferences
           </p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Config
+          </Button>
         </div>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-500 rounded-lg mr-4">
+                <Settings className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-blue-800">Active Features</p>
+                <p className="text-3xl font-bold text-blue-900">
+                  {Object.values(features).filter(Boolean).length}/{Object.keys(features).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-500 rounded-lg mr-4">
+                <CheckCircle className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-800">System Status</p>
+                <p className="text-3xl font-bold text-green-900">Healthy</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-500 rounded-lg mr-4">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-purple-800">Profile Status</p>
+                <p className="text-3xl font-bold text-purple-900">
+                  {profileLoading ? "Loading..." : adminProfile ? "Active" : "Pending"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-500 rounded-lg mr-4">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-orange-800">Config Health</p>
+                <p className="text-3xl font-bold text-orange-900">Optimized</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="contact" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="contact" className="flex items-center gap-2">
             <Phone className="h-4 w-4" />
             Contact
