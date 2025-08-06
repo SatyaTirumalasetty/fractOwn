@@ -36,7 +36,8 @@ export function useAuth() {
         throw new Error('Session expired');
       }
       
-      return response.json();
+      const data = await response.json();
+      return data.user || data; // Handle both {user: ...} and direct user object formats
     },
   });
 
