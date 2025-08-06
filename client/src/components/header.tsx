@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, login, logout } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -28,7 +28,8 @@ export default function Header() {
   };
 
   const handleLoginSuccess = (userData: any, sessionToken: string) => {
-    // The useAuth hook will handle the login state
+    // Update auth state with user data and session token
+    login(userData, sessionToken);
     setShowLoginDialog(false);
   };
 
@@ -72,13 +73,29 @@ export default function Header() {
           </div>
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 hover:text-fractown-primary"
-                onClick={handleLoginClick}
-              >
-                {isAuthenticated ? 'Logout' : 'Login'}
-              </Button>
+              {isAuthenticated && user ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-700">
+                    Welcome, <span className="font-medium text-fractown-primary">{user.name}</span>
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-gray-600 hover:text-fractown-primary border-gray-300"
+                    onClick={handleLoginClick}
+                  >
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 hover:text-fractown-primary"
+                  onClick={handleLoginClick}
+                >
+                  Login
+                </Button>
+              )}
               <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
                 Admin
               </Button>
@@ -109,13 +126,28 @@ export default function Header() {
                     </button>
                   ))}
                   <div className="border-t pt-4 space-y-2">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start"
-                      onClick={handleLoginClick}
-                    >
-                      {isAuthenticated ? 'Logout' : 'Login'}
-                    </Button>
+                    {isAuthenticated && user ? (
+                      <div className="px-3 py-2 space-y-2">
+                        <p className="text-sm text-gray-700">
+                          Welcome, <span className="font-medium text-fractown-primary">{user.name}</span>
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start"
+                          onClick={handleLoginClick}
+                        >
+                          Logout
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={handleLoginClick}
+                      >
+                        Login
+                      </Button>
+                    )}
                     <Button 
                       variant="ghost" 
                       className="w-full justify-start text-gray-600 hover:text-fractown-primary" 
