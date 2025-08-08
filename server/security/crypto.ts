@@ -52,6 +52,11 @@ class CryptoService {
       
       const tag = cipher.getAuthTag();
       
+      // Security: Ensure authentication tag is exactly the expected length
+      if (tag.length !== TAG_LENGTH) {
+        throw new Error('Generated authentication tag has invalid length');
+      }
+      
       // Combine salt + iv + tag + encrypted data
       const combined = Buffer.concat([salt, iv, tag, Buffer.from(encrypted, 'base64')]);
       return combined.toString('base64');
@@ -91,7 +96,13 @@ class CryptoService {
         throw new Error('Invalid authentication tag length');
       }
       
+      // Additional validation: Ensure tag contains non-zero bytes (prevent empty/zero tags)
+      if (tag.every(byte => byte === 0)) {
+        throw new Error('Invalid authentication tag: all zeros detected');
+      }
+      
       const decipher = createDecipheriv(ALGORITHM, key, iv);
+      // Set the authentication tag with explicit length validation already performed
       decipher.setAuthTag(tag);
       
       let decrypted = decipher.update(encrypted, undefined, 'utf8');
