@@ -34,12 +34,12 @@ export default function AdminSettingsTab() {
   });
 
   // Update preview when site settings load
-  useState(() => {
+  useEffect(() => {
     const currentLogo = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value;
     if (currentLogo && !logoPreview) {
       setLogoPreview(currentLogo);
     }
-  }, [siteSettings]);
+  }, [siteSettings, logoPreview]);
 
   // Fetch admin profile
   const { data: adminProfile, isLoading: profileLoading } = useQuery({
