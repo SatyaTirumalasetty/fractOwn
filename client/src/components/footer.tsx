@@ -1,6 +1,15 @@
+import { useEffect, useState } from "react";
 import { Linkedin, Twitter, Instagram } from "lucide-react";
 
+interface SocialLink {
+  icon: any;
+  href: string;
+  label: string;
+}
+
 export default function Footer() {
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+
   const footerSections = [
     {
       title: "Investment",
@@ -31,11 +40,57 @@ export default function Footer() {
     }
   ];
 
-  const socialLinks = [
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" }
-  ];
+  useEffect(() => {
+    const fetchSocialSettings = async () => {
+      try {
+        const response = await fetch('/api/admin/settings/social');
+        if (response.ok) {
+          const settings = await response.json();
+          
+          const dynamicSocialLinks: SocialLink[] = [];
+          
+          // Find each social media setting and add to links if URL exists
+          const linkedinSetting = settings.find((s: any) => s.key === 'social_linkedin');
+          if (linkedinSetting?.value) {
+            dynamicSocialLinks.push({
+              icon: Linkedin,
+              href: linkedinSetting.value,
+              label: "LinkedIn"
+            });
+          }
+          
+          const twitterSetting = settings.find((s: any) => s.key === 'social_twitter');
+          if (twitterSetting?.value) {
+            dynamicSocialLinks.push({
+              icon: Twitter,
+              href: twitterSetting.value,
+              label: "Twitter"
+            });
+          }
+          
+          const instagramSetting = settings.find((s: any) => s.key === 'social_instagram');
+          if (instagramSetting?.value) {
+            dynamicSocialLinks.push({
+              icon: Instagram,
+              href: instagramSetting.value,
+              label: "Instagram"
+            });
+          }
+          
+          setSocialLinks(dynamicSocialLinks);
+        } else {
+          // Fallback to empty array if settings can't be fetched
+          setSocialLinks([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch social settings:', error);
+        // Fallback to empty array on error
+        setSocialLinks([]);
+      }
+    };
+
+    fetchSocialSettings();
+  }, []);
 
   return (
     <footer className="bg-gray-800 text-white py-12">
@@ -50,21 +105,28 @@ export default function Footer() {
             <p className="text-gray-400 mb-4">
               Democratizing real estate investment through fractional ownership. Start your wealth journey today.
             </p>
-            <div className="flex space-x-4">
-              {socialLinks.map((social, index) => {
-                const IconComponent = social.icon;
-                return (
-                  <a
-                    key={index}
-                    href={social.href}
-                    className="text-gray-400 hover:text-fractown-accent transition-colors"
-                    aria-label={social.label}
-                  >
-                    <IconComponent className="w-6 h-6" />
-                  </a>
-                );
-              })}
-            </div>
+            {socialLinks.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-4">Follow Us</h4>
+                <div className="flex space-x-4">
+                  {socialLinks.map((social, index) => {
+                    const IconComponent = social.icon;
+                    return (
+                      <a
+                        key={index}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-400 hover:text-fractown-accent transition-colors"
+                        aria-label={social.label}
+                      >
+                        <IconComponent className="w-6 h-6" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           
           {footerSections.map((section, index) => (

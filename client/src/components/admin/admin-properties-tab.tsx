@@ -244,8 +244,14 @@ export function AdminPropertiesTab() {
 
   const createMutation = useMutation({
     mutationFn: async (data: PropertyForm) => {
+      // Extract image URLs from attachments for the imageUrls field
+      const imageUrls = attachments
+        .filter(attachment => attachment.type === 'image')
+        .map(attachment => attachment.url);
+      
       const propertyData = {
         ...data,
+        imageUrls: imageUrls,
         attachments: attachments
       };
       
@@ -274,12 +280,23 @@ export function AdminPropertiesTab() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<PropertyForm> }) => {
+      // Extract image URLs from attachments for the imageUrls field
+      const imageUrls = attachments
+        .filter(attachment => attachment.type === 'image')
+        .map(attachment => attachment.url);
+      
+      const updatedData = {
+        ...data,
+        imageUrls: imageUrls,
+        attachments: attachments
+      };
+      
       const response = await fetch(`/api/admin/properties/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(updatedData),
       });
       
       if (!response.ok) {
@@ -345,6 +362,14 @@ export function AdminPropertiesTab() {
       propertyType: property.propertyType as "residential" | "commercial",
       isActive: property.isActive,
     });
+    
+    // Populate attachments from the property data
+    if (property.attachments && Array.isArray(property.attachments)) {
+      setAttachments(property.attachments);
+    } else {
+      setAttachments([]);
+    }
+    
     setIsEditOpen(true);
   };
 

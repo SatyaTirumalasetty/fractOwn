@@ -29,6 +29,12 @@ export default function AdminContactSettings() {
     { key: 'office_address', label: 'Office Address', icon: MapPin, placeholder: 'Koramangala, Bangalore, Karnataka 560034' }
   ];
 
+  const socialFields = [
+    { key: 'social_linkedin', label: 'LinkedIn URL', icon: Globe, placeholder: 'https://linkedin.com/company/fractown' },
+    { key: 'social_twitter', label: 'Twitter URL', icon: Globe, placeholder: 'https://twitter.com/fractown' },
+    { key: 'social_instagram', label: 'Instagram URL', icon: Globe, placeholder: 'https://instagram.com/fractown' }
+  ];
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -57,6 +63,9 @@ export default function AdminContactSettings() {
 
     setSaving(true);
     try {
+      // Determine category based on key prefix
+      const category = key.startsWith('social_') ? 'social' : 'contact';
+      
       const response = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: {
@@ -65,7 +74,7 @@ export default function AdminContactSettings() {
         body: JSON.stringify({
           key,
           value: value.trim(),
-          category: 'contact'
+          category
         }),
       });
 
@@ -183,8 +192,9 @@ export default function AdminContactSettings() {
 
       {/* Tabbed Interface */}
       <Tabs defaultValue="contact-info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="contact-info">Contact Information</TabsTrigger>
+          <TabsTrigger value="social-media">Social Media</TabsTrigger>
           <TabsTrigger value="business-hours">Business Hours</TabsTrigger>
           <TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
         </TabsList>
@@ -248,6 +258,87 @@ export default function AdminContactSettings() {
                     </div>
                   );
                 })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="social-media" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Globe className="h-5 w-5 mr-2 text-blue-600" />
+                Social Media Links
+              </CardTitle>
+              <CardDescription>
+                Manage your social media presence and "Follow Us" links
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4">
+                {socialFields.map((field) => {
+                  const IconComponent = field.icon;
+                  const currentValue = getCurrentValue(field.key);
+                  const hasValue = currentValue && currentValue.trim();
+                  
+                  return (
+                    <div key={field.key} className="group">
+                      <Label htmlFor={field.key} className="flex items-center gap-2 text-sm font-medium mb-2">
+                        <IconComponent className="h-4 w-4 text-gray-500" />
+                        {field.label}
+                        {hasValue && (
+                          <Badge variant="secondary" className="text-xs">
+                            Active
+                          </Badge>
+                        )}
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id={field.key}
+                          placeholder={field.placeholder}
+                          defaultValue={currentValue}
+                          onBlur={(e) => {
+                            const newValue = e.target.value;
+                            if (newValue !== currentValue) {
+                              handleUpdateSetting(field.key, newValue);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const target = e.target as HTMLInputElement;
+                              target.blur();
+                            }
+                          }}
+                          className={`pr-10 transition-colors ${hasValue ? 'border-green-300 bg-green-50' : ''}`}
+                          disabled={saving}
+                        />
+                        {hasValue && (
+                          <CheckCircle className="h-4 w-4 text-green-500 absolute right-3 top-3" />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {saving ? 'Saving...' : 'Auto-saves on change'}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-100 rounded-full p-2">
+                    <Globe className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-blue-900 mb-2">Follow Us Section</h4>
+                    <p className="text-sm text-blue-800 mb-3">
+                      These social media links will appear in the "Follow Us" section of your website footer.
+                    </p>
+                    <Badge variant="outline" className="text-blue-700 border-blue-300">
+                      Live Updates
+                    </Badge>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
