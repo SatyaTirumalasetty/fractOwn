@@ -146,8 +146,9 @@ export default function PropertyDetail() {
                 att.type === 'image'
               ).map((att: any) => att.url);
               
-              // Combine manual imageUrls with image attachments
-              const allImages = [...imageUrls, ...imageAttachments].filter(Boolean);
+              // Combine manual imageUrls with image attachments, removing duplicates
+              const combinedImages = [...imageUrls, ...imageAttachments];
+              const allImages = Array.from(new Set(combinedImages)).filter(Boolean);
               
               if (allImages.length === 0) {
                 return (

@@ -302,18 +302,14 @@ export function AdminPropertiesTab() {
 
   const createMutation = useMutation({
     mutationFn: async (data: PropertyForm) => {
-      // Extract image URLs from attachments for the imageUrls field
-      const imageUrls = attachments
-        .filter(attachment => attachment.type === 'image')
-        .map(attachment => attachment.url);
-      
-      // Process imageUrls from textarea (if provided)
+      // Process imageUrls from textarea (if provided) - manual image URLs only
       const textAreaImageUrls = data.imageUrls && typeof data.imageUrls === 'string' 
         ? data.imageUrls.split('\n').filter((url: string) => url.trim())
         : Array.isArray(data.imageUrls) ? data.imageUrls : [];
       
-      // Combine both sources of image URLs
-      const allImageUrls = [...textAreaImageUrls, ...imageUrls];
+      // Use only manual image URLs for the imageUrls field
+      // Uploaded images are already stored in attachments
+      const allImageUrls = textAreaImageUrls;
       
       const propertyData = {
         ...data,
