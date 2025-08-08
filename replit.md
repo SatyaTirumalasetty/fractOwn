@@ -101,3 +101,20 @@ Fixed multiple security vulnerabilities in `server/security/crypto.ts`:
 5. **Timing Attack Protection**: Enhanced backup code verification with proper input validation and consistent error responses to prevent timing attacks.
 
 6. **Memory Management**: Improved secure memory wiping function to work with Buffer objects instead of strings (though full memory wiping remains limited by Node.js garbage collection).
+
+### Auto-Setup Script Security Hardening (August 2025)
+Fixed critical command injection vulnerability in `scripts/auto-setup.js`:
+
+1. **Command Injection Prevention**: Replaced vulnerable `exec()` function with safer `execFile()` to prevent shell injection attacks.
+
+2. **Command Whitelisting**: Implemented strict whitelist of allowed commands (npx, npm, node) to prevent execution of malicious commands.
+
+3. **Input Validation**: Added comprehensive validation for command arrays and database URLs with protocol verification.
+
+4. **Environment Security**: Added root user detection and working directory validation to prevent execution in unsafe environments.
+
+5. **Resource Limits**: Implemented command timeouts (2 minutes) and buffer limits (1MB) to prevent resource exhaustion attacks.
+
+6. **Database URL Validation**: Added URL parsing and protocol validation to ensure only PostgreSQL connections are allowed.
+
+These changes eliminate the risk of command injection while maintaining full functionality of the setup process.
