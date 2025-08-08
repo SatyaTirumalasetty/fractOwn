@@ -36,10 +36,12 @@ export default function AdminSettingsTab() {
   // Update preview when site settings load
   useEffect(() => {
     const currentLogo = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value;
-    if (currentLogo && !logoPreview) {
+    if (currentLogo) {
       setLogoPreview(currentLogo);
+    } else {
+      setLogoPreview("/attached_assets/image_1754379283931.png");
     }
-  }, [siteSettings, logoPreview]);
+  }, [siteSettings]);
 
   // Fetch admin profile
   const { data: adminProfile, isLoading: profileLoading } = useQuery({
@@ -234,25 +236,61 @@ export default function AdminSettingsTab() {
 
       const { uploadURL } = await uploadResponse.json();
 
-      // Upload file
+      // Create a unique filename for the uploaded logo
+      const timestamp = Date.now();
+      const fileExtension = logoFile.name.split('.').pop() || 'png';
+      const filename = `logo-${timestamp}.${fileExtension}`;
+      
+      // Upload file to cloud storage
       const formData = new FormData();
       formData.append('file', logoFile);
 
       const fileResponse = await fetch(uploadURL, {
-        method: 'POST',
+        method: 'POST', 
         body: formData
       });
 
       if (!fileResponse.ok) {
-        throw new Error('Failed to upload file');
+        // If cloud upload fails, try using base64 data URL as fallback
+        const reader = new FileReader();
+        const dataUrl = await new Promise<string>((resolve) => {
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsDataURL(logoFile);
+        });
+        
+        // Save as base64 data URL
+        const logoUrl = dataUrl;
+        
+        // Save logo setting
+        const saveResponse = await fetch('/api/admin/logo/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+          },
+          body: JSON.stringify({ logoUrl })
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error('Failed to save logo setting');
+        }
+
+        setLogoFile(null);
+        setLogoPreview(logoUrl);
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/settings/site'] });
+        
+        toast({
+          title: "Logo updated",
+          description: "Your logo has been updated successfully",
+        });
+        return;
       }
 
-      // For Google Cloud Storage, construct the public URL from the upload URL path
+      // Extract filename from upload URL for cloud storage path
       const url = new URL(uploadURL);
-      // Extract the path and convert private uploads to served objects path
       const pathParts = url.pathname.split('/');
-      const filename = pathParts[pathParts.length - 1];
-      const logoUrl = `/objects/.private/uploads/${filename}`;
+      const uploadedFilename = pathParts[pathParts.length - 1];
+      const logoUrl = `/objects/.private/uploads/${uploadedFilename}`;
 
       // Save logo URL to settings
       const saveResponse = await fetch('/api/admin/logo/save', {
