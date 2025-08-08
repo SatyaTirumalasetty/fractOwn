@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, ArrowLeft, ChevronLeft, ChevronRight, Building, TrendingUp, Calendar, Users } from "lucide-react";
+import { MapPin, ArrowLeft, ChevronLeft, ChevronRight, Building, TrendingUp, Calendar, Users, FileText, Download, ExternalLink } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import type { Property } from "@shared/schema";
@@ -323,6 +323,77 @@ export default function PropertyDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Property Documents */}
+            {property.attachments && property.attachments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="w-5 h-5 mr-2" />
+                    Property Documents
+                  </CardTitle>
+                  <CardDescription>
+                    Download important documents related to this property
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {property.attachments.map((attachment, index) => {
+                      const getFileIcon = (type: string) => {
+                        if (type.includes('pdf')) return <FileText className="w-5 h-5 text-red-500" />;
+                        if (type.includes('doc')) return <FileText className="w-5 h-5 text-blue-500" />;
+                        return <FileText className="w-5 h-5 text-gray-500" />;
+                      };
+
+                      const getFileTypeLabel = (type: string) => {
+                        if (type.includes('pdf')) return 'PDF Document';
+                        if (type.includes('doc')) return 'Word Document';
+                        return 'Document';
+                      };
+
+                      return (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center space-x-3">
+                            {getFileIcon(attachment.type)}
+                            <div>
+                              <p className="font-medium text-gray-900">{attachment.name}</p>
+                              <p className="text-sm text-gray-500">{getFileTypeLabel(attachment.type)}</p>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(attachment.url, '_blank')}
+                              className="text-sm"
+                            >
+                              <ExternalLink className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = attachment.url;
+                                link.download = attachment.name;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                              className="text-sm"
+                            >
+                              <Download className="w-4 h-4 mr-1" />
+                              Download
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
