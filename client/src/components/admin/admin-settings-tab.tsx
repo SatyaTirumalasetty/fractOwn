@@ -221,6 +221,16 @@ export default function AdminSettingsTab() {
       return;
     }
 
+    // Check file size (max 5MB recommended for web upload)
+    if (logoFile.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Logo file must be smaller than 5MB. Please compress your image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       // Get upload URL
       const uploadResponse = await fetch('/api/admin/logo/upload', {
