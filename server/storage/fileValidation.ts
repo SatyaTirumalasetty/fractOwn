@@ -35,7 +35,11 @@ export class FileValidator {
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/plain'
+    'application/vnd.ms-excel',
+    'text/plain',
+    'text/csv',
+    'application/zip',
+    'application/x-zip-compressed'
   ];
 
   private static readonly maxFileSize = appConfig.uploads.maxFileSize; // 10MB
@@ -64,7 +68,7 @@ export class FileValidator {
     if (!allAllowedTypes.includes(file.type)) {
       result.isValid = false;
       result.errors.push(`File type "${file.type}" is not allowed for "${file.name}"`);
-      result.suggestedActions.push('Please choose files with these formats: JPG, PNG, WebP, PDF, DOC, DOCX');
+      result.suggestedActions.push('Please choose files with these formats: JPG, PNG, WebP, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT, CSV, ZIP');
     }
 
     // Check file name

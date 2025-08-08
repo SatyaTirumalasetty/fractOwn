@@ -32,6 +32,9 @@ The platform includes custom performance monitoring for request timing and memor
 ### Logo Management System
 The platform integrates a complete logo management system allowing dynamic logo fetching from admin settings, with backend routes for upload and save, file validation, object storage integration, and cache invalidation.
 
+### Property Management & File Upload System
+The system now supports comprehensive property management with enhanced file upload capabilities. Property values use bigint data types to handle large real estate investments (₹50+ crores). File uploads support multiple formats including images (JPG, PNG, GIF, WebP), documents (PDF, DOC, DOCX), spreadsheets (XLS, XLSX), text files (TXT, CSV), and archives (ZIP) with validation and cloud storage integration.
+
 ## External Dependencies
 
 ### Security and Authentication
