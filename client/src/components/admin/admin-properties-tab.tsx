@@ -20,8 +20,7 @@ import { getStates, getCitiesByState } from "@/data/indian-states-cities";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { ObjectUploader } from "@/components/ObjectUploader";
-import type { UploadResult } from "@uppy/core";
+
 
 const propertyFormSchema = insertPropertySchema.extend({
   totalValue: z.coerce.number().min(1, "Total value must be greater than 0"),
@@ -134,49 +133,102 @@ export function AdminPropertiesTab() {
   };
 
   // Cloud storage upload handlers
-  const handleGetUploadParameters = async () => {
-    const response = await fetch("/api/objects/upload", { method: "POST" });
-    const data = await response.json();
-    return {
-      method: "PUT" as const,
-      url: data.uploadURL,
-    };
-  };
 
-  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (!result.successful) return;
+
+  const handleDirectFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    console.log("Direct file upload started:", files);
     
-    result.successful.forEach((file) => {
-      console.log("Processing uploaded file:", file);
-      
-      const fileType = file.type?.startsWith('image/') ? 'image' : 
-                      file.type === 'application/pdf' ? 'pdf' : 'document';
-      
-      // Normalize the cloud storage URL to our API endpoint format
-      let normalizedUrl = file.uploadURL || '';
-      console.log("Original upload URL:", normalizedUrl);
-      
-      if (normalizedUrl.includes('storage.googleapis.com')) {
-        // Extract the object ID from the uploaded URL
-        const urlParts = normalizedUrl.split('/');
-        const objectId = urlParts[urlParts.length - 1].split('?')[0];
-        normalizedUrl = `/objects/uploads/${objectId}`;
-        console.log("Normalized URL:", normalizedUrl);
+    // Validate files
+    const validationErrors: string[] = [];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const maxFileSize = 10485760; // 10MB
+
+    files.forEach(file => {
+      if (!allowedTypes.includes(file.type)) {
+        validationErrors.push(`${file.name}: Invalid file type`);
       }
-      
-      setAttachments(prev => [...prev, {
-        name: file.name || 'Uploaded File',
-        url: normalizedUrl,
-        type: fileType
-      }]);
+      if (file.size > maxFileSize) {
+        validationErrors.push(`${file.name}: File too large (max 10MB)`);
+      }
     });
 
-    if (result.successful && result.successful.length > 0) {
+    if (validationErrors.length > 0) {
+      setValidationErrors(validationErrors);
+      setShowFileValidation(true);
+      return;
+    }
+
+    try {
+      // Upload files sequentially
+      for (const file of files) {
+        console.log("Uploading file:", file.name);
+        
+        // Get upload URL
+        const uploadResponse = await fetch('/api/objects/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to get upload URL');
+        }
+        
+        const { uploadURL } = await uploadResponse.json();
+        console.log("Got upload URL:", uploadURL);
+        
+        // Upload file directly to cloud storage
+        const uploadFileResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+        
+        if (!uploadFileResponse.ok) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+        
+        console.log("File uploaded successfully:", file.name);
+        
+        // Determine file type
+        const fileType = file.type.startsWith('image/') ? 'image' : 
+                        file.type === 'application/pdf' ? 'pdf' : 'document';
+        
+        // Extract object ID from upload URL and create normalized path
+        const urlParts = uploadURL.split('/');
+        const objectId = urlParts[urlParts.length - 1].split('?')[0];
+        const normalizedUrl = `/objects/uploads/${objectId}`;
+        
+        console.log("Adding attachment:", { name: file.name, url: normalizedUrl, type: fileType });
+        
+        // Add to attachments
+        setAttachments(prev => [...prev, {
+          name: file.name,
+          url: normalizedUrl,
+          type: fileType
+        }]);
+      }
+      
       toast({
         title: "Files uploaded successfully",
-        description: `${result.successful.length} file(s) uploaded to cloud storage.`,
+        description: `${files.length} file(s) uploaded to cloud storage.`,
+      });
+      
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload files",
+        variant: "destructive",
       });
     }
+    
+    // Reset file input
+    e.target.value = '';
   };
 
   const handleGoogleDriveLink = () => {
@@ -768,26 +820,28 @@ export function AdminPropertiesTab() {
             )}
             
             <div className="space-y-4">
-              {/* Cloud Storage File Upload Section */}
+              {/* Direct Cloud Storage File Upload */}
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
                 <div className="text-center">
                   <Upload className="h-8 w-8 text-gray-400 mx-auto mb-4" />
-                  <div className="space-y-2">
-                    <div onClick={(e) => e.preventDefault()}>
-                      <ObjectUploader
-                        maxNumberOfFiles={10}
-                        maxFileSize={10485760} // 10MB
-                        onGetUploadParameters={handleGetUploadParameters}
-                        onComplete={handleUploadComplete}
-                        buttonClassName="h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Browse & Upload to Cloud
-                      </ObjectUploader>
-                    </div>
-                    <p className="text-xs text-gray-500">Click to open file browser and upload to cloud storage</p>
+                  <div className="space-y-4">
+                    <input
+                      type="file"
+                      multiple
+                      accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx"
+                      onChange={handleDirectFileUpload}
+                      className="hidden"
+                      id="file-upload-input"
+                    />
+                    <label
+                      htmlFor="file-upload-input"
+                      className="inline-flex items-center justify-center h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 rounded-md cursor-pointer transition-colors"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Browse & Upload Files
+                    </label>
+                    <p className="text-xs text-gray-500">Direct upload to cloud storage</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Files will be stored in secure cloud storage</p>
                   <div className="mt-2 text-xs text-gray-400">
                     Allowed: JPG, PNG, WebP, PDF, DOC, DOCX (Max 10MB each, 10 files total)
                   </div>
