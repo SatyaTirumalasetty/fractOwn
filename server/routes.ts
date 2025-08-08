@@ -1277,6 +1277,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin dashboard stats route
+  app.get("/api/admin/dashboard-stats/:period", requireAuth, async (req, res) => {
+    try {
+      const { period } = req.params;
+      const validPeriods = ['7d', '30d', '90d'];
+      
+      if (!validPeriods.includes(period)) {
+        return res.status(400).json({ message: "Invalid period. Use 7d, 30d, or 90d" });
+      }
+
+      // Calculate date range
+      const days = parseInt(period.replace('d', ''));
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Get basic dashboard stats
+      const totalProperties = await db.select().from(properties).then(p => p.length);
+      const totalContacts = await db.select().from(contacts).then(c => c.length);
+      const activeProperties = await db.select().from(properties).where(eq(properties.isActive, true)).then(p => p.length);
+
+      const stats = {
+        totalProperties,
+        totalContacts,
+        activeProperties,
+        period: period,
+        generatedAt: new Date().toISOString()
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Dashboard stats error:", error);
+      res.status(500).json({ message: "Failed to load dashboard stats" });
+    }
+  });
+
   // Mount secure properties router for encrypted data handling
   app.use(securePropertiesRouter);
 
