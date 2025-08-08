@@ -773,16 +773,18 @@ export function AdminPropertiesTab() {
                 <div className="text-center">
                   <Upload className="h-8 w-8 text-gray-400 mx-auto mb-4" />
                   <div className="space-y-2">
-                    <ObjectUploader
-                      maxNumberOfFiles={10}
-                      maxFileSize={10485760} // 10MB
-                      onGetUploadParameters={handleGetUploadParameters}
-                      onComplete={handleUploadComplete}
-                      buttonClassName="h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Browse & Upload to Cloud
-                    </ObjectUploader>
+                    <div onClick={(e) => e.preventDefault()}>
+                      <ObjectUploader
+                        maxNumberOfFiles={10}
+                        maxFileSize={10485760} // 10MB
+                        onGetUploadParameters={handleGetUploadParameters}
+                        onComplete={handleUploadComplete}
+                        buttonClassName="h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Browse & Upload to Cloud
+                      </ObjectUploader>
+                    </div>
                     <p className="text-xs text-gray-500">Click to open file browser and upload to cloud storage</p>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">Files will be stored in secure cloud storage</p>

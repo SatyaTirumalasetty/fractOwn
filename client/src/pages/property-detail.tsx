@@ -359,7 +359,7 @@ export default function PropertyDetail() {
             {/* Property Documents - Only show non-image documents */}
             {(() => {
               const documents = (property.attachments || []).filter((att: any) => 
-                !att.type.startsWith('image/')
+                att.type !== 'image'
               );
               
               if (documents.length === 0) return null;
