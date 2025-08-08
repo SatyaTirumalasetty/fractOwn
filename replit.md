@@ -84,3 +84,20 @@ The application uses a centralized configuration system (`config/app.config.js`)
 - RFC 6238 TOTP specification compliance
 - Enhanced input validation and sanitization
 - Comprehensive security audit documentation
+
+## Recent Security Updates (August 2025)
+
+### Cryptographic Service Security Hardening
+Fixed multiple security vulnerabilities in `server/security/crypto.ts`:
+
+1. **Master Key Security**: Removed insecure fallback key generation. Now requires mandatory MASTER_ENCRYPTION_KEY environment variable with minimum 32-character length.
+
+2. **Error Message Security**: Sanitized error messages to prevent information disclosure attacks. Error details are logged server-side but generic messages are returned to clients.
+
+3. **OTP Generation Security**: Fixed modulo bias vulnerability in OTP generation using rejection sampling technique to ensure uniform distribution.
+
+4. **Input Validation**: Added comprehensive input validation for all cryptographic operations including type checking, format validation, and size limits.
+
+5. **Timing Attack Protection**: Enhanced backup code verification with proper input validation and consistent error responses to prevent timing attacks.
+
+6. **Memory Management**: Improved secure memory wiping function to work with Buffer objects instead of strings (though full memory wiping remains limited by Node.js garbage collection).
