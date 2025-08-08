@@ -226,8 +226,10 @@ export default function AdminSettingsTab() {
       const uploadResponse = await fetch('/api/admin/logo/upload', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
-        }
+          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
       });
 
       if (!uploadResponse.ok) {

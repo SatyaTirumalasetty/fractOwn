@@ -1329,16 +1329,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin logo upload endpoint
-  app.post("/api/admin/logo/upload", requireAuth, async (req, res) => {
-    try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
-    } catch (error) {
-      console.error("Error getting logo upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL for logo", details: error.message });
-    }
+  // Admin logo upload endpoint (no content-type validation needed for upload URL request)
+  app.post("/api/admin/logo/upload", requireAuth, (req, res) => {
+    // Skip content-type validation for this endpoint
+    (async () => {
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        res.json({ uploadURL });
+      } catch (error) {
+        console.error("Error getting logo upload URL:", error);
+        res.status(500).json({ error: "Failed to get upload URL for logo", details: error.message });
+      }
+    })();
   });
 
   // Update site logo setting

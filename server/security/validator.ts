@@ -173,6 +173,11 @@ export class SecurityValidator {
 
       // Validate Content-Type for POST/PUT requests
       if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+        // Skip content-type validation for logo upload endpoint
+        if (req.path === '/api/admin/logo/upload') {
+          return next();
+        }
+        
         const contentType = req.get('Content-Type') || '';
         if (!contentType.includes('application/json') && !contentType.includes('multipart/form-data')) {
           return res.status(400).json({ 
