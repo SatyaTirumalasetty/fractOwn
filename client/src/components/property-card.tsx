@@ -34,12 +34,37 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
 
   const isNearlyDone = property.fundingProgress >= 95;
 
+  // Get the first available image from either imageUrls or image attachments
+  const getFirstImage = () => {
+    // Check imageUrls first
+    if (property.imageUrls && property.imageUrls.length > 0 && property.imageUrls[0]) {
+      return property.imageUrls[0];
+    }
+    
+    // Check image attachments
+    if (property.attachments && Array.isArray(property.attachments)) {
+      const imageAttachment = property.attachments.find((att: any) => 
+        att.type === 'image' && att.url
+      );
+      if (imageAttachment) {
+        return imageAttachment.url;
+      }
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop';
+  };
+
   return (
     <Card className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
       <img
-        src={property.imageUrls[0]}
+        src={getFirstImage()}
         alt={property.name}
         className="w-full h-48 object-cover"
+        onError={(e) => {
+          // Fallback to placeholder if image fails to load
+          e.currentTarget.src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop';
+        }}
       />
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-2">

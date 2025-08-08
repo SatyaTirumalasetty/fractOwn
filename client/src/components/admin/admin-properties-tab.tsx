@@ -147,16 +147,21 @@ export function AdminPropertiesTab() {
     if (!result.successful) return;
     
     result.successful.forEach((file) => {
+      console.log("Processing uploaded file:", file);
+      
       const fileType = file.type?.startsWith('image/') ? 'image' : 
                       file.type === 'application/pdf' ? 'pdf' : 'document';
       
       // Normalize the cloud storage URL to our API endpoint format
       let normalizedUrl = file.uploadURL || '';
+      console.log("Original upload URL:", normalizedUrl);
+      
       if (normalizedUrl.includes('storage.googleapis.com')) {
         // Extract the object ID from the uploaded URL
         const urlParts = normalizedUrl.split('/');
         const objectId = urlParts[urlParts.length - 1].split('?')[0];
         normalizedUrl = `/objects/uploads/${objectId}`;
+        console.log("Normalized URL:", normalizedUrl);
       }
       
       setAttachments(prev => [...prev, {
@@ -767,16 +772,19 @@ export function AdminPropertiesTab() {
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
                 <div className="text-center">
                   <Upload className="h-8 w-8 text-gray-400 mx-auto mb-4" />
-                  <ObjectUploader
-                    maxNumberOfFiles={10}
-                    maxFileSize={10485760} // 10MB
-                    onGetUploadParameters={handleGetUploadParameters}
-                    onComplete={handleUploadComplete}
-                    buttonClassName="h-9 px-4 text-sm"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload to Cloud Storage
-                  </ObjectUploader>
+                  <div className="space-y-2">
+                    <ObjectUploader
+                      maxNumberOfFiles={10}
+                      maxFileSize={10485760} // 10MB
+                      onGetUploadParameters={handleGetUploadParameters}
+                      onComplete={handleUploadComplete}
+                      buttonClassName="h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Browse & Upload to Cloud
+                    </ObjectUploader>
+                    <p className="text-xs text-gray-500">Click to open file browser and upload to cloud storage</p>
+                  </div>
                   <p className="text-xs text-gray-500 mt-2">Files will be stored in secure cloud storage</p>
                   <div className="mt-2 text-xs text-gray-400">
                     Allowed: JPG, PNG, WebP, PDF, DOC, DOCX (Max 10MB each, 10 files total)

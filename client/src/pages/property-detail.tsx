@@ -143,7 +143,7 @@ export default function PropertyDetail() {
               // Get only image URLs, filtering out document attachments from imageUrls
               const imageUrls = property.imageUrls || [];
               const imageAttachments = (property.attachments || []).filter((att: any) => 
-                att.type.startsWith('image/')
+                att.type === 'image'
               ).map((att: any) => att.url);
               
               // Combine manual imageUrls with image attachments
@@ -166,6 +166,11 @@ export default function PropertyDetail() {
                       data-testid={`img-property-main-${currentImageIndex}`}
                       className="w-full h-96 object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105"
                       onClick={() => setShowImageCarousel(true)}
+                      onError={(e) => {
+                        // Fallback to placeholder if image fails to load
+                        console.error("Failed to load image:", allImages[currentImageIndex]);
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop';
+                      }}
                     />
                     
                     {/* Image Counter */}
