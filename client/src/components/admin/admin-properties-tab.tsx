@@ -20,6 +20,8 @@ import { getStates, getCitiesByState } from "@/data/indian-states-cities";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
 
 const propertyFormSchema = insertPropertySchema.extend({
   totalValue: z.coerce.number().min(1, "Total value must be greater than 0"),
@@ -131,47 +133,43 @@ export function AdminPropertiesTab() {
     return { valid: errors.length === 0, errors, validFiles };
   };
 
-  // File handling functions with validation
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  // Cloud storage upload handlers
+  const handleGetUploadParameters = async () => {
+    const response = await fetch("/api/objects/upload", { method: "POST" });
+    const data = await response.json();
+    return {
+      method: "PUT" as const,
+      url: data.uploadURL,
+    };
+  };
 
-    const validation = validateFiles(files);
-    
-    if (!validation.valid) {
-      setValidationErrors(validation.errors);
-      setFileValidationMessage(
-        `Upload failed for some files:\n\n${validation.errors.join('\n')}\n\nAllowed formats: JPG, PNG, WebP, PDF, DOC, DOCX\nMax file size: 10MB\nMax files per property: 10`
-      );
-      setShowFileValidation(true);
-      
-      // Clear the file input
-      e.target.value = '';
-      return;
-    }
-
-    // Process valid files
-    validation.validFiles.forEach(file => {
-      const fileType = file.type.startsWith('image/') ? 'image' : 
+  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    result.successful.forEach((file) => {
+      const fileType = file.type?.startsWith('image/') ? 'image' : 
                       file.type === 'application/pdf' ? 'pdf' : 'document';
       
+      // Normalize the cloud storage URL to our API endpoint format
+      let normalizedUrl = file.uploadURL || '';
+      if (normalizedUrl.includes('storage.googleapis.com')) {
+        // Extract the object ID from the uploaded URL
+        const urlParts = normalizedUrl.split('/');
+        const objectId = urlParts[urlParts.length - 1].split('?')[0];
+        normalizedUrl = `/objects/uploads/${objectId}`;
+      }
+      
       setAttachments(prev => [...prev, {
-        name: file.name,
-        url: URL.createObjectURL(file),
+        name: file.name || 'Uploaded File',
+        url: normalizedUrl,
         type: fileType
       }]);
     });
 
-    // Show success message
-    if (validation.validFiles.length > 0) {
+    if (result.successful.length > 0) {
       toast({
         title: "Files uploaded successfully",
-        description: `${validation.validFiles.length} file(s) added to property.`,
+        description: `${result.successful.length} file(s) uploaded to cloud storage.`,
       });
     }
-
-    // Clear the file input
-    e.target.value = '';
   };
 
   const handleGoogleDriveLink = () => {
@@ -763,46 +761,23 @@ export function AdminPropertiesTab() {
             )}
             
             <div className="space-y-4">
-              {/* File Upload Section */}
+              {/* Cloud Storage File Upload Section */}
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
                 <div className="text-center">
-                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-                    <Input
-                      type="file"
-                      multiple
-                      accept="image/*,.pdf,.doc,.docx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="file-upload"
-                    />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={() => document.getElementById('file-upload')?.click()}
-                            className="h-9 px-4 text-sm"
-                          >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Choose Files
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-sm">
-                            <p className="font-medium">Allowed file types:</p>
-                            <p>• Images: JPG, PNG, WebP, GIF</p>
-                            <p>• Documents: PDF, DOC, DOCX</p>
-                            <p className="mt-1">Max: 10MB per file, 10 total files</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Images, PDFs, or Documents (Max 10MB, 10 files)</p>
+                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-4" />
+                  <ObjectUploader
+                    maxNumberOfFiles={10}
+                    maxFileSize={10485760} // 10MB
+                    onGetUploadParameters={handleGetUploadParameters}
+                    onComplete={handleUploadComplete}
+                    buttonClassName="h-9 px-4 text-sm"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload to Cloud Storage
+                  </ObjectUploader>
+                  <p className="text-xs text-gray-500 mt-2">Files will be stored in secure cloud storage</p>
                   <div className="mt-2 text-xs text-gray-400">
-                    Allowed: JPG, PNG, WebP, PDF, DOC, DOCX
+                    Allowed: JPG, PNG, WebP, PDF, DOC, DOCX (Max 10MB each, 10 files total)
                   </div>
                 </div>
               </div>
