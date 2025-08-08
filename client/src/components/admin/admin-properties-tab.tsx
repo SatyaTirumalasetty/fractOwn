@@ -144,6 +144,8 @@ export function AdminPropertiesTab() {
   };
 
   const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (!result.successful) return;
+    
     result.successful.forEach((file) => {
       const fileType = file.type?.startsWith('image/') ? 'image' : 
                       file.type === 'application/pdf' ? 'pdf' : 'document';
@@ -164,7 +166,7 @@ export function AdminPropertiesTab() {
       }]);
     });
 
-    if (result.successful.length > 0) {
+    if (result.successful && result.successful.length > 0) {
       toast({
         title: "Files uploaded successfully",
         description: `${result.successful.length} file(s) uploaded to cloud storage.`,

@@ -1283,12 +1283,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Object storage routes for file uploads
   app.post("/api/objects/upload", async (req, res) => {
     try {
+      console.log("Getting upload URL for object storage...");
       const objectStorageService = new ObjectStorageService();
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      console.log("Generated upload URL:", uploadURL);
       res.json({ uploadURL });
     } catch (error) {
       console.error("Error getting upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL" });
+      res.status(500).json({ error: "Failed to get upload URL", details: error.message });
     }
   });
 
@@ -1296,14 +1298,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/objects/:objectPath(*)", async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     try {
+      console.log("Serving object:", req.path);
+      console.log("PRIVATE_OBJECT_DIR:", process.env.PRIVATE_OBJECT_DIR);
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      console.log("Object file found, streaming to response");
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error serving object:", error);
       if (error instanceof ObjectNotFoundError) {
-        return res.sendStatus(404);
+        return res.status(404).json({ error: "File not found", path: req.path });
       }
-      return res.sendStatus(500);
+      return res.status(500).json({ error: "Internal server error", details: error.message });
     }
   });
 

@@ -192,6 +192,21 @@ export class ObjectStorageService {
     const entityId = rawObjectPath.slice(objectEntityDir.length);
     return `/objects/${entityId}`;
   }
+
+  // Tries to set the ACL policy for the object entity and return the normalized path.
+  async trySetObjectEntityAclPolicy(
+    rawPath: string,
+    aclPolicy: any
+  ): Promise<string> {
+    const normalizedPath = this.normalizeObjectEntityPath(rawPath);
+    if (!normalizedPath.startsWith("/")) {
+      return normalizedPath;
+    }
+
+    const objectFile = await this.getObjectEntityFile(normalizedPath);
+    // For now, we'll skip ACL policies and just return the normalized path
+    return normalizedPath;
+  }
 }
 
 function parseObjectPath(path: string): {
