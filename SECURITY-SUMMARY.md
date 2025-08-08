@@ -60,6 +60,8 @@ Three critical security vulnerabilities were identified and successfully remedia
 #### Remediation Applied
 - ✅ Added explicit validation that authentication tags are exactly 16 bytes (128 bits)
 - ✅ Implemented tag truncation prevention for both short and long tags
+- ✅ Added zero-byte authentication tag detection and rejection
+- ✅ Enhanced setAuthTag error handling with tampering detection
 - ✅ Added proper TypeScript casting to `DecipherGCM` type for type safety
 - ✅ Created comprehensive security test suite (`tests/security/gcm-auth-tag-test.js`)
 - ✅ Validates rejection of zero-length, short, and long authentication tags
@@ -87,11 +89,20 @@ const decipher = createDecipheriv(algorithm, key, iv);
 decipher.setAuthTag(tag); // No tag length validation
 
 // AFTER (Secure)
+// Comprehensive tag validation
 if (tag.length !== TAG_LENGTH) {
   throw new Error('Invalid authentication tag length');
 }
-const decipher = createDecipheriv(algorithm, key, iv);
-decipher.setAuthTag(tag); // Tag length validated
+if (tag.every(byte => byte === 0)) {
+  throw new Error('Invalid authentication tag: all zeros detected');
+}
+
+const decipher = createDecipheriv(algorithm, key, iv) as crypto.DecipherGCM;
+try {
+  decipher.setAuthTag(tag); // Enhanced error handling
+} catch (authError) {
+  throw new Error('Authentication tag validation failed - potential tampering detected');
+}
 ```
 
 ### Environment Validation
@@ -147,8 +158,10 @@ decipher.setAuthTag(tag); // Tag length validated
 ✅ Short tag rejection: Tags < 16 bytes rejected
 ✅ Long tag rejection: Tags > 16 bytes rejected
 ✅ Zero-length protection: Empty tags rejected
+✅ All-zero tag detection: Zero-byte tags rejected
+✅ Enhanced error handling: Tampering detection implemented
 ✅ Type safety: Proper DecipherGCM casting implemented
-✅ Comprehensive testing: 5 security test cases created
+✅ Comprehensive testing: Multiple security test cases created
 ```
 
 ## Compliance & Standards

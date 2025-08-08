@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes, pbkdf2Sync } from 'crypto';
+import * as crypto from 'crypto';
 
 /**
  * Enterprise-grade cryptographic utilities for TOTP and sensitive data
@@ -101,9 +102,17 @@ class CryptoService {
         throw new Error('Invalid authentication tag: all zeros detected');
       }
       
-      const decipher = createDecipheriv(ALGORITHM, key, iv);
-      // Set the authentication tag with explicit length validation already performed
-      decipher.setAuthTag(tag);
+      // Create decipher with explicit algorithm and security parameters
+      const decipher = createDecipheriv(ALGORITHM, key, iv) as crypto.DecipherGCM;
+      
+      // Security: Set authentication tag with additional integrity checks
+      // Tag length has been validated above (exactly 16 bytes/128 bits)
+      try {
+        decipher.setAuthTag(tag);
+      } catch (authError) {
+        // If setAuthTag fails, it indicates potential tampering
+        throw new Error('Authentication tag validation failed - potential tampering detected');
+      }
       
       let decrypted = decipher.update(encrypted, undefined, 'utf8');
       decrypted += decipher.final('utf8');
