@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
@@ -249,9 +250,17 @@ export function AdminPropertiesTab() {
         .filter(attachment => attachment.type === 'image')
         .map(attachment => attachment.url);
       
+      // Process imageUrls from textarea (if provided)
+      const textAreaImageUrls = data.imageUrls && typeof data.imageUrls === 'string' 
+        ? data.imageUrls.split('\n').filter(url => url.trim())
+        : Array.isArray(data.imageUrls) ? data.imageUrls : [];
+      
+      // Combine both sources of image URLs
+      const allImageUrls = [...textAreaImageUrls, ...imageUrls];
+      
       const propertyData = {
         ...data,
-        imageUrls: imageUrls,
+        imageUrls: allImageUrls,
         attachments: attachments
       };
       
@@ -723,15 +732,15 @@ export function AdminPropertiesTab() {
                     </ul>
                     <div className="mt-3 text-sm">
                       <p><strong>Allowed formats:</strong> JPG, PNG, WebP, PDF, DOC, DOCX</p>
-                      <p><strong>Max file size:</strong> 10MB</p>
-                      <p><strong>Max files per property:</strong> 10</p>
+                      <p><strong>Max file size:</strong> 10MB per file</p>
+                      <p><strong>Max files:</strong> 10 files per property</p>
                     </div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={() => setShowFileValidation(false)}
-                      className="mt-2"
+                      className="mt-3 text-red-600 border-red-300 hover:bg-red-50"
                     >
                       Dismiss
                     </Button>
@@ -754,15 +763,29 @@ export function AdminPropertiesTab() {
                       className="hidden"
                       id="file-upload"
                     />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => document.getElementById('file-upload')?.click()}
-                      className="h-9 px-4 text-sm"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Choose Files
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                            className="h-9 px-4 text-sm"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose Files
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="text-sm">
+                            <p className="font-medium">Allowed file types:</p>
+                            <p>• Images: JPG, PNG, WebP, GIF</p>
+                            <p>• Documents: PDF, DOC, DOCX</p>
+                            <p className="mt-1">Max: 10MB per file, 10 total files</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">Images, PDFs, or Documents (Max 10MB, 10 files)</p>
                   <div className="mt-2 text-xs text-gray-400">

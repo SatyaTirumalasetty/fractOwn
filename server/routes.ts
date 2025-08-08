@@ -534,18 +534,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create property (admin)
   app.post("/api/admin/properties", async (req, res) => {
     try {
+      console.log("Creating property with data:", req.body);
       const validatedData = insertPropertySchema.parse(req.body);
+      console.log("Validated data:", validatedData);
+      
       const property = await storage.createProperty(validatedData);
       broadcastUpdate('PROPERTY_CREATED', property);
       res.status(201).json(property);
     } catch (error) {
+      console.error("Property creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           message: "Validation failed", 
           errors: error.errors 
         });
       }
-      res.status(500).json({ message: "Failed to create property" });
+      res.status(500).json({ 
+        message: "Failed to create property",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
