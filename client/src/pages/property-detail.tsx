@@ -137,83 +137,110 @@ export default function PropertyDetail() {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Image Gallery */}
+          {/* Image Gallery - Only show images, not documents */}
           <div className="space-y-4">
-            <div className="relative group cursor-pointer">
-              <img
-                src={property.imageUrls[currentImageIndex]}
-                alt={`${property.name} - Image ${currentImageIndex + 1}`}
-                data-testid={`img-property-main-${currentImageIndex}`}
-                className="w-full h-96 object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105"
-                onClick={() => setShowImageCarousel(true)}
-              />
+            {(() => {
+              // Get only image URLs, filtering out document attachments from imageUrls
+              const imageUrls = property.imageUrls || [];
+              const imageAttachments = (property.attachments || []).filter((att: any) => 
+                att.type.startsWith('image/')
+              ).map((att: any) => att.url);
               
-              {/* Image Counter */}
-              <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
-                {currentImageIndex + 1} / {property.imageUrls.length}
-              </div>
+              // Combine manual imageUrls with image attachments
+              const allImages = [...imageUrls, ...imageAttachments].filter(Boolean);
               
-              {/* Navigation Arrows */}
-              {property.imageUrls.length > 1 && (
+              if (allImages.length === 0) {
+                return (
+                  <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <p className="text-gray-500">No images available</p>
+                  </div>
+                );
+              }
+
+              return (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    data-testid="button-previous-main"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      prevImage();
-                    }}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    data-testid="button-next-main"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      nextImage();
-                    }}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
-                </>
-              )}
-              
-              {/* Click to expand hint */}
-              <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                Click to view gallery
-              </div>
-            </div>
-            
-            {/* Thumbnail Gallery */}
-            {property.imageUrls.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
-                {property.imageUrls.map((image, index) => (
-                  <button
-                    key={index}
-                    data-testid={`button-thumbnail-main-${index}`}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      index === currentImageIndex 
-                        ? "border-fractown-primary scale-110" 
-                        : "border-gray-200 hover:border-fractown-accent"
-                    }`}
-                  >
+                  <div className="relative group cursor-pointer">
                     <img
-                      src={image}
-                      alt={`${property.name} - Thumbnail ${index + 1}`}
-                      data-testid={`img-thumbnail-main-${index}`}
-                      className="w-full h-full object-cover"
+                      src={allImages[currentImageIndex]}
+                      alt={`${property.name} - Image ${currentImageIndex + 1}`}
+                      data-testid={`img-property-main-${currentImageIndex}`}
+                      className="w-full h-96 object-cover rounded-lg shadow-lg transition-transform group-hover:scale-105"
+                      onClick={() => setShowImageCarousel(true)}
                     />
-                  </button>
-                ))}
-              </div>
-            )}
+                    
+                    {/* Image Counter */}
+                    <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                      {currentImageIndex + 1} / {allImages.length}
+                    </div>
+                    
+                    {/* Navigation Arrows */}
+                    {allImages.length > 1 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          data-testid="button-previous-main"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex((prev) => 
+                              prev === 0 ? allImages.length - 1 : prev - 1
+                            );
+                          }}
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronLeft className="h-6 w-6" />
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          data-testid="button-next-main"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex((prev) => 
+                              prev === allImages.length - 1 ? 0 : prev + 1
+                            );
+                          }}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronRight className="h-6 w-6" />
+                        </Button>
+                      </>
+                    )}
+                    
+                    {/* Click to expand hint */}
+                    <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                      Click to view gallery
+                    </div>
+                  </div>
+                  
+                  {/* Thumbnail Gallery */}
+                  {allImages.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto">
+                      {allImages.map((image, index) => (
+                        <button
+                          key={index}
+                          data-testid={`button-thumbnail-main-${index}`}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                            index === currentImageIndex 
+                              ? "border-fractown-primary scale-110" 
+                              : "border-gray-200 hover:border-fractown-accent"
+                          }`}
+                        >
+                          <img
+                            src={image}
+                            alt={`${property.name} - Thumbnail ${index + 1}`}
+                            data-testid={`img-thumbnail-main-${index}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* Property Details */}
@@ -324,76 +351,84 @@ export default function PropertyDetail() {
               </CardContent>
             </Card>
 
-            {/* Property Documents */}
-            {property.attachments && property.attachments.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <FileText className="w-5 h-5 mr-2" />
-                    Property Documents
-                  </CardTitle>
-                  <CardDescription>
-                    Download important documents related to this property
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {property.attachments.map((attachment, index) => {
-                      const getFileIcon = (type: string) => {
-                        if (type.includes('pdf')) return <FileText className="w-5 h-5 text-red-500" />;
-                        if (type.includes('doc')) return <FileText className="w-5 h-5 text-blue-500" />;
-                        return <FileText className="w-5 h-5 text-gray-500" />;
-                      };
+            {/* Property Documents - Only show non-image documents */}
+            {(() => {
+              const documents = (property.attachments || []).filter((att: any) => 
+                !att.type.startsWith('image/')
+              );
+              
+              if (documents.length === 0) return null;
 
-                      const getFileTypeLabel = (type: string) => {
-                        if (type.includes('pdf')) return 'PDF Document';
-                        if (type.includes('doc')) return 'Word Document';
-                        return 'Document';
-                      };
+              return (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <FileText className="w-5 h-5 mr-2" />
+                      Property Documents
+                    </CardTitle>
+                    <CardDescription>
+                      Download important documents related to this property
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {documents.map((attachment: any, index: number) => {
+                        const getFileIcon = (type: string) => {
+                          if (type.includes('pdf')) return <FileText className="w-5 h-5 text-red-500" />;
+                          if (type.includes('doc')) return <FileText className="w-5 h-5 text-blue-500" />;
+                          return <FileText className="w-5 h-5 text-gray-500" />;
+                        };
 
-                      return (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center space-x-3">
-                            {getFileIcon(attachment.type)}
-                            <div>
-                              <p className="font-medium text-gray-900">{attachment.name}</p>
-                              <p className="text-sm text-gray-500">{getFileTypeLabel(attachment.type)}</p>
+                        const getFileTypeLabel = (type: string) => {
+                          if (type.includes('pdf')) return 'PDF Document';
+                          if (type.includes('doc')) return 'Word Document';
+                          return 'Document';
+                        };
+
+                        return (
+                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center space-x-3">
+                              {getFileIcon(attachment.type)}
+                              <div>
+                                <p className="font-medium text-gray-900">{attachment.name}</p>
+                                <p className="text-sm text-gray-500">{getFileTypeLabel(attachment.type)}</p>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(attachment.url, '_blank')}
+                                className="text-sm"
+                              >
+                                <ExternalLink className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = attachment.url;
+                                  link.download = attachment.name;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                                className="text-sm"
+                              >
+                                <Download className="w-4 h-4 mr-1" />
+                                Download
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(attachment.url, '_blank')}
-                              className="text-sm"
-                            >
-                              <ExternalLink className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const link = document.createElement('a');
-                                link.href = attachment.url;
-                                link.download = attachment.name;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                              }}
-                              className="text-sm"
-                            >
-                              <Download className="w-4 h-4 mr-1" />
-                              Download
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </div>
         </div>
 
@@ -446,7 +481,10 @@ export default function PropertyDetail() {
 
         {/* Image Carousel Modal */}
         <PropertyImageCarousel
-          images={property.imageUrls}
+          images={[
+            ...(property.imageUrls || []),
+            ...((property.attachments || []).filter((att: any) => att.type.startsWith('image/')).map((att: any) => att.url))
+          ].filter(Boolean)}
           propertyName={property.name}
           isOpen={showImageCarousel}
           onClose={() => setShowImageCarousel(false)}
