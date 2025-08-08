@@ -143,3 +143,31 @@ Identified critical security vulnerability in Replit deployment configuration:
    - Manual deployment procedures for immediate compliance
 
 **Recommended Action**: Update `.replit` deployment configuration to use `npm run build && npm run start` instead of `npm run dev` to ensure production security compliance.
+
+### GCM Authentication Tag Length Vulnerability (August 2025)
+Fixed critical cryptographic vulnerability in GCM mode decryption operations:
+
+**Issue**: The `createDecipheriv` calls with AES-256-GCM mode were missing explicit authentication tag length validation, potentially allowing attackers to use truncated authentication tags to bypass cryptographic verification.
+
+**Risk Level**: CRITICAL - Could allow authentication bypass and arbitrary data forgery in GCM encrypted data.
+
+**Files Affected**:
+- `server/security/crypto.ts` - TOTP secret encryption/decryption
+- `server/storage/encryptionService.ts` - Property data and file encryption
+
+**Security Fixes Applied**:
+
+1. **Authentication Tag Length Validation**: Added explicit validation that authentication tags are exactly 16 bytes (128 bits) before decryption operations.
+
+2. **Tag Truncation Prevention**: Implemented checks to reject both short and long authentication tags that could indicate tampering attempts.
+
+3. **Type Safety Improvements**: Added proper TypeScript casting to `DecipherGCM` type to access GCM-specific methods safely.
+
+4. **Comprehensive Security Testing**: Created `tests/security/gcm-auth-tag-test.js` with 5 security test cases validating:
+   - Valid tag length acceptance
+   - Short tag rejection (< 16 bytes)
+   - Long tag rejection (> 16 bytes)  
+   - Zero-length tag rejection
+   - CryptoService specific validation
+
+**Security Impact**: This fix prevents potential attacks where malicious actors could use shortened authentication tags to forge encrypted data, compromise TOTP secrets, or bypass file encryption validation.

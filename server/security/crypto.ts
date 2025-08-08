@@ -86,6 +86,11 @@ class CryptoService {
       // Derive key using same PBKDF2 parameters
       const key = pbkdf2Sync(this.masterKey, salt, 10000, KEY_LENGTH, 'sha512');
       
+      // Security: Validate authentication tag length to prevent tag truncation attacks
+      if (tag.length !== TAG_LENGTH) {
+        throw new Error('Invalid authentication tag length');
+      }
+      
       const decipher = createDecipheriv(ALGORITHM, key, iv);
       decipher.setAuthTag(tag);
       

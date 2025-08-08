@@ -25,6 +25,7 @@ export class EncryptionService {
   private static readonly algorithm = 'aes-256-gcm';
   private static readonly keyLength = 32; // 256 bits
   private static readonly ivLength = 16; // 128 bits
+  private static readonly tagLength = 16; // 128 bits - REQUIRED for security
   
   // Generate encryption key from environment or create secure default
   private static readonly encryptionKey = this.getOrCreateEncryptionKey();
@@ -74,9 +75,19 @@ export class EncryptionService {
    */
   static decryptText(encryptedData: EncryptedData): string {
     try {
-      const decipher = crypto.createDecipheriv(encryptedData.algorithm, this.encryptionKey, Buffer.from(encryptedData.iv, 'hex'));
+      // Security: Validate authentication tag length to prevent tag truncation attacks
+      const authTagBuffer = Buffer.from(encryptedData.authTag, 'hex');
+      if (authTagBuffer.length !== this.tagLength) {
+        throw new Error('Invalid authentication tag length');
+      }
+      
+      const decipher = crypto.createDecipheriv(
+        encryptedData.algorithm, 
+        this.encryptionKey, 
+        Buffer.from(encryptedData.iv, 'hex')
+      ) as crypto.DecipherGCM;
       decipher.setAAD(Buffer.from('fractown-data'));
-      decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
+      decipher.setAuthTag(authTagBuffer);
 
       let decrypted = decipher.update(encryptedData.encryptedContent, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
@@ -95,6 +106,8 @@ export class EncryptionService {
     encryptedBuffer: Buffer;
     encryptedMetadata: EncryptedData;
     fileHash: string;
+    iv: string;
+    authTag: string;
   } {
     try {
       // Generate checksum for integrity verification
@@ -141,10 +154,20 @@ export class EncryptionService {
       const metadataJson = this.decryptText(encryptedMetadata);
       const metadata: FileMetadata = JSON.parse(metadataJson);
 
+      // Security: Validate authentication tag length to prevent tag truncation attacks
+      const authTagBuffer = Buffer.from(authTag, 'hex');
+      if (authTagBuffer.length !== this.tagLength) {
+        throw new Error('Invalid authentication tag length');
+      }
+      
       // Decrypt file content
-      const decipher = crypto.createDecipheriv(this.algorithm, this.encryptionKey, Buffer.from(iv, 'hex'));
+      const decipher = crypto.createDecipheriv(
+        this.algorithm, 
+        this.encryptionKey, 
+        Buffer.from(iv, 'hex')
+      ) as crypto.DecipherGCM;
       decipher.setAAD(Buffer.from('fractown-file'));
-      decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+      decipher.setAuthTag(authTagBuffer);
 
       const decryptedChunks: Buffer[] = [];
       decryptedChunks.push(decipher.update(encryptedBuffer));
