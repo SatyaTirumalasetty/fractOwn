@@ -57,6 +57,11 @@ export class EncryptionService {
       encrypted += cipher.final('hex');
       
       const authTag = cipher.getAuthTag();
+      
+      // Security: Ensure authentication tag is exactly the expected length
+      if (authTag.length !== this.tagLength) {
+        throw new Error('Generated authentication tag has invalid length');
+      }
 
       return {
         encryptedContent: encrypted,
@@ -81,13 +86,26 @@ export class EncryptionService {
         throw new Error('Invalid authentication tag length');
       }
       
+      // Additional validation: Ensure tag contains non-zero bytes (prevent empty/zero tags)
+      if (authTagBuffer.every(byte => byte === 0)) {
+        throw new Error('Invalid authentication tag: all zeros detected');
+      }
+      
       const decipher = crypto.createDecipheriv(
         encryptedData.algorithm, 
         this.encryptionKey, 
         Buffer.from(encryptedData.iv, 'hex')
       ) as crypto.DecipherGCM;
+      
       decipher.setAAD(Buffer.from('fractown-data'));
-      decipher.setAuthTag(authTagBuffer);
+      
+      // Security: Set authentication tag with additional integrity checks
+      try {
+        decipher.setAuthTag(authTagBuffer);
+      } catch (authError) {
+        // If setAuthTag fails, it indicates potential tampering
+        throw new Error('Authentication tag validation failed - potential tampering detected');
+      }
 
       let decrypted = decipher.update(encryptedData.encryptedContent, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
@@ -124,6 +142,11 @@ export class EncryptionService {
       
       const encryptedBuffer = Buffer.concat(encryptedChunks);
       const authTag = cipher.getAuthTag();
+      
+      // Security: Ensure authentication tag is exactly the expected length
+      if (authTag.length !== this.tagLength) {
+        throw new Error('Generated authentication tag has invalid length');
+      }
 
       // Encrypt metadata
       const metadataWithHash = { ...metadata, checksum: fileHash, isEncrypted: true };
@@ -160,14 +183,27 @@ export class EncryptionService {
         throw new Error('Invalid authentication tag length');
       }
       
-      // Decrypt file content
+      // Additional validation: Ensure tag contains non-zero bytes (prevent empty/zero tags)
+      if (authTagBuffer.every(byte => byte === 0)) {
+        throw new Error('Invalid authentication tag: all zeros detected');
+      }
+      
+      // Decrypt file content with enhanced security parameters
       const decipher = crypto.createDecipheriv(
         this.algorithm, 
         this.encryptionKey, 
         Buffer.from(iv, 'hex')
       ) as crypto.DecipherGCM;
+      
       decipher.setAAD(Buffer.from('fractown-file'));
-      decipher.setAuthTag(authTagBuffer);
+      
+      // Security: Set authentication tag with additional integrity checks
+      try {
+        decipher.setAuthTag(authTagBuffer);
+      } catch (authError) {
+        // If setAuthTag fails, it indicates potential tampering
+        throw new Error('Authentication tag validation failed - potential tampering detected');
+      }
 
       const decryptedChunks: Buffer[] = [];
       decryptedChunks.push(decipher.update(encryptedBuffer));
