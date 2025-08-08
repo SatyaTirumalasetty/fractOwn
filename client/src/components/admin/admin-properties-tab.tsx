@@ -252,7 +252,7 @@ export function AdminPropertiesTab() {
       
       // Process imageUrls from textarea (if provided)
       const textAreaImageUrls = data.imageUrls && typeof data.imageUrls === 'string' 
-        ? data.imageUrls.split('\n').filter(url => url.trim())
+        ? data.imageUrls.split('\n').filter((url: string) => url.trim())
         : Array.isArray(data.imageUrls) ? data.imageUrls : [];
       
       // Combine both sources of image URLs
@@ -264,7 +264,20 @@ export function AdminPropertiesTab() {
         attachments: attachments
       };
       
-      return apiRequest("/api/admin/properties", "POST", propertyData);
+      const response = await fetch("/api/admin/properties", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(propertyData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create property");
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] });

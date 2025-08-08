@@ -29,9 +29,7 @@ export function AdminContactsTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/contacts/${id}`, {
-        method: "DELETE",
-      });
+      return apiRequest(`/api/contacts/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
