@@ -282,9 +282,10 @@ export default function AdminSettingsTab() {
 
     } catch (error) {
       console.error('Logo upload error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload logo. Please try again.";
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload logo. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }

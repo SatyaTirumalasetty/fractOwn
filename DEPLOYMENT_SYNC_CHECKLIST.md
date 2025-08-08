@@ -8,7 +8,7 @@
   - Added `/api/admin/logo/upload` and `/api/admin/logo/save` endpoints
   - Dynamic logo fetching from admin settings in header/hero components
   - Complete logo upload functionality in admin panel
-- **Status**: ✅ Implemented in dev, needs production deployment
+- **Status**: ✅ Implemented in dev, ❌ Production deployment pending (endpoints return "Not Found")
 
 ### 2. Contact Form Fix (Critical)
 - **File**: `client/src/components/contact-section.tsx`
