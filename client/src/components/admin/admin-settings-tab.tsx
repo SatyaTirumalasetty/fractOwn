@@ -20,7 +20,26 @@ export default function AdminSettingsTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string>("/attached_assets/image_1754379283931.png");
+  const [logoPreview, setLogoPreview] = useState<string>("");
+
+  // Fetch current site settings to get the current logo
+  const { data: siteSettings } = useQuery({
+    queryKey: ['/api/admin/settings/site'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/settings/site');
+      if (!response.ok) return [];
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Update preview when site settings load
+  useState(() => {
+    const currentLogo = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value;
+    if (currentLogo && !logoPreview) {
+      setLogoPreview(currentLogo);
+    }
+  }, [siteSettings]);
 
   // Fetch admin profile
   const { data: adminProfile, isLoading: profileLoading } = useQuery({
@@ -169,6 +188,12 @@ export default function AdminSettingsTab() {
         return;
       }
 
+      if (section === "Branding" && logoFile) {
+        // Handle logo upload
+        await handleLogoUploadAndSave();
+        return;
+      }
+
       // Here you would typically send the settings to your API
       // For now, we'll just show a success message
       toast({
@@ -179,6 +204,83 @@ export default function AdminSettingsTab() {
       toast({
         title: "Error",
         description: "Failed to save settings. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleLogoUploadAndSave = async () => {
+    if (!logoFile) {
+      toast({
+        title: "No logo selected",
+        description: "Please select a logo file to upload.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Get upload URL
+      const uploadResponse = await fetch('/api/admin/logo/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+        }
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+
+      const { uploadURL } = await uploadResponse.json();
+
+      // Upload file
+      const formData = new FormData();
+      formData.append('file', logoFile);
+
+      const fileResponse = await fetch(uploadURL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!fileResponse.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const fileResult = await fileResponse.json();
+      const logoUrl = fileResult.url;
+
+      // Save logo URL to settings
+      const saveResponse = await fetch('/api/admin/logo/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+        },
+        body: JSON.stringify({ logoUrl })
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error('Failed to save logo setting');
+      }
+
+      // Clear logo file state
+      setLogoFile(null);
+      setLogoPreview(logoUrl);
+
+      // Invalidate cache to refresh logo
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings/site'] });
+
+      toast({
+        title: "Logo updated",
+        description: "Your logo has been updated successfully",
+      });
+
+    } catch (error) {
+      console.error('Logo upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload logo. Please try again.",
         variant: "destructive"
       });
     }

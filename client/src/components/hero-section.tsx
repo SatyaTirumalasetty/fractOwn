@@ -2,12 +2,27 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HeroSection() {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [sessionToken, setSessionToken] = useState(null);
   const { features } = useFeatureFlags();
+
+  // Fetch site logo from admin settings
+  const { data: siteSettings } = useQuery({
+    queryKey: ['/api/admin/settings/site'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/settings/site');
+      if (!response.ok) return [];
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Get logo URL from settings or fallback
+  const logoUrl = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value || '/attached_assets/image_1754379283931.png';
 
   useEffect(() => {
     // Check for stored user and session
@@ -99,7 +114,7 @@ export default function HeroSection() {
           <div className="mb-8 flex justify-start">
             <div className="logo-hero">
               <img 
-                src="/attached_assets/image_1754379283931.png" 
+                src={logoUrl} 
                 alt="fractOWN Logo"
                 className="h-48 w-auto logo-transparent"
               />

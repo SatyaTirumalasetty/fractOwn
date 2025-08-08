@@ -5,12 +5,27 @@ import { Menu } from "lucide-react";
 import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { user, isAuthenticated, login, logout } = useAuth();
   const [location, setLocation] = useLocation();
+
+  // Fetch site logo from admin settings
+  const { data: siteSettings } = useQuery({
+    queryKey: ['/api/admin/settings/site'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/settings/site');
+      if (!response.ok) return [];
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Get logo URL from settings or fallback
+  const logoUrl = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value || '/attached_assets/fractOWN_logo1_1754210267276.jpg';
 
   const scrollToSection = (sectionId: string) => {
     // If we're not on the home page, navigate to home first
@@ -63,7 +78,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0 cursor-pointer" onClick={() => scrollToSection('home')}>
               <img 
-                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
+                src={logoUrl} 
                 alt="fractOWN Logo"
                 className="h-20 w-20 object-contain hover:opacity-80 transition-opacity"
               />

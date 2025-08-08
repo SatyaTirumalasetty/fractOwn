@@ -1329,6 +1329,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin logo upload endpoint
+  app.post("/api/admin/logo/upload", requireAuth, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting logo upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL for logo", details: error.message });
+    }
+  });
+
+  // Update site logo setting
+  app.post("/api/admin/logo/save", requireAuth, async (req, res) => {
+    try {
+      const { logoUrl } = req.body;
+      if (!logoUrl) {
+        return res.status(400).json({ message: "Logo URL is required" });
+      }
+      
+      await storage.setAdminSetting("site_logo", logoUrl, "site", "Website logo");
+      res.json({ message: "Logo updated successfully", logoUrl });
+    } catch (error) {
+      console.error("Failed to save logo setting:", error);
+      res.status(500).json({ message: "Failed to save logo" });
+    }
+  });
+
   // Serve uploaded objects
   app.get("/objects/:objectPath(*)", async (req, res) => {
     const objectStorageService = new ObjectStorageService();
