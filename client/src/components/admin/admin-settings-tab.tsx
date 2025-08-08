@@ -247,8 +247,12 @@ export default function AdminSettingsTab() {
         throw new Error('Failed to upload file');
       }
 
-      const fileResult = await fileResponse.json();
-      const logoUrl = fileResult.url;
+      // For Google Cloud Storage, construct the public URL from the upload URL path
+      const url = new URL(uploadURL);
+      // Extract the path and convert private uploads to served objects path
+      const pathParts = url.pathname.split('/');
+      const filename = pathParts[pathParts.length - 1];
+      const logoUrl = `/objects/.private/uploads/${filename}`;
 
       // Save logo URL to settings
       const saveResponse = await fetch('/api/admin/logo/save', {
