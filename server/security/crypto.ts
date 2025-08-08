@@ -103,7 +103,8 @@ class CryptoService {
       }
       
       // Create decipher with explicit algorithm and security parameters
-      const decipher = createDecipheriv(ALGORITHM, key, iv) as crypto.DecipherGCM;
+      // Specify expected authentication tag length to prevent tag length attacks
+      const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: TAG_LENGTH } as any) as crypto.DecipherGCM;
       
       // Security: Set authentication tag with additional integrity checks
       // Tag length has been validated above (exactly 16 bytes/128 bits)

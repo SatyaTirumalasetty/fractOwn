@@ -94,7 +94,8 @@ export class EncryptionService {
       const decipher = crypto.createDecipheriv(
         encryptedData.algorithm, 
         this.encryptionKey, 
-        Buffer.from(encryptedData.iv, 'hex')
+        Buffer.from(encryptedData.iv, 'hex'),
+        { authTagLength: this.tagLength } as any
       ) as crypto.DecipherGCM;
       
       decipher.setAAD(Buffer.from('fractown-data'));
@@ -192,7 +193,8 @@ export class EncryptionService {
       const decipher = crypto.createDecipheriv(
         this.algorithm, 
         this.encryptionKey, 
-        Buffer.from(iv, 'hex')
+        Buffer.from(iv, 'hex'),
+        { authTagLength: this.tagLength } as any
       ) as crypto.DecipherGCM;
       
       decipher.setAAD(Buffer.from('fractown-file'));
