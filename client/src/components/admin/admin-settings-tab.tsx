@@ -243,7 +243,21 @@ export default function AdminSettingsTab() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to get upload URL');
+        const errorText = await uploadResponse.text();
+        console.error('Upload URL error:', errorText);
+        
+        // If authentication failed, redirect to login
+        if (uploadResponse.status === 401) {
+          toast({
+            title: "Session expired",
+            description: "Please log in again",
+            variant: "destructive",
+          });
+          window.location.href = '/admin/login';
+          return;
+        }
+        
+        throw new Error(`Failed to get upload URL: ${uploadResponse.status}`);
       }
 
       const { uploadURL } = await uploadResponse.json();
@@ -263,6 +277,7 @@ export default function AdminSettingsTab() {
       });
 
       if (!fileResponse.ok) {
+        console.warn('Cloud upload failed, using base64 fallback');
         // If cloud upload fails, try using base64 data URL as fallback
         const reader = new FileReader();
         const dataUrl = await new Promise<string>((resolve) => {
