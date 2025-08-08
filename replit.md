@@ -118,3 +118,28 @@ Fixed critical command injection vulnerability in `scripts/auto-setup.js`:
 6. **Database URL Validation**: Added URL parsing and protocol validation to ensure only PostgreSQL connections are allowed.
 
 These changes eliminate the risk of command injection while maintaining full functionality of the setup process.
+
+### Deployment Configuration Security Issue (August 2025)
+Identified critical security vulnerability in Replit deployment configuration:
+
+**Issue**: The `.replit` file deployment section uses `npm run dev` (development server) instead of production build commands, exposing sensitive debugging information and creating security risks.
+
+**Risk Level**: HIGH - Development servers expose internal application details, debug information, and are not optimized for production security.
+
+**Solutions Provided**:
+
+1. **Secure Production Deployment Script**: Created `scripts/deploy-production.js` with comprehensive security validation:
+   - Forces `NODE_ENV=production` environment
+   - Validates all required production environment variables
+   - Prevents use of default session secrets
+   - Implements secure command execution with timeouts
+   - Builds optimized production bundles
+   - Provides security validation checklist
+
+2. **Security Documentation**: Created `SECURITY-DEPLOYMENT.md` detailing:
+   - Security implications of development vs production servers
+   - Step-by-step secure deployment process
+   - Environment variable security requirements
+   - Manual deployment procedures for immediate compliance
+
+**Recommended Action**: Update `.replit` deployment configuration to use `npm run build && npm run start` instead of `npm run dev` to ensure production security compliance.
