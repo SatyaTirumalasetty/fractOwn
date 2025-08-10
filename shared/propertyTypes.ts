@@ -119,3 +119,32 @@ export const FIELD_TYPE_CONFIG = {
     validation: { min: 0, max: 100 }
   }
 } as const;
+
+// Production Data Safety Configuration
+export const PRODUCTION_SAFETY_CONFIG = {
+  // Environment detection
+  isProduction: () => {
+    return process.env.NODE_ENV === 'production' || 
+           (typeof window !== 'undefined' && window.location.hostname.includes('.replit.app'));
+  },
+  
+  // Data isolation for custom fields
+  getCustomFieldStorageKey: () => {
+    const isProductionEnv = PRODUCTION_SAFETY_CONFIG.isProduction();
+    return isProductionEnv ? 'customFieldDefinitions_prod' : 'customFieldDefinitions_dev';
+  },
+  
+  // Migration safety check
+  shouldIsolateData: () => {
+    return PRODUCTION_SAFETY_CONFIG.isProduction();
+  },
+  
+  // Auto-sync configuration
+  syncEnabled: true,
+  syncInterval: 30000, // 30 seconds
+  
+  // Warning messages
+  getDataIsolationWarning: () => {
+    return "Production deployment detected. Custom field data is isolated from development to prevent data contamination.";
+  }
+} as const;

@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
 import { CustomFieldsManager } from "./custom-fields-manager";
-import { FIELD_SECTIONS, SECTION_CONFIG, FIELD_TYPE_CONFIG, type CustomField } from "@shared/propertyTypes";
+import { FIELD_SECTIONS, SECTION_CONFIG, FIELD_TYPE_CONFIG, PRODUCTION_SAFETY_CONFIG, type CustomField } from "@shared/propertyTypes";
 import { getStates, getCitiesByState } from "@/data/indian-states-cities";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -59,21 +59,33 @@ export function AdminPropertiesTab() {
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
   const [fieldDefinitions, setFieldDefinitions] = useState<CustomField[]>([]);
 
-  // Load field definitions from localStorage on mount
+  // Load field definitions from environment-specific localStorage on mount
   useEffect(() => {
-    const savedDefinitions = localStorage.getItem('customFieldDefinitions');
+    const storageKey = PRODUCTION_SAFETY_CONFIG.getCustomFieldStorageKey();
+    const savedDefinitions = localStorage.getItem(storageKey);
     if (savedDefinitions) {
       try {
-        setFieldDefinitions(JSON.parse(savedDefinitions));
+        const definitions = JSON.parse(savedDefinitions);
+        setFieldDefinitions(definitions);
+        
+        // Show production isolation warning if applicable
+        if (PRODUCTION_SAFETY_CONFIG.shouldIsolateData()) {
+          toast({
+            title: "Production Data Isolation",
+            description: PRODUCTION_SAFETY_CONFIG.getDataIsolationWarning(),
+            variant: "default"
+          });
+        }
       } catch (error) {
         console.error('Failed to load custom field definitions:', error);
       }
     }
   }, []);
 
-  // Save field definitions to localStorage whenever they change
+  // Save field definitions to environment-specific localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('customFieldDefinitions', JSON.stringify(fieldDefinitions));
+    const storageKey = PRODUCTION_SAFETY_CONFIG.getCustomFieldStorageKey();
+    localStorage.setItem(storageKey, JSON.stringify(fieldDefinitions));
   }, [fieldDefinitions]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -368,8 +380,13 @@ export function AdminPropertiesTab() {
       createForm.reset();
       setAttachments([]);
       setGoogleDriveLink("");
-      setCustomFields({});
-      setFieldDefinitions([]);
+      
+      // Reset custom field values to their default values but keep field definitions
+      const resetFields: Record<string, any> = {};
+      fieldDefinitions.forEach(def => {
+        resetFields[def.id] = def.defaultValue || FIELD_TYPE_CONFIG[def.type as keyof typeof FIELD_TYPE_CONFIG]?.defaultValue || '';
+      });
+      setCustomFields(resetFields);
     },
     onError: (error: any) => {
       toast({

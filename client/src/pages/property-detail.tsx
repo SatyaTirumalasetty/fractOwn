@@ -11,7 +11,7 @@ import Footer from "@/components/footer";
 import type { Property } from "@shared/schema";
 import { PropertyImageCarousel } from "@/components/property-image-carousel";
 import { useRealtimeUpdates } from "@/hooks/use-realtime-updates";
-import { FIELD_SECTIONS, SECTION_CONFIG, FIELD_TYPE_CONFIG, type CustomField } from "@shared/propertyTypes";
+import { FIELD_SECTIONS, SECTION_CONFIG, FIELD_TYPE_CONFIG, PRODUCTION_SAFETY_CONFIG, type CustomField } from "@shared/propertyTypes";
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -449,15 +449,32 @@ export default function PropertyDetail() {
             <h3 className="text-xl font-bold text-gray-900 mb-6">Property Details</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {Object.entries(SECTION_CONFIG).map(([sectionKey, sectionConfig]) => {
-                // Filter custom fields for this section based on field naming convention
+                // Load field definitions from environment-specific localStorage to get proper display names
+                const storageKey = PRODUCTION_SAFETY_CONFIG.getCustomFieldStorageKey();
+                const savedDefinitions = localStorage.getItem(storageKey);
+                let fieldDefinitions: CustomField[] = [];
+                if (savedDefinitions) {
+                  try {
+                    fieldDefinitions = JSON.parse(savedDefinitions);
+                  } catch (error) {
+                    console.error('Failed to load custom field definitions:', error);
+                  }
+                }
+
+                // Filter custom fields for this section based on field definitions
                 const sectionFields = Object.entries(property.customFields || {})
-                  .filter(([fieldKey, value]) => {
-                    // Check if field key starts with section prefix or contains section identifier
-                    const normalizedKey = fieldKey.toLowerCase();
-                    const sectionPrefix = sectionKey.toLowerCase().substring(0, 4); // 'basi', 'loca', 'inve', etc.
-                    return normalizedKey.startsWith(sectionPrefix) || normalizedKey.includes(sectionPrefix);
+                  .map(([fieldKey, value]) => {
+                    // Find the field definition to get the proper display name
+                    const fieldDef = fieldDefinitions.find(def => def.id === fieldKey);
+                    return { fieldKey, value, definition: fieldDef };
                   })
-                  .filter(([_, value]) => value !== null && value !== undefined && value !== '');
+                  .filter(({ definition, value }) => 
+                    definition && 
+                    definition.section === sectionKey && 
+                    value !== null && 
+                    value !== undefined && 
+                    value !== ''
+                  );
 
                 if (sectionFields.length === 0) return null;
 
@@ -472,10 +489,11 @@ export default function PropertyDetail() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {sectionFields.map(([fieldKey, value]) => (
+                        {sectionFields.map(({ fieldKey, value, definition }) => (
                           <div key={fieldKey}>
-                            <h4 className="font-medium text-gray-900 mb-1 capitalize">
-                              {fieldKey.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}
+                            <h4 className="font-medium text-gray-900 mb-1 flex items-center gap-2">
+                              <span>{FIELD_TYPE_CONFIG[definition?.type as keyof typeof FIELD_TYPE_CONFIG]?.icon || '📝'}</span>
+                              {definition?.displayName || fieldKey.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}
                             </h4>
                             <p className="text-gray-600">
                               {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 
