@@ -1302,9 +1302,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       startDate.setDate(startDate.getDate() - days);
 
       // Get basic dashboard stats
-      const totalProperties = await db.select().from(properties).then(p => p.length);
-      const totalContacts = await db.select().from(contacts).then(c => c.length);
-      const activeProperties = await db.select().from(properties).where(eq(properties.isActive, true)).then(p => p.length);
+      const allProperties = await db.select().from(properties);
+      const allContacts = await db.select().from(contacts);
+      const totalProperties = allProperties.length;
+      const totalContacts = allContacts.length;
+      const activeProperties = allProperties.filter(p => p.isActive).length;
 
       const stats = {
         totalProperties,

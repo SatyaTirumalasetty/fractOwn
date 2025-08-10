@@ -53,6 +53,7 @@ export function AdminPropertiesTab() {
   const [fileValidationMessage, setFileValidationMessage] = useState<string>("");
   const [showFileValidation, setShowFileValidation] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,8 +91,92 @@ export function AdminPropertiesTab() {
     const storageKey = PRODUCTION_SAFETY_CONFIG.getCustomFieldStorageKey();
     localStorage.setItem(storageKey, JSON.stringify(fieldDefinitions));
   }, [fieldDefinitions]);
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Export functionality
+  const exportToCSV = (properties: Property[], filename: string = 'properties.csv') => {
+    if (properties.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No properties to export",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Define headers for CSV
+    const headers = [
+      'Name', 'Type', 'Location', 'City', 'State', 'Total Value (₹)', 
+      'Min Investment (₹)', 'Expected Return', 'Funding Progress (%)', 
+      'Status', 'Created Date'
+    ];
+
+    // Convert properties to CSV format
+    const csvData = properties.map(property => [
+      property.name,
+      property.propertyType,
+      property.location,
+      property.city,
+      property.state,
+      property.totalValue?.toString() || '0',
+      property.minInvestment?.toString() || '0',
+      property.expectedReturn || '',
+      property.fundingProgress?.toString() || '0',
+      property.isActive ? 'Active' : 'Inactive',
+      property.createdAt ? new Date(property.createdAt).toLocaleDateString() : ''
+    ]);
+
+    // Combine headers and data
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export Successful",
+      description: `Exported ${properties.length} properties to ${filename}`
+    });
+  };
+
+  const handleExport = () => {
+    const propertiesToExport = selectedProperties.length > 0 
+      ? properties?.filter(p => selectedProperties.includes(p.id)) || []
+      : properties || [];
+    
+    const filename = selectedProperties.length > 0 
+      ? `selected_properties_${new Date().toISOString().split('T')[0]}.csv`
+      : `all_properties_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    exportToCSV(propertiesToExport, filename);
+  };
+
+  const handleSelectProperty = (propertyId: string) => {
+    setSelectedProperties(prev => 
+      prev.includes(propertyId) 
+        ? prev.filter(id => id !== propertyId)
+        : [...prev, propertyId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProperties.length === properties?.length) {
+      setSelectedProperties([]);
+    } else {
+      setSelectedProperties(properties?.map(p => p.id) || []);
+    }
+  };
 
   const { data: properties = [], isLoading } = useQuery<Property[]>({
     queryKey: ["/api/admin/properties"],
@@ -1417,13 +1502,26 @@ export function AdminPropertiesTab() {
         </div>
         
         <div className="flex gap-2">
+          {selectedProperties.length > 0 && (
+            <div className="text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200 flex items-center">
+              <span className="font-medium">{selectedProperties.length} selected</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedProperties([])}
+                className="ml-2 h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
           <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/properties"] })}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Export
+            Export {selectedProperties.length > 0 ? `(${selectedProperties.length})` : 'All'}
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={(open) => {
             if (open) {
@@ -1616,6 +1714,14 @@ export function AdminPropertiesTab() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
+                  <TableHead className="w-12">
+                    <input
+                      type="checkbox"
+                      checked={selectedProperties.length === properties?.length && properties?.length > 0}
+                      onChange={handleSelectAll}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </TableHead>
                   <TableHead className="font-semibold">Property Details</TableHead>
                   <TableHead className="font-semibold">Location</TableHead>
                   <TableHead className="font-semibold">Type</TableHead>
@@ -1628,7 +1734,7 @@ export function AdminPropertiesTab() {
               <TableBody>
                 {filteredProperties.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <div className="flex flex-col items-center">
                         <Building className="h-12 w-12 text-gray-300 mb-4" />
                         <p className="text-gray-500 text-lg font-medium">No properties found</p>
@@ -1639,6 +1745,14 @@ export function AdminPropertiesTab() {
                 ) : (
                   filteredProperties.map((property: Property) => (
                     <TableRow key={property.id} className="hover:bg-gray-50">
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedProperties.includes(property.id)}
+                          onChange={() => handleSelectProperty(property.id)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <div className="p-2 bg-blue-100 rounded-full mr-3">
