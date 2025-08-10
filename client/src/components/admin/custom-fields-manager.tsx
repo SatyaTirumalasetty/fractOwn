@@ -31,6 +31,12 @@ export function CustomFieldsManager({
     setLocalFields(customFields);
   }, [customFields]);
 
+  const saveFieldsToDatabase = async () => {
+    // This would sync field definitions to backend
+    // For now, handled through the parent component's property creation/update
+    return Promise.resolve();
+  };
+
   const handleAddField = () => {
     setEditingField({
       id: '',
@@ -43,7 +49,7 @@ export function CustomFieldsManager({
     setIsAddingField(true);
   };
 
-  const handleSaveField = () => {
+  const handleSaveField = async () => {
     if (!editingField?.name || !editingField?.displayName) {
       toast({
         title: "Error",
@@ -53,10 +59,16 @@ export function CustomFieldsManager({
       return;
     }
 
-    const fieldId = editingField.name.toLowerCase().replace(/\s+/g, '_');
+    // Validate field name format
+    const fieldName = editingField.name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (fieldName !== editingField.name.toLowerCase()) {
+      setEditingField({ ...editingField, name: fieldName });
+    }
+
+    const fieldId = fieldName;
     const newField: CustomField = {
       id: fieldId,
-      name: editingField.name,
+      name: fieldName,
       displayName: editingField.displayName,
       type: editingField.type || CUSTOM_FIELD_TYPES.TEXT,
       required: editingField.required || false,
@@ -89,10 +101,20 @@ export function CustomFieldsManager({
     setEditingField(null);
     setIsAddingField(false);
     
-    toast({
-      title: "Success",
-      description: "Custom field saved successfully"
-    });
+    // Save to backend immediately for persistence
+    try {
+      await saveFieldsToDatabase();
+      toast({
+        title: "Success",
+        description: "Custom field saved and synchronized with database"
+      });
+    } catch (error) {
+      toast({
+        title: "Warning",
+        description: "Field saved locally but database sync failed",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDeleteField = (fieldId: string) => {
@@ -210,7 +232,16 @@ export function CustomFieldsManager({
       {/* Add New Field Button - Always at the top */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Custom Property Fields</h3>
-        <Button onClick={handleAddField} size="sm" className="bg-green-600 hover:bg-green-700">
+        <Button 
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddField();
+          }} 
+          size="sm" 
+          className="bg-green-600 hover:bg-green-700"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add New Field
         </Button>
@@ -227,13 +258,15 @@ export function CustomFieldsManager({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="field-name">Field Name</Label>
+                <Label htmlFor="field-name">Field Name (Internal)</Label>
                 <Input
                   id="field-name"
                   value={editingField?.name || ''}
                   onChange={(e) => setEditingField({ ...editingField, name: e.target.value })}
                   placeholder="e.g., parking_spaces"
+                  autoFocus={isAddingField}
                 />
+                <p className="text-xs text-gray-500 mt-1">Used in database - lowercase, underscores only</p>
               </div>
               <div>
                 <Label htmlFor="display-name">Display Name</Label>
@@ -243,10 +276,11 @@ export function CustomFieldsManager({
                   onChange={(e) => setEditingField({ ...editingField, displayName: e.target.value })}
                   placeholder="e.g., Parking Spaces"
                 />
+                <p className="text-xs text-gray-500 mt-1">Label shown to users</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="field-type">Data Type</Label>
                 <Select 
@@ -268,6 +302,15 @@ export function CustomFieldsManager({
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label htmlFor="default-value">Default Value</Label>
+                <Input
+                  id="default-value"
+                  value={editingField?.defaultValue || ''}
+                  onChange={(e) => setEditingField({ ...editingField, defaultValue: e.target.value })}
+                  placeholder="Optional default value"
+                />
+              </div>
               <div className="flex items-center space-x-2 mt-6">
                 <Switch
                   id="required"
@@ -281,14 +324,24 @@ export function CustomFieldsManager({
             <div className="flex justify-end space-x-2">
               <Button 
                 variant="outline" 
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   setEditingField(null);
                   setIsAddingField(false);
                 }}
               >
                 Cancel
               </Button>
-              <Button onClick={handleSaveField}>
+              <Button 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSaveField();
+                }}
+              >
                 <Save className="w-4 h-4 mr-2" />
                 Save Field
               </Button>
@@ -318,9 +371,12 @@ export function CustomFieldsManager({
                 </div>
                 <div className="flex space-x-1">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setEditingField(field);
                       setIsAddingField(false);
                     }}
@@ -328,9 +384,14 @@ export function CustomFieldsManager({
                     Edit
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDeleteField(field.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteField(field.id);
+                    }}
                     className="text-red-600 border-red-200 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />

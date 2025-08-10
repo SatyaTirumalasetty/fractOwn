@@ -922,7 +922,7 @@ export function AdminPropertiesTab() {
         )}
       </div>
 
-      {/* Custom Fields Section */}
+      {/* Custom Fields Section - Before Submit */}
       <div className="space-y-6">
         <div className="border-b border-gray-200 pb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
