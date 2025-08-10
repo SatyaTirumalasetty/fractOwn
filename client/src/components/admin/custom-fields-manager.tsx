@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,12 @@ export function CustomFieldsManager({
 }: CustomFieldsManagerProps) {
   const [editingField, setEditingField] = useState<Partial<CustomField> | null>(null);
   const [isAddingField, setIsAddingField] = useState(false);
+  const [localFields, setLocalFields] = useState(customFields);
+
+  // Sync local fields with props when they change
+  useEffect(() => {
+    setLocalFields(customFields);
+  }, [customFields]);
 
   const handleAddField = () => {
     setEditingField({
@@ -70,11 +76,14 @@ export function CustomFieldsManager({
     }
 
     // Initialize field value if not exists
-    if (!(fieldId in customFields)) {
-      onFieldsChange({
-        ...customFields,
+    const currentFields = { ...localFields, ...customFields };
+    if (!(fieldId in currentFields)) {
+      const updatedFields = {
+        ...currentFields,
         [fieldId]: newField.defaultValue || FIELD_TYPE_CONFIG[newField.type].defaultValue
-      });
+      };
+      setLocalFields(updatedFields);
+      onFieldsChange(updatedFields);
     }
 
     setEditingField(null);
@@ -92,7 +101,8 @@ export function CustomFieldsManager({
       onFieldDefinitionsChange(fieldDefinitions.filter(f => f.id !== fieldId));
       
       // Remove from values
-      const { [fieldId]: removed, ...remainingFields } = customFields;
+      const { [fieldId]: removed, ...remainingFields } = localFields;
+      setLocalFields(remainingFields);
       onFieldsChange(remainingFields);
       
       toast({
@@ -103,14 +113,16 @@ export function CustomFieldsManager({
   };
 
   const handleFieldValueChange = (fieldId: string, value: any) => {
-    onFieldsChange({
-      ...customFields,
+    const updatedFields = {
+      ...localFields,
       [fieldId]: value
-    });
+    };
+    setLocalFields(updatedFields);
+    onFieldsChange(updatedFields);
   };
 
   const renderFieldInput = (field: CustomField) => {
-    const value = customFields[field.id] || field.defaultValue || FIELD_TYPE_CONFIG[field.type].defaultValue;
+    const value = localFields[field.id] !== undefined ? localFields[field.id] : (field.defaultValue || FIELD_TYPE_CONFIG[field.type].defaultValue);
     
     switch (field.type) {
       case CUSTOM_FIELD_TYPES.TEXT:
@@ -195,11 +207,12 @@ export function CustomFieldsManager({
 
   return (
     <div className="space-y-6">
+      {/* Add New Field Button - Always at the top */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Custom Property Fields</h3>
-        <Button onClick={handleAddField} size="sm">
+        <Button onClick={handleAddField} size="sm" className="bg-green-600 hover:bg-green-700">
           <Plus className="w-4 h-4 mr-2" />
-          Add Property Field
+          Add New Field
         </Button>
       </div>
 
@@ -318,6 +331,7 @@ export function CustomFieldsManager({
                     variant="outline"
                     size="sm"
                     onClick={() => handleDeleteField(field.id)}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
