@@ -35,6 +35,12 @@ The platform integrates a complete logo management system allowing dynamic logo 
 ### Property Management & File Upload System
 The system now supports comprehensive property management with enhanced file upload capabilities. Property values use bigint data types to handle large real estate investments (₹50+ crores). File uploads support multiple formats including images (JPG, PNG, GIF, WebP), documents (PDF, DOC, DOCX), spreadsheets (XLS, XLSX), text files (TXT, CSV), and archives (ZIP) with validation and cloud storage integration.
 
+### Dynamic Property Metadata System
+The platform includes a complete dynamic metadata management system allowing unlimited custom fields for properties. Custom fields support multiple data types (Text, Number, Boolean, Date, Email, URL, Currency, Percentage) and are stored as JSON in the customFields column. The CustomFieldsManager component provides full CRUD operations through the admin interface.
+
+### Production Data Isolation
+Critical production deployment protection ensures development data never migrates to production. Seeding scripts automatically detect NODE_ENV=production and prevent data contamination. Production environments load data exclusively from the production database, maintaining complete data isolation and integrity.
+
 ## External Dependencies
 
 ### Security and Authentication

@@ -105,6 +105,15 @@ const sampleProperties = [
 
 async function seedDatabase() {
   try {
+    // CRITICAL: Prevent accidental seeding in production
+    if (process.env.NODE_ENV === 'production') {
+      console.log("🚫 PRODUCTION ENVIRONMENT DETECTED");
+      console.log("📋 Seeding is disabled in production to prevent data corruption");
+      console.log("💾 Production will load existing data from the database");
+      console.log("✅ Production data isolation maintained");
+      return;
+    }
+
     console.log("Seeding database...");
     
     // Add sample properties

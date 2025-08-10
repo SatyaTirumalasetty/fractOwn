@@ -95,7 +95,7 @@ export const securityRateLimiter = new SecurityRateLimiter();
 // Pre-configured rate limiters for different endpoints
 export const authRateLimiter = securityRateLimiter.createLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 attempts per 15 minutes
+  maxRequests: 20, // Increased to 20 attempts per 15 minutes for development
   onLimitReached: (req) => {
     console.warn(`Authentication rate limit exceeded for IP: ${req.ip}`);
   }
