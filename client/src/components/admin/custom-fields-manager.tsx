@@ -129,7 +129,7 @@ export function CustomFieldsManager({
       required: editingField.required || false,
       defaultValue: editingField.defaultValue,
       section: editingField.section || FIELD_SECTIONS.BASIC,
-      order: editingField.order !== undefined ? editingField.order : nextOrder
+      order: editingField.order !== undefined ? editingField.order : Math.max(...fieldDefinitions.map(f => f.order || 0), 0) + 1
     };
 
     // Check if field already exists

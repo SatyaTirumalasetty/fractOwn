@@ -453,32 +453,54 @@ export default function PropertyDetail() {
             <h3 className="text-xl font-bold text-gray-900 mb-6">Property Details</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {Object.entries(SECTION_CONFIG).map(([sectionKey, sectionConfig]) => {
-                // Load field definitions from environment-specific localStorage to get proper display names
+                // Load field definitions from environment-specific localStorage with production isolation
                 const storageKey = PRODUCTION_SAFETY_CONFIG.getCustomFieldStorageKey();
                 const savedDefinitions = localStorage.getItem(storageKey);
                 let fieldDefinitions: CustomField[] = [];
                 if (savedDefinitions) {
                   try {
                     fieldDefinitions = JSON.parse(savedDefinitions);
+                    // Log environment isolation status
+                    console.log('Field definitions loaded with production isolation:', {
+                      environment: PRODUCTION_SAFETY_CONFIG.getDatabaseEnvironment(),
+                      storageKey: storageKey,
+                      fieldCount: fieldDefinitions.length
+                    });
                   } catch (error) {
                     console.error('Failed to load custom field definitions:', error);
                   }
+                } else if (PRODUCTION_SAFETY_CONFIG.isProduction()) {
+                  // In production, warn about missing field definitions but continue gracefully
+                  console.log(PRODUCTION_SAFETY_CONFIG.getDataIsolationWarning());
                 }
 
-                // Filter custom fields for this section based on field definitions
+                // Filter custom fields for this section with production-safe handling
                 const sectionFields = Object.entries(property.customFields || {})
                   .map(([fieldKey, value]) => {
                     // Find the field definition to get the proper display name
                     const fieldDef = fieldDefinitions.find(def => def.id === fieldKey);
-                    return { fieldKey, value, definition: fieldDef };
+                    
+                    // Use production-safe field value retrieval
+                    const safeValue = PRODUCTION_SAFETY_CONFIG.getFieldValueSafely(
+                      property.customFields,
+                      fieldKey,
+                      fieldDef?.type || 'text'
+                    );
+                    
+                    return { fieldKey, value: safeValue, definition: fieldDef };
                   })
-                  .filter(({ definition, value }) => 
-                    definition && 
-                    definition.section === sectionKey && 
-                    value !== null && 
-                    value !== undefined && 
-                    value !== ''
-                  );
+                  .filter(({ definition, value }) => {
+                    // In production, show fields even if definition is missing (graceful degradation)
+                    if (PRODUCTION_SAFETY_CONFIG.isProduction() && !definition) {
+                      return value !== null && value !== undefined && value !== '';
+                    }
+                    
+                    return definition && 
+                           definition.section === sectionKey && 
+                           value !== null && 
+                           value !== undefined && 
+                           value !== '';
+                  });
 
                 if (sectionFields.length === 0) return null;
 
@@ -498,6 +520,11 @@ export default function PropertyDetail() {
                             <h4 className="font-medium text-gray-900 mb-1 flex items-center gap-2">
                               <span>{FIELD_TYPE_CONFIG[definition?.type as keyof typeof FIELD_TYPE_CONFIG]?.icon || '📝'}</span>
                               {definition?.displayName || fieldKey.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}
+                              {PRODUCTION_SAFETY_CONFIG.isProduction() && !definition && (
+                                <span className="text-xs text-gray-400" title="Field definition not found - using fallback display">
+                                  (legacy)
+                                </span>
+                              )}
                             </h4>
                             <p className="text-gray-600">
                               {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 

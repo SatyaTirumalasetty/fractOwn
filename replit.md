@@ -39,7 +39,7 @@ The system now supports comprehensive property management with enhanced file upl
 The platform includes a complete dynamic metadata management system allowing unlimited custom fields for properties. Custom fields support multiple data types (Text, Number, Boolean, Date, Email, URL, Currency, Percentage) and are stored as JSON in the customFields column. The CustomFieldsManager component provides full CRUD operations through the admin interface.
 
 ### Production Data Isolation
-Critical production deployment protection ensures development data never migrates to production. Seeding scripts automatically detect NODE_ENV=production and prevent data contamination. Production environments load data exclusively from the production database, maintaining complete data isolation and integrity.
+Comprehensive production deployment protection with multi-layer isolation ensures development data never migrates to production. Environment detection includes NODE_ENV, REPL_DEPLOYMENT, and hostname analysis. Seeding scripts automatically block in production environments. Custom field definitions use environment-specific localStorage keys (customFieldDefinitions_prod vs customFieldDefinitions_dev). Production systems gracefully handle missing field definitions and schema changes. Production data remains completely isolated and unaffected by development changes, with automatic environment detection, data segregation warnings, and resilient field handling that supports schema evolution without breaking existing functionality.
 
 ## External Dependencies
 

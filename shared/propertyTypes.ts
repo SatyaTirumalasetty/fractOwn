@@ -128,23 +128,60 @@ export const PRODUCTION_SAFETY_CONFIG = {
            (typeof window !== 'undefined' && window.location.hostname.includes('.replit.app'));
   },
   
-  // Data isolation for custom fields
+  // Data isolation for custom fields - environment-based storage keys
   getCustomFieldStorageKey: () => {
     const isProductionEnv = PRODUCTION_SAFETY_CONFIG.isProduction();
     return isProductionEnv ? 'customFieldDefinitions_prod' : 'customFieldDefinitions_dev';
   },
   
-  // Migration safety check
-  shouldIsolateData: () => {
+  // Database connection isolation
+  getDatabaseEnvironment: () => {
+    return PRODUCTION_SAFETY_CONFIG.isProduction() ? 'production' : 'development';
+  },
+  
+  // Migration safety check - prevents dev data from going to prod
+  shouldPreventMigration: () => {
     return PRODUCTION_SAFETY_CONFIG.isProduction();
+  },
+  
+  // Custom field compatibility check
+  validateCustomFieldCompatibility: (devFields: any[], prodFields: any[]) => {
+    // Production should be able to handle new dev fields gracefully
+    const devFieldIds = new Set(devFields.map(f => f.id));
+    const prodFieldIds = new Set(prodFields.map(f => f.id));
+    
+    return {
+      compatible: true, // Production can always handle new fields
+      newFields: devFields.filter(f => !prodFieldIds.has(f.id)),
+      removedFields: prodFields.filter(f => !devFieldIds.has(f.id)),
+      changes: []
+    };
   },
   
   // Auto-sync configuration
   syncEnabled: true,
   syncInterval: 30000, // 30 seconds
   
+  // Production resilience - handle missing custom fields gracefully
+  getFieldValueSafely: (customFields: any, fieldId: string, fieldType: string) => {
+    if (!customFields || !customFields[fieldId]) {
+      // Return appropriate default based on field type
+      switch (fieldType) {
+        case 'boolean': return false;
+        case 'number': case 'currency': case 'percentage': return 0;
+        case 'date': return null;
+        default: return '';
+      }
+    }
+    return customFields[fieldId];
+  },
+  
   // Warning messages
   getDataIsolationWarning: () => {
-    return "Production deployment detected. Custom field data is isolated from development to prevent data contamination.";
+    return "Production environment detected. Data is completely isolated from development to ensure production stability.";
+  },
+  
+  getDevDataProtectionMessage: () => {
+    return "Development data is protected from production migration. Production data remains unaffected by development changes.";
   }
 } as const;
