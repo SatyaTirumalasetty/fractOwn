@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus, Save, GripVertical } from "lucide-react";
-import { CUSTOM_FIELD_TYPES, FIELD_TYPE_CONFIG, type CustomField } from "@shared/propertyTypes";
+import { CUSTOM_FIELD_TYPES, FIELD_TYPE_CONFIG, FIELD_SECTIONS, SECTION_CONFIG, type CustomField } from "@shared/propertyTypes";
 import { toast } from "@/hooks/use-toast";
 import {
   DndContext,
@@ -57,15 +57,23 @@ export function CustomFieldsManager({
     })
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent, section: string) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const oldIndex = fieldDefinitions.findIndex((field) => field.id === active.id);
-      const newIndex = fieldDefinitions.findIndex((field) => field.id === over?.id);
+      const sectionFields = fieldDefinitions.filter(f => f.section === section);
+      const otherFields = fieldDefinitions.filter(f => f.section !== section);
+      
+      const oldIndex = sectionFields.findIndex((field) => field.id === active.id);
+      const newIndex = sectionFields.findIndex((field) => field.id === over?.id);
 
-      const reorderedFields = arrayMove(fieldDefinitions, oldIndex, newIndex);
-      onFieldDefinitionsChange(reorderedFields);
+      const reorderedSectionFields = arrayMove(sectionFields, oldIndex, newIndex)
+        .map((field, index) => ({ ...field, order: index }));
+      
+      const allFields = [...otherFields, ...reorderedSectionFields]
+        .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order);
+      
+      onFieldDefinitionsChange(allFields);
       
       toast({
         title: "Success",
@@ -80,14 +88,17 @@ export function CustomFieldsManager({
     return Promise.resolve();
   };
 
-  const handleAddField = () => {
+  const handleAddField = (section: string = FIELD_SECTIONS.BASIC) => {
+    const nextOrder = Math.max(0, ...fieldDefinitions.filter(f => f.section === section).map(f => f.order)) + 1;
     setEditingField({
       id: '',
       name: '',
       displayName: '',
       type: CUSTOM_FIELD_TYPES.TEXT,
       required: false,
-      defaultValue: ''
+      defaultValue: '',
+      section: section,
+      order: nextOrder
     });
     setIsAddingField(true);
   };
@@ -115,7 +126,9 @@ export function CustomFieldsManager({
       displayName: editingField.displayName,
       type: editingField.type || CUSTOM_FIELD_TYPES.TEXT,
       required: editingField.required || false,
-      defaultValue: editingField.defaultValue
+      defaultValue: editingField.defaultValue,
+      section: editingField.section || FIELD_SECTIONS.BASIC,
+      order: editingField.order || 0
     };
 
     // Check if field already exists
@@ -270,24 +283,17 @@ export function CustomFieldsManager({
     }
   };
 
+  // Group fields by section
+  const fieldsBySection = Object.values(FIELD_SECTIONS).reduce((acc, section) => {
+    acc[section] = fieldDefinitions.filter(f => f.section === section).sort((a, b) => a.order - b.order);
+    return acc;
+  }, {} as Record<string, CustomField[]>);
+
   return (
     <div className="space-y-6">
-      {/* Add New Field Button - Always at the top */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Custom Property Fields</h3>
-        <Button 
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddField();
-          }} 
-          size="sm" 
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Field
-        </Button>
       </div>
 
       {/* Field Definitions Management */}
@@ -323,7 +329,28 @@ export function CustomFieldsManager({
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="field-section">Section</Label>
+                <Select 
+                  value={editingField?.section || FIELD_SECTIONS.BASIC} 
+                  onValueChange={(value) => setEditingField({ ...editingField, section: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SECTION_CONFIG).map(([section, config]) => (
+                      <SelectItem key={section} value={section}>
+                        <span className="flex items-center gap-2">
+                          <span>{config.icon}</span>
+                          {config.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="field-type">Data Type</Label>
                 <Select 
@@ -345,6 +372,9 @@ export function CustomFieldsManager({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="default-value">Default Value</Label>
                 <Input
@@ -393,42 +423,76 @@ export function CustomFieldsManager({
         </Card>
       )}
 
-      {/* Render Custom Fields */}
-      {fieldDefinitions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Property Metadata</CardTitle>
-            <p className="text-sm text-gray-600">Drag fields to reorder them</p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={fieldDefinitions.map(f => f.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {fieldDefinitions.map((field) => (
-                  <SortableFieldItem
-                    key={field.id}
-                    field={field}
-                    value={localFields[field.id] !== undefined ? localFields[field.id] : (field.defaultValue || FIELD_TYPE_CONFIG[field.type].defaultValue)}
-                    onValueChange={handleFieldValueChange}
-                    onEdit={() => {
-                      setEditingField(field);
-                      setIsAddingField(false);
-                    }}
-                    onDelete={() => handleDeleteField(field.id)}
-                    renderFieldInput={renderFieldInput}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          </CardContent>
-        </Card>
-      )}
+      {/* Render Sections */}
+      {Object.entries(SECTION_CONFIG).map(([sectionKey, sectionConfig]) => {
+        const sectionFields = fieldsBySection[sectionKey] || [];
+        
+        return (
+          <Card key={sectionKey}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{sectionConfig.icon}</span>
+                  <div>
+                    <CardTitle className="text-lg">{sectionConfig.label}</CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">{sectionConfig.description}</p>
+                  </div>
+                </div>
+                <Button 
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddField(sectionKey);
+                  }} 
+                  size="sm" 
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Field
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {sectionFields.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-500 mb-3">Drag fields to reorder within this section</p>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => handleDragEnd(event, sectionKey)}
+                  >
+                    <SortableContext
+                      items={sectionFields.map(f => f.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {sectionFields.map((field) => (
+                        <SortableFieldItem
+                          key={field.id}
+                          field={field}
+                          value={localFields[field.id] !== undefined ? localFields[field.id] : (field.defaultValue || FIELD_TYPE_CONFIG[field.type].defaultValue)}
+                          onValueChange={handleFieldValueChange}
+                          onEdit={() => {
+                            setEditingField(field);
+                            setIsAddingField(false);
+                          }}
+                          onDelete={() => handleDeleteField(field.id)}
+                          renderFieldInput={renderFieldInput}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-sm">No custom fields in this section yet.</p>
+                  <p className="text-xs mt-1">Click "Add Field" to create your first field.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

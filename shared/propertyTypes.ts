@@ -19,6 +19,8 @@ export interface CustomField {
   type: CustomFieldType;
   required: boolean;
   defaultValue?: any;
+  section: string;
+  order: number;
   options?: string[]; // For select/radio fields
   validation?: {
     min?: number;
@@ -27,6 +29,42 @@ export interface CustomField {
     message?: string;
   };
 }
+
+export const FIELD_SECTIONS = {
+  BASIC: 'basic',
+  LOCATION: 'location',
+  INVESTMENT: 'investment',
+  FEATURES: 'features',
+  LEGAL: 'legal'
+} as const;
+
+export const SECTION_CONFIG = {
+  [FIELD_SECTIONS.BASIC]: {
+    label: 'Basic Information',
+    description: 'Core property details and characteristics',
+    icon: '🏠'
+  },
+  [FIELD_SECTIONS.LOCATION]: {
+    label: 'Location Details',
+    description: 'Address, neighborhood and area information',
+    icon: '📍'
+  },
+  [FIELD_SECTIONS.INVESTMENT]: {
+    label: 'Investment Details',
+    description: 'Financial metrics and investment information',
+    icon: '💰'
+  },
+  [FIELD_SECTIONS.FEATURES]: {
+    label: 'Property Features',
+    description: 'Amenities, facilities and special features',
+    icon: '✨'
+  },
+  [FIELD_SECTIONS.LEGAL]: {
+    label: 'Legal & Documentation',
+    description: 'Permits, approvals and legal requirements',
+    icon: '📋'
+  }
+} as const;
 
 export interface PropertyCustomFields {
   [fieldName: string]: any;
