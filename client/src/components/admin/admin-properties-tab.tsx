@@ -341,18 +341,19 @@ export function AdminPropertiesTab() {
 
   const createMutation = useMutation({
     mutationFn: async (data: PropertyForm) => {
-      // Process imageUrls from textarea (if provided) - manual image URLs only
-      const textAreaImageUrls = data.imageUrls && typeof data.imageUrls === 'string' 
-        ? data.imageUrls.split('\n').filter((url: string) => url.trim())
-        : Array.isArray(data.imageUrls) ? data.imageUrls : [];
+      // The imageUrls field is already transformed by Zod validation
+      // Since we used z.union with transform, data.imageUrls is already an array
+      const imageUrls = Array.isArray(data.imageUrls) ? data.imageUrls : [];
       
-      // Use only manual image URLs for the imageUrls field
-      // Uploaded images are already stored in attachments
-      const allImageUrls = textAreaImageUrls;
+      console.log('Processing image URLs:', { 
+        originalData: data.imageUrls, 
+        processedUrls: imageUrls,
+        attachments: attachments 
+      });
       
       const propertyData = {
         ...data,
-        imageUrls: allImageUrls,
+        imageUrls: imageUrls,
         attachments: attachments,
         customFields: customFields
       };
@@ -402,10 +403,14 @@ export function AdminPropertiesTab() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<PropertyForm> }) => {
-      // Extract image URLs from attachments for the imageUrls field
-      const imageUrls = attachments
-        .filter(attachment => attachment.type === 'image')
-        .map(attachment => attachment.url);
+      // The imageUrls field is already transformed by Zod validation
+      const imageUrls = Array.isArray(data.imageUrls) ? data.imageUrls : [];
+      
+      console.log('Updating image URLs:', { 
+        originalData: data.imageUrls, 
+        processedUrls: imageUrls,
+        attachments: attachments 
+      });
       
       const updatedData = {
         ...data,
