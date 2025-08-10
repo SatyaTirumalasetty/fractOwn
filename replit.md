@@ -29,6 +29,9 @@ Key security measures include TOTP authentication with AES-256-GCM encryption fo
 ### Performance Optimizations
 The platform includes custom performance monitoring for request timing and memory usage, LRU caching, database query monitoring, and multi-layer caching (session, property, config).
 
+### Production Database Backup System
+Comprehensive backup and restore solution implemented with full production data protection. Features include automated backup creation with metadata tracking, integrity verification, environment-specific safety checks, and disaster recovery capabilities. The system supports complete database backups covering properties and contacts with detailed logging and error handling. Commands available: create backups with descriptions, list all available backups, restore from backup files (with confirmation requirements), and verify backup integrity. Backup files stored as JSON in ./backups/ directory with timestamp-based naming. Dual backup strategy available using both custom scripts and Replit's native point-in-time recovery features.
+
 ### Logo Management System
 The platform integrates a complete logo management system allowing dynamic logo fetching from admin settings, with backend routes for upload and save, file validation, object storage integration, and cache invalidation.
 
