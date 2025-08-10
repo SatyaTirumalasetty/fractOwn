@@ -12,7 +12,7 @@ export default {
     host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
     cors: {
-      origin: process.env.CORS_ORIGIN || '*',
+      origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? 'https://fractown.in' : '*'),
       credentials: true
     }
   },
@@ -206,7 +206,7 @@ export default {
       enableCors: true,
       corsOptions: {
         origin: process.env.NODE_ENV === 'production' 
-          ? [process.env.FRONTEND_URL] 
+          ? [process.env.FRONTEND_URL || 'https://fractown.in'] 
           : true, // Allow all origins in development
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

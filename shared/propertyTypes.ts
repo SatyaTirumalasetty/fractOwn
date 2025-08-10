@@ -125,7 +125,10 @@ export const PRODUCTION_SAFETY_CONFIG = {
   // Environment detection
   isProduction: () => {
     return process.env.NODE_ENV === 'production' || 
-           (typeof window !== 'undefined' && window.location.hostname.includes('.replit.app'));
+           (typeof window !== 'undefined' && (
+             window.location.hostname === 'fractown.in' ||
+             window.location.hostname.includes('fractown.in')
+           ));
   },
   
   // Data isolation for custom fields - environment-based storage keys

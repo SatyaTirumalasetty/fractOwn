@@ -1,7 +1,7 @@
 # fractOWN - Fractional Real Estate Investment Platform
 
 ## Overview
-fractOWN is a web application designed to democratize real estate investment in India by enabling fractional ownership of premium properties. The platform allows users to invest with a low entry barrier (₹10L), benefiting from property appreciation. It offers a comprehensive investment experience including property browsing, investment calculators, portfolio tracking, and contact management, aiming to provide a secure, scalable, and user-friendly platform.
+fractOWN is a web application designed to democratize real estate investment in India by enabling fractional ownership of premium properties. The platform allows users to invest with a low entry barrier (₹10L), benefiting from property appreciation. It offers a comprehensive investment experience including property browsing, investment calculators, portfolio tracking, and contact management, aiming to provide a secure, scalable, and user-friendly platform. The production deployment is configured for the custom domain fractown.in.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
