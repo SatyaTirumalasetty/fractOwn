@@ -12,7 +12,7 @@ export const properties = pgTable("properties", {
   state: text("state").notNull(),
   totalValue: bigint("total_value", { mode: "number" }).notNull(), // in rupees
   minInvestment: bigint("min_investment", { mode: "number" }).notNull(), // in rupees
-  expectedReturn: decimal("expected_return", { precision: 5, scale: 2 }).notNull(), // percentage
+  expectedReturn: decimal("expected_return", { precision: 5, scale: 2 }), // percentage - nullable
 
   fundingProgress: integer("funding_progress").notNull().default(0), // percentage 0-100
   imageUrls: text("image_urls").array().notNull().default(sql`ARRAY[]::text[]`),

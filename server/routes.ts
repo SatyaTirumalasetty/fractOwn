@@ -536,7 +536,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/properties", async (req, res) => {
     try {
       console.log("Creating property with data:", req.body);
-      const validatedData = insertPropertySchema.parse(req.body);
+      
+      // Clean and validate request body
+      const cleanedBody = {
+        ...req.body,
+        // Convert empty string to null for numeric fields
+        expectedReturn: req.body.expectedReturn === '' ? null : req.body.expectedReturn,
+        fundingProgress: req.body.fundingProgress || 0
+      };
+      
+      const validatedData = insertPropertySchema.parse(cleanedBody);
       console.log("Validated data:", validatedData);
       
       const property = await storage.createProperty(validatedData);

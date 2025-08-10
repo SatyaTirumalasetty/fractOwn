@@ -5,9 +5,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, Plus, Save } from "lucide-react";
+import { Trash2, Plus, Save, GripVertical } from "lucide-react";
 import { CUSTOM_FIELD_TYPES, FIELD_TYPE_CONFIG, type CustomField } from "@shared/propertyTypes";
 import { toast } from "@/hooks/use-toast";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface CustomFieldsManagerProps {
   customFields: Record<string, any>;
@@ -30,6 +49,30 @@ export function CustomFieldsManager({
   useEffect(() => {
     setLocalFields(customFields);
   }, [customFields]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = fieldDefinitions.findIndex((field) => field.id === active.id);
+      const newIndex = fieldDefinitions.findIndex((field) => field.id === over?.id);
+
+      const reorderedFields = arrayMove(fieldDefinitions, oldIndex, newIndex);
+      onFieldDefinitionsChange(reorderedFields);
+      
+      toast({
+        title: "Success",
+        description: "Field order updated successfully"
+      });
+    }
+  };
 
   const saveFieldsToDatabase = async () => {
     // This would sync field definitions to backend
@@ -355,53 +398,128 @@ export function CustomFieldsManager({
         <Card>
           <CardHeader>
             <CardTitle>Property Metadata</CardTitle>
+            <p className="text-sm text-gray-600">Drag fields to reorder them</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {fieldDefinitions.map((field) => (
-              <div key={field.id} className="flex items-center space-x-4">
-                <div className="flex-1">
-                  <Label htmlFor={field.id} className="flex items-center gap-2">
-                    <span>{FIELD_TYPE_CONFIG[field.type].icon}</span>
-                    {field.displayName}
-                    {field.required && <span className="text-red-500">*</span>}
-                  </Label>
-                  <div className="mt-1">
-                    {renderFieldInput(field)}
-                  </div>
-                </div>
-                <div className="flex space-x-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={fieldDefinitions.map(f => f.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {fieldDefinitions.map((field) => (
+                  <SortableFieldItem
+                    key={field.id}
+                    field={field}
+                    value={localFields[field.id] !== undefined ? localFields[field.id] : (field.defaultValue || FIELD_TYPE_CONFIG[field.type].defaultValue)}
+                    onValueChange={handleFieldValueChange}
+                    onEdit={() => {
                       setEditingField(field);
                       setIsAddingField(false);
                     }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeleteField(field.id);
-                    }}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+                    onDelete={() => handleDeleteField(field.id)}
+                    renderFieldInput={renderFieldInput}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+// Sortable Field Item Component
+interface SortableFieldItemProps {
+  field: CustomField;
+  value: any;
+  onValueChange: (fieldId: string, value: any) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  renderFieldInput: (field: CustomField) => React.ReactNode;
+}
+
+function SortableFieldItem({ 
+  field, 
+  value, 
+  onValueChange, 
+  onEdit, 
+  onDelete, 
+  renderFieldInput 
+}: SortableFieldItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center space-x-4 p-3 border rounded-lg bg-white ${
+        isDragging ? 'shadow-lg' : 'border-gray-200'
+      }`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+      
+      <div className="flex-1">
+        <Label htmlFor={field.id} className="flex items-center gap-2">
+          <span>{FIELD_TYPE_CONFIG[field.type].icon}</span>
+          {field.displayName}
+          {field.required && <span className="text-red-500">*</span>}
+        </Label>
+        <div className="mt-1">
+          {renderFieldInput(field)}
+        </div>
+      </div>
+      
+      <div className="flex space-x-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onEdit();
+          }}
+        >
+          Edit
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="text-red-600 border-red-200 hover:bg-red-50"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }
