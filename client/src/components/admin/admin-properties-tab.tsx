@@ -577,12 +577,14 @@ export function AdminPropertiesTab() {
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
       {/* Basic Information Section */}
       <div className="space-y-6">
-        <div className="border-b border-gray-200 pb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-600" />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <FileText className="h-4 w-4 text-white" />
+            </div>
             Basic Information
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Essential property details and classification</p>
+          <p className="text-gray-600">Essential property details and classification</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -648,12 +650,14 @@ export function AdminPropertiesTab() {
 
       {/* Location Information Section */}
       <div className="space-y-6">
-        <div className="border-b border-gray-200 pb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <span className="text-blue-600">📍</span>
+        <div className="bg-gradient-to-r from-red-50 to-pink-50 p-6 rounded-xl border border-red-100">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-white" />
+            </div>
             Location Details
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Specify the exact location and geographic details</p>
+          <p className="text-gray-600">Specify the exact location and geographic details</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -735,12 +739,14 @@ export function AdminPropertiesTab() {
 
       {/* Financial Information Section */}
       <div className="space-y-6">
-        <div className="border-b border-gray-200 pb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <span className="text-green-600">💰</span>
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-white" />
+            </div>
             Investment Details
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Property valuation and investment parameters</p>
+          <p className="text-gray-600">Property valuation and investment parameters</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -832,12 +838,14 @@ export function AdminPropertiesTab() {
 
       {/* Media & Documentation Section */}
       <div className="space-y-6">
-        <div className="border-b border-gray-200 pb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Image className="h-5 w-5 text-purple-600" />
+        <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+              <Image className="h-4 w-4 text-white" />
+            </div>
             Media & Documentation
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Property images and supporting documents</p>
+          <p className="text-gray-600">Property images and supporting documents</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1022,12 +1030,12 @@ export function AdminPropertiesTab() {
       </div>
 
       {/* Submit Section */}
-      <div className="pt-6 border-t border-gray-200">
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 -m-8 p-8 mt-8 border-t border-gray-200 rounded-b-2xl">
         <div className="flex flex-col sm:flex-row gap-4">
           <Button 
             type="submit" 
             disabled={isSubmitting} 
-            className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+            className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
@@ -1045,7 +1053,7 @@ export function AdminPropertiesTab() {
             type="button" 
             variant="outline" 
             onClick={() => form.reset()}
-            className="h-12 px-6 border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="h-12 px-6 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
           >
             Reset Form
           </Button>
@@ -1266,13 +1274,13 @@ export function AdminPropertiesTab() {
         {sectionFields.length > 0 && (
           <div className="space-y-3">
             {sectionFields.map((field) => (
-              <div key={field.id} className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="lg:col-span-3 space-y-2">
-                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <div key={field.id} className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm">
+                <div className="lg:col-span-3 space-y-3">
+                  <Label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
                     <span>{FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG]?.icon || '📝'}</span>
                     {field.displayName}
                     {field.required && <span className="text-red-500">*</span>}
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
                       {FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG]?.label || field.type}
                     </Badge>
                   </Label>
@@ -1417,30 +1425,65 @@ export function AdminPropertiesTab() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <Dialog open={isCreateOpen} onOpenChange={(open) => {
+            if (open) {
+              // Reset all form data when opening create dialog
+              createForm.reset({
+                name: "",
+                description: "",
+                location: "",
+                city: "",
+                state: "",
+                totalValue: 0,
+                minInvestment: 0,
+                expectedReturn: "",
+                fundingProgress: 0,
+                imageUrls: [],
+                propertyType: "residential",
+                isActive: true,
+                attachments: [],
+                customFields: {}
+              });
+              
+              // Reset all form state
+              setAttachments([]);
+              setGoogleDriveLink("");
+              setFileValidationMessage("");
+              setShowFileValidation(false);
+              setValidationErrors([]);
+              
+              // Reset custom field values to their default values
+              const resetFields: Record<string, any> = {};
+              fieldDefinitions.forEach(def => {
+                resetFields[def.id] = def.defaultValue || FIELD_TYPE_CONFIG[def.type as keyof typeof FIELD_TYPE_CONFIG]?.defaultValue || '';
+              });
+              setCustomFields(resetFields);
+            }
+            setIsCreateOpen(open);
+          }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-medium px-6 py-2.5 rounded-lg">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Property
+                Create Property
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden">
-            <DialogHeader className="pb-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Plus className="h-6 w-6 text-blue-600" />
+            <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden bg-white rounded-2xl shadow-2xl border-0">
+            <DialogHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 -m-6 px-8 py-6 mb-6 border-b border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                  <Plus className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-semibold text-gray-900">
+                  <DialogTitle className="text-2xl font-bold text-gray-900">
                     Create New Property
                   </DialogTitle>
-                  <DialogDescription className="text-gray-600 mt-1">
+                  <DialogDescription className="text-gray-600 mt-1 text-base">
                     Add a new investment opportunity to the fractOWN platform
                   </DialogDescription>
                 </div>
               </div>
             </DialogHeader>
-            <div className="max-h-[75vh] overflow-y-auto py-6 px-1 -mx-1">
+            <div className="max-h-[calc(95vh-160px)] overflow-y-auto py-6 px-2 -mx-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
               <PropertyForm
                 form={createForm}
                 onSubmit={(data) => createMutation.mutate(data)}
