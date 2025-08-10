@@ -151,10 +151,6 @@ export default function PropertyDetail() {
               const combinedImages = [...imageUrls, ...imageAttachments];
               const allImages = Array.from(new Set(combinedImages)).filter(url => url && url.trim().length > 0);
               
-              console.log('Property imageUrls:', imageUrls);
-              console.log('Image attachments:', imageAttachments);
-              console.log('Combined images:', allImages);
-              
               if (allImages.length === 0) {
                 return (
                   <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">

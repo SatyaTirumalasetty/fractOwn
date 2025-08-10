@@ -29,7 +29,10 @@ const propertyFormSchema = insertPropertySchema.extend({
   totalValue: z.coerce.number().min(1, "Total value must be greater than 0"),
   minInvestment: z.coerce.number().min(1, "Minimum investment must be greater than 0"),
   fundingProgress: z.coerce.number().min(0).max(100).default(0),
-  imageUrls: z.array(z.string()).default([]),
+  imageUrls: z.union([
+    z.string().transform((str) => str.split('\n').map(url => url.trim()).filter(url => url.length > 0)),
+    z.array(z.string())
+  ]).default([]),
   attachments: z.array(z.object({
     name: z.string(),
     url: z.string(),
