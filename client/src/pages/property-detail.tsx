@@ -11,6 +11,7 @@ import Footer from "@/components/footer";
 import type { Property } from "@shared/schema";
 import { PropertyImageCarousel } from "@/components/property-image-carousel";
 import { useRealtimeUpdates } from "@/hooks/use-realtime-updates";
+import { FIELD_SECTIONS, SECTION_CONFIG, FIELD_TYPE_CONFIG, type CustomField } from "@shared/propertyTypes";
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -442,7 +443,57 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        {/* Additional Property Information */}
+        {/* Custom Fields Display by Section */}
+        {property.customFields && Object.keys(property.customFields).length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">Property Details</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {Object.entries(SECTION_CONFIG).map(([sectionKey, sectionConfig]) => {
+                // Filter custom fields for this section based on field naming convention
+                const sectionFields = Object.entries(property.customFields || {})
+                  .filter(([fieldKey, value]) => {
+                    // Check if field key starts with section prefix or contains section identifier
+                    const normalizedKey = fieldKey.toLowerCase();
+                    const sectionPrefix = sectionKey.toLowerCase().substring(0, 4); // 'basi', 'loca', 'inve', etc.
+                    return normalizedKey.startsWith(sectionPrefix) || normalizedKey.includes(sectionPrefix);
+                  })
+                  .filter(([_, value]) => value !== null && value !== undefined && value !== '');
+
+                if (sectionFields.length === 0) return null;
+
+                return (
+                  <Card key={sectionKey} className="h-fit">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <span className="text-xl">{sectionConfig.icon}</span>
+                        {sectionConfig.label}
+                      </CardTitle>
+                      <CardDescription>{sectionConfig.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {sectionFields.map(([fieldKey, value]) => (
+                          <div key={fieldKey}>
+                            <h4 className="font-medium text-gray-900 mb-1 capitalize">
+                              {fieldKey.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}
+                            </h4>
+                            <p className="text-gray-600">
+                              {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 
+                               typeof value === 'number' ? value.toLocaleString('en-IN') :
+                               String(value)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Standard Property Information */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>

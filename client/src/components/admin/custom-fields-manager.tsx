@@ -89,7 +89,8 @@ export function CustomFieldsManager({
   };
 
   const handleAddField = (section: string = FIELD_SECTIONS.BASIC) => {
-    const nextOrder = Math.max(0, ...fieldDefinitions.filter(f => f.section === section).map(f => f.order)) + 1;
+    const sectionFields = fieldDefinitions.filter(f => f.section === section);
+    const nextOrder = sectionFields.length > 0 ? Math.max(...sectionFields.map(f => f.order || 0)) + 1 : 0;
     setEditingField({
       id: '',
       name: '',
@@ -128,7 +129,7 @@ export function CustomFieldsManager({
       required: editingField.required || false,
       defaultValue: editingField.defaultValue,
       section: editingField.section || FIELD_SECTIONS.BASIC,
-      order: editingField.order || 0
+      order: editingField.order !== undefined ? editingField.order : nextOrder
     };
 
     // Check if field already exists
@@ -580,6 +581,7 @@ function SortableFieldItem({
             onDelete();
           }}
           className="text-red-600 border-red-200 hover:bg-red-50"
+          title="Delete field"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
