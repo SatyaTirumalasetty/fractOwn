@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
 import { CustomFieldsManager } from "./custom-fields-manager";
-import { type CustomField } from "@shared/propertyTypes";
+import { FIELD_SECTIONS, SECTION_CONFIG, FIELD_TYPE_CONFIG, type CustomField } from "@shared/propertyTypes";
 import { getStates, getCitiesByState } from "@/data/indian-states-cities";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -592,6 +592,15 @@ export function AdminPropertiesTab() {
             </p>
           )}
         </div>
+
+        {/* Basic Information Custom Fields */}
+        <SectionCustomFields 
+          section={FIELD_SECTIONS.BASIC}
+          fieldDefinitions={fieldDefinitions}
+          customFields={customFields}
+          onFieldsChange={setCustomFields}
+          onFieldDefinitionsChange={setFieldDefinitions}
+        />
       </div>
 
       {/* Location Information Section */}
@@ -670,6 +679,15 @@ export function AdminPropertiesTab() {
             )}
           </div>
         </div>
+
+        {/* Location Custom Fields */}
+        <SectionCustomFields 
+          section={FIELD_SECTIONS.LOCATION}
+          fieldDefinitions={fieldDefinitions}
+          customFields={customFields}
+          onFieldsChange={setCustomFields}
+          onFieldDefinitionsChange={setFieldDefinitions}
+        />
       </div>
 
       {/* Financial Information Section */}
@@ -758,6 +776,15 @@ export function AdminPropertiesTab() {
             </div>
           </div>
         </div>
+
+        {/* Investment Custom Fields */}
+        <SectionCustomFields 
+          section={FIELD_SECTIONS.INVESTMENT}
+          fieldDefinitions={fieldDefinitions}
+          customFields={customFields}
+          onFieldsChange={setCustomFields}
+          onFieldDefinitionsChange={setFieldDefinitions}
+        />
       </div>
 
       {/* Media & Documentation Section */}
@@ -920,22 +947,33 @@ export function AdminPropertiesTab() {
             </div>
           </div>
         )}
+
+        {/* Property Features Custom Fields */}
+        <SectionCustomFields 
+          section={FIELD_SECTIONS.FEATURES}
+          fieldDefinitions={fieldDefinitions}
+          customFields={customFields}
+          onFieldsChange={setCustomFields}
+          onFieldDefinitionsChange={setFieldDefinitions}
+        />
       </div>
 
-      {/* Custom Fields Section - Before Submit */}
+      {/* Legal & Documentation Section */}
       <div className="space-y-6">
         <div className="border-b border-gray-200 pb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Settings className="h-5 w-5 text-green-600" />
-            Custom Property Metadata
+            <FileText className="h-5 w-5 text-amber-600" />
+            Legal & Documentation
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Add custom fields to capture specific property information</p>
+          <p className="text-sm text-gray-600 mt-1">Legal requirements and compliance documentation</p>
         </div>
-        
-        <CustomFieldsManager
+
+        {/* Legal Custom Fields */}
+        <SectionCustomFields 
+          section={FIELD_SECTIONS.LEGAL}
+          fieldDefinitions={fieldDefinitions}
           customFields={customFields}
           onFieldsChange={setCustomFields}
-          fieldDefinitions={fieldDefinitions}
           onFieldDefinitionsChange={setFieldDefinitions}
         />
       </div>
@@ -972,6 +1010,146 @@ export function AdminPropertiesTab() {
       </div>
     </form>
   );
+
+  // Section-specific custom fields component
+  const SectionCustomFields = ({ 
+    section, 
+    fieldDefinitions, 
+    customFields, 
+    onFieldsChange, 
+    onFieldDefinitionsChange 
+  }: {
+    section: string;
+    fieldDefinitions: CustomField[];
+    customFields: Record<string, any>;
+    onFieldsChange: (fields: Record<string, any>) => void;
+    onFieldDefinitionsChange: (definitions: CustomField[]) => void;
+  }) => {
+    const sectionFields = fieldDefinitions.filter(f => f.section === section).sort((a, b) => a.order - b.order);
+    const sectionConfig = SECTION_CONFIG[section as keyof typeof SECTION_CONFIG];
+    
+    if (!sectionConfig) return null;
+
+    const handleAddField = () => {
+      const nextOrder = sectionFields.length > 0 ? Math.max(...sectionFields.map(f => f.order || 0)) + 1 : 0;
+      const newField: CustomField = {
+        id: `${section}_${Date.now()}`,
+        name: `${section}_field_${nextOrder}`,
+        displayName: `New ${sectionConfig.label} Field`,
+        type: 'text',
+        required: false,
+        defaultValue: '',
+        section: section,
+        order: nextOrder
+      };
+      onFieldDefinitionsChange([...fieldDefinitions, newField]);
+    };
+
+    const handleDeleteField = (fieldId: string) => {
+      if (!confirm('Are you sure you want to delete this field?')) return;
+      
+      const updatedDefinitions = fieldDefinitions.filter(f => f.id !== fieldId);
+      onFieldDefinitionsChange(updatedDefinitions);
+      
+      const updatedFields = { ...customFields };
+      delete updatedFields[fieldId];
+      onFieldsChange(updatedFields);
+    };
+
+    const renderFieldInput = (field: CustomField) => {
+      const value = customFields[field.id] || field.defaultValue || '';
+      
+      const handleChange = (newValue: any) => {
+        onFieldsChange({
+          ...customFields,
+          [field.id]: newValue
+        });
+      };
+
+      switch (field.type) {
+        case 'text':
+          return (
+            <Input
+              value={value}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder={`Enter ${field.displayName}`}
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
+            />
+          );
+        case 'number':
+          return (
+            <Input
+              type="number"
+              value={value}
+              onChange={(e) => handleChange(parseFloat(e.target.value) || 0)}
+              placeholder={`Enter ${field.displayName}`}
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
+            />
+          );
+        case 'boolean':
+          return (
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={Boolean(value)}
+                onCheckedChange={handleChange}
+              />
+              <Label>{Boolean(value) ? 'Yes' : 'No'}</Label>
+            </div>
+          );
+        default:
+          return (
+            <Input
+              value={value}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder={`Enter ${field.displayName}`}
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
+            />
+          );
+      }
+    };
+
+    return (
+      <div className="space-y-4">
+        {sectionFields.length > 0 && (
+          <div className="space-y-3">
+            {sectionFields.map((field) => (
+              <div key={field.id} className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="lg:col-span-2 space-y-2">
+                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <span>{FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG]?.icon || '📝'}</span>
+                    {field.displayName}
+                    {field.required && <span className="text-red-500">*</span>}
+                  </Label>
+                  {renderFieldInput(field)}
+                </div>
+                <div className="flex items-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteField(field.id)}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleAddField}
+          className="w-full border-dashed border-2 border-gray-300 hover:border-blue-400 hover:bg-blue-50 text-gray-600 hover:text-blue-600"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add {sectionConfig.label} Field
+        </Button>
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
