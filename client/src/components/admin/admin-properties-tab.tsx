@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Eye, Upload, Link, X, FileText, Image, FileIcon, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle, Search, Filter, Calendar, TrendingUp, BarChart3, RefreshCw, Download, Settings, Building, MapPin, DollarSign } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -57,6 +58,23 @@ export function AdminPropertiesTab() {
   const [sortBy, setSortBy] = useState("newest");
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
   const [fieldDefinitions, setFieldDefinitions] = useState<CustomField[]>([]);
+
+  // Load field definitions from localStorage on mount
+  useEffect(() => {
+    const savedDefinitions = localStorage.getItem('customFieldDefinitions');
+    if (savedDefinitions) {
+      try {
+        setFieldDefinitions(JSON.parse(savedDefinitions));
+      } catch (error) {
+        console.error('Failed to load custom field definitions:', error);
+      }
+    }
+  }, []);
+
+  // Save field definitions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('customFieldDefinitions', JSON.stringify(fieldDefinitions));
+  }, [fieldDefinitions]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -1025,28 +1043,116 @@ export function AdminPropertiesTab() {
     onFieldsChange: (fields: Record<string, any>) => void;
     onFieldDefinitionsChange: (definitions: CustomField[]) => void;
   }) => {
-    const sectionFields = fieldDefinitions.filter(f => f.section === section).sort((a, b) => a.order - b.order);
+    const [isAddingField, setIsAddingField] = useState(false);
+    const [editingField, setEditingField] = useState<CustomField | null>(null);
+    const [newField, setNewField] = useState({
+      displayName: '',
+      type: 'text' as const,
+      required: false,
+      defaultValue: ''
+    });
+
+    const sectionFields = fieldDefinitions.filter(f => f.section === section).sort((a, b) => (a.order || 0) - (b.order || 0));
     const sectionConfig = SECTION_CONFIG[section as keyof typeof SECTION_CONFIG];
     
     if (!sectionConfig) return null;
 
     const handleAddField = () => {
-      const nextOrder = sectionFields.length > 0 ? Math.max(...sectionFields.map(f => f.order || 0)) + 1 : 0;
-      const newField: CustomField = {
-        id: `${section}_${Date.now()}`,
-        name: `${section}_field_${nextOrder}`,
-        displayName: `New ${sectionConfig.label} Field`,
+      setNewField({
+        displayName: '',
         type: 'text',
         required: false,
-        defaultValue: '',
+        defaultValue: ''
+      });
+      setIsAddingField(true);
+    };
+
+    const handleSaveField = async () => {
+      if (!newField.displayName.trim()) {
+        toast({
+          title: "Error",
+          description: "Field name is required",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const nextOrder = sectionFields.length > 0 ? Math.max(...sectionFields.map(f => f.order || 0)) + 1 : 0;
+      const fieldName = newField.displayName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const fieldId = `${section}_${fieldName}_${Date.now()}`;
+      
+      const customField: CustomField = {
+        id: fieldId,
+        name: fieldName,
+        displayName: newField.displayName,
+        type: newField.type,
+        required: newField.required,
+        defaultValue: newField.defaultValue,
         section: section,
         order: nextOrder
       };
-      onFieldDefinitionsChange([...fieldDefinitions, newField]);
+
+      // Save to state and localStorage for persistence
+      onFieldDefinitionsChange([...fieldDefinitions, customField]);
+      
+      // Initialize field value
+      const initialValue = newField.defaultValue || FIELD_TYPE_CONFIG[newField.type].defaultValue;
+      onFieldsChange({
+        ...customFields,
+        [fieldId]: initialValue
+      });
+
+      setIsAddingField(false);
+      toast({
+        title: "Success",
+        description: "Custom field added successfully"
+      });
+    };
+
+    const handleEditField = (field: CustomField) => {
+      setEditingField(field);
+      setNewField({
+        displayName: field.displayName,
+        type: field.type,
+        required: field.required,
+        defaultValue: field.defaultValue
+      });
+      setIsAddingField(true);
+    };
+
+    const handleUpdateField = async () => {
+      if (!editingField || !newField.displayName.trim()) {
+        toast({
+          title: "Error",
+          description: "Field name is required",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const updatedField: CustomField = {
+        ...editingField,
+        displayName: newField.displayName,
+        type: newField.type,
+        required: newField.required,
+        defaultValue: newField.defaultValue
+      };
+
+      const updatedDefinitions = fieldDefinitions.map(f => 
+        f.id === editingField.id ? updatedField : f
+      );
+      onFieldDefinitionsChange(updatedDefinitions);
+      
+      setIsAddingField(false);
+      setEditingField(null);
+      toast({
+        title: "Success",
+        description: "Custom field updated successfully"
+      });
     };
 
     const handleDeleteField = (fieldId: string) => {
-      if (!confirm('Are you sure you want to delete this field?')) return;
+      if (!confirm('Are you sure you want to delete this field? This will remove all data for this field.')) return;
       
       const updatedDefinitions = fieldDefinitions.filter(f => f.id !== fieldId);
       onFieldDefinitionsChange(updatedDefinitions);
@@ -1054,10 +1160,15 @@ export function AdminPropertiesTab() {
       const updatedFields = { ...customFields };
       delete updatedFields[fieldId];
       onFieldsChange(updatedFields);
+
+      toast({
+        title: "Success",
+        description: "Custom field deleted successfully"
+      });
     };
 
     const renderFieldInput = (field: CustomField) => {
-      const value = customFields[field.id] || field.defaultValue || '';
+      const value = customFields[field.id] !== undefined ? customFields[field.id] : field.defaultValue;
       
       const handleChange = (newValue: any) => {
         onFieldsChange({
@@ -1066,21 +1177,29 @@ export function AdminPropertiesTab() {
         });
       };
 
+      const config = FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG];
+      if (!config) return null;
+
       switch (field.type) {
         case 'text':
+        case 'email':
+        case 'url':
           return (
             <Input
-              value={value}
+              value={value || ''}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={`Enter ${field.displayName}`}
               className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
+              type={field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'}
             />
           );
         case 'number':
+        case 'currency':
+        case 'percentage':
           return (
             <Input
               type="number"
-              value={value}
+              value={value || ''}
               onChange={(e) => handleChange(parseFloat(e.target.value) || 0)}
               placeholder={`Enter ${field.displayName}`}
               className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
@@ -1096,10 +1215,19 @@ export function AdminPropertiesTab() {
               <Label>{Boolean(value) ? 'Yes' : 'No'}</Label>
             </div>
           );
+        case 'date':
+          return (
+            <Input
+              type="date"
+              value={value || ''}
+              onChange={(e) => handleChange(e.target.value)}
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
+            />
+          );
         default:
           return (
             <Input
-              value={value}
+              value={value || ''}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={`Enter ${field.displayName}`}
               className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500"
@@ -1113,16 +1241,28 @@ export function AdminPropertiesTab() {
         {sectionFields.length > 0 && (
           <div className="space-y-3">
             {sectionFields.map((field) => (
-              <div key={field.id} className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="lg:col-span-2 space-y-2">
+              <div key={field.id} className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="lg:col-span-3 space-y-2">
                   <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <span>{FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG]?.icon || '📝'}</span>
                     {field.displayName}
                     {field.required && <span className="text-red-500">*</span>}
+                    <Badge variant="secondary" className="text-xs">
+                      {FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG]?.label || field.type}
+                    </Badge>
                   </Label>
                   {renderFieldInput(field)}
                 </div>
                 <div className="flex items-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditField(field)}
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -1147,6 +1287,73 @@ export function AdminPropertiesTab() {
           <Plus className="w-4 h-4 mr-2" />
           Add {sectionConfig.label} Field
         </Button>
+
+        {/* Add/Edit Field Dialog */}
+        <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingField ? 'Edit' : 'Add'} {sectionConfig.label} Field
+              </DialogTitle>
+              <DialogDescription>
+                Configure the custom field properties for {sectionConfig.label.toLowerCase()} section.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="displayName">Field Name</Label>
+                <Input
+                  id="displayName"
+                  value={newField.displayName}
+                  onChange={(e) => setNewField({ ...newField, displayName: e.target.value })}
+                  placeholder="e.g., Building Age, Parking Spots"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="type">Data Type</Label>
+                <Select value={newField.type} onValueChange={(value: any) => setNewField({ ...newField, type: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select field type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(FIELD_TYPE_CONFIG).map(([type, config]) => (
+                      <SelectItem key={type} value={type}>
+                        <div className="flex items-center gap-2">
+                          <span>{config.icon}</span>
+                          {config.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="defaultValue">Default Value (Optional)</Label>
+                <Input
+                  id="defaultValue"
+                  value={newField.defaultValue}
+                  onChange={(e) => setNewField({ ...newField, defaultValue: e.target.value })}
+                  placeholder={FIELD_TYPE_CONFIG[newField.type]?.placeholder || "Enter default value"}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={newField.required}
+                  onCheckedChange={(checked) => setNewField({ ...newField, required: checked })}
+                />
+                <Label>Required field</Label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setIsAddingField(false)}>
+                Cancel
+              </Button>
+              <Button onClick={editingField ? handleUpdateField : handleSaveField}>
+                {editingField ? 'Update' : 'Add'} Field
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   };

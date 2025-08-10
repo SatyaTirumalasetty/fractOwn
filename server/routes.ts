@@ -1403,6 +1403,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =========================== CUSTOM FIELDS API ===========================
+  
+  // Get all custom field definitions
+  app.get("/api/admin/custom-fields", async (req, res) => {
+    try {
+      // For now, return empty array since we're storing in localStorage
+      // In production, this would query a database table for custom field definitions
+      res.json([]);
+    } catch (error) {
+      console.error('Failed to fetch custom fields:', error);
+      res.status(500).json({ error: 'Failed to fetch custom fields' });
+    }
+  });
+
+  // Create custom field definition
+  app.post("/api/admin/custom-fields", async (req, res) => {
+    try {
+      const customField = req.body;
+      // For now, just return success since we're handling persistence client-side
+      // In production, this would save to a database table
+      res.json({ success: true, field: customField });
+    } catch (error) {
+      console.error('Failed to create custom field:', error);
+      res.status(500).json({ error: 'Failed to create custom field' });
+    }
+  });
+
+  // Update custom field definition
+  app.put("/api/admin/custom-fields/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const customField = req.body;
+      // For now, just return success since we're handling persistence client-side
+      // In production, this would update a database table
+      res.json({ success: true, field: customField });
+    } catch (error) {
+      console.error('Failed to update custom field:', error);
+      res.status(500).json({ error: 'Failed to update custom field' });
+    }
+  });
+
+  // Delete custom field definition
+  app.delete("/api/admin/custom-fields/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      // For now, just return success since we're handling persistence client-side
+      // In production, this would delete from a database table
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete custom field:', error);
+      res.status(500).json({ error: 'Failed to delete custom field' });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Setup WebSocket server for real-time updates
