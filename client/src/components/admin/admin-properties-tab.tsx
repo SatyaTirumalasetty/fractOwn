@@ -16,6 +16,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPropertySchema, updatePropertySchema, type Property, type InsertProperty, type UpdateProperty } from "@shared/schema";
+import { CustomFieldsManager } from "./custom-fields-manager";
+import { type CustomField } from "@shared/propertyTypes";
 import { getStates, getCitiesByState } from "@/data/indian-states-cities";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +35,7 @@ const propertyFormSchema = insertPropertySchema.extend({
     type: z.enum(["image", "document", "pdf"]),
     size: z.number().optional(),
   })).default([]),
+  customFields: z.record(z.any()).default({}),
 });
 
 type PropertyForm = z.infer<typeof propertyFormSchema>;
@@ -52,6 +55,8 @@ export function AdminPropertiesTab() {
   const [filterType, setFilterType] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [customFields, setCustomFields] = useState<Record<string, any>>({});
+  const [fieldDefinitions, setFieldDefinitions] = useState<CustomField[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -75,6 +80,7 @@ export function AdminPropertiesTab() {
       propertyType: "residential",
       isActive: true,
       attachments: [],
+      customFields: {},
     },
   });
 
@@ -314,7 +320,8 @@ export function AdminPropertiesTab() {
       const propertyData = {
         ...data,
         imageUrls: allImageUrls,
-        attachments: attachments
+        attachments: attachments,
+        customFields: customFields
       };
       
       const response = await fetch("/api/admin/properties", {
@@ -343,6 +350,8 @@ export function AdminPropertiesTab() {
       createForm.reset();
       setAttachments([]);
       setGoogleDriveLink("");
+      setCustomFields({});
+      setFieldDefinitions([]);
     },
     onError: (error: any) => {
       toast({
@@ -363,7 +372,8 @@ export function AdminPropertiesTab() {
       const updatedData = {
         ...data,
         imageUrls: imageUrls,
-        attachments: attachments
+        attachments: attachments,
+        customFields: customFields
       };
       
       const response = await fetch(`/api/admin/properties/${id}`, {
@@ -910,6 +920,24 @@ export function AdminPropertiesTab() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Custom Fields Section */}
+      <div className="space-y-6">
+        <div className="border-b border-gray-200 pb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Settings className="h-5 w-5 text-green-600" />
+            Custom Property Metadata
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Add custom fields to capture specific property information</p>
+        </div>
+        
+        <CustomFieldsManager
+          customFields={customFields}
+          onFieldsChange={setCustomFields}
+          fieldDefinitions={fieldDefinitions}
+          onFieldDefinitionsChange={setFieldDefinitions}
+        />
       </div>
 
       {/* Submit Section */}

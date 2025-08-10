@@ -17,6 +17,7 @@ export const properties = pgTable("properties", {
   fundingProgress: integer("funding_progress").notNull().default(0), // percentage 0-100
   imageUrls: text("image_urls").array().notNull().default(sql`ARRAY[]::text[]`),
   attachments: jsonb("attachments").default(sql`'[]'::jsonb`), // Store file attachments with metadata
+  customFields: jsonb("custom_fields").default(sql`'{}'::jsonb`), // Dynamic property metadata fields
   propertyType: text("property_type").notNull(), // 'residential' | 'commercial'
   isActive: boolean("is_active").notNull().default(true),
 });

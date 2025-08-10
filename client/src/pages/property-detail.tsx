@@ -141,14 +141,18 @@ export default function PropertyDetail() {
           <div className="space-y-4">
             {(() => {
               // Get only image URLs, filtering out document attachments from imageUrls
-              const imageUrls = property.imageUrls || [];
+              const imageUrls = Array.isArray(property.imageUrls) ? property.imageUrls : [];
               const imageAttachments = (property.attachments || []).filter((att: any) => 
                 att.type === 'image'
               ).map((att: any) => att.url);
               
               // Combine manual imageUrls with image attachments, removing duplicates
               const combinedImages = [...imageUrls, ...imageAttachments];
-              const allImages = Array.from(new Set(combinedImages)).filter(Boolean);
+              const allImages = Array.from(new Set(combinedImages)).filter(url => url && url.trim().length > 0);
+              
+              console.log('Property imageUrls:', imageUrls);
+              console.log('Image attachments:', imageAttachments);
+              console.log('Combined images:', allImages);
               
               if (allImages.length === 0) {
                 return (
