@@ -1,0 +1,268 @@
+{
+  "metadata": {
+    "timestamp": "2025-08-10T16:11:07.430Z",
+    "environment": "development",
+    "version": "1.0.0",
+    "tables": [
+      "properties",
+      "contacts"
+    ],
+    "recordCounts": {
+      "properties": 11,
+      "contacts": 4
+    },
+    "size": "0.01MB",
+    "description": "Pre-deployment safety backup"
+  },
+  "data": {
+    "properties": [
+      {
+        "id": "6fe8394a-a22c-4961-b16e-dbce0b633ac5",
+        "name": "Cyber Towers",
+        "description": "Premium residential apartments in Gachibowli with world-class facilities",
+        "location": "Gachibowli",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "totalValue": 42000000,
+        "minInvestment": 42000,
+        "expectedReturn": "12.80",
+        "fundingProgress": 73,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "residential",
+        "isActive": true
+      },
+      {
+        "id": "cea49ac7-b1f2-49bc-9ffc-e986b68822a1",
+        "name": "Mill Heritage Residences",
+        "description": "Luxury villa community near textile mills with traditional and modern architecture",
+        "location": "Peelamedu",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "totalValue": 35000000,
+        "minInvestment": 35000,
+        "expectedReturn": "11.50",
+        "fundingProgress": 62,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "residential",
+        "isActive": true
+      },
+      {
+        "id": "a2017b69-0e07-44e4-a190-7f0e39ee14d0",
+        "name": "Business Park Coimbatore",
+        "description": "Commercial office spaces with IT and manufacturing companies as tenants",
+        "location": "Saravanampatti",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "totalValue": 28000000,
+        "minInvestment": 28000,
+        "expectedReturn": "13.20",
+        "fundingProgress": 48,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "commercial",
+        "isActive": true
+      },
+      {
+        "id": "4017ca35-caca-4bdb-94b7-20832e98bb13",
+        "name": "Marina Bay Residences",
+        "description": "Luxury waterfront apartments with sea views and premium amenities near Marina Beach",
+        "location": "Marina Beach Road",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "totalValue": 45000000,
+        "minInvestment": 45000,
+        "expectedReturn": "12.50",
+        "fundingProgress": 68,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "residential",
+        "isActive": true
+      },
+      {
+        "id": "22fe169b-42c6-4a0b-8c6b-5fa607cf052f",
+        "name": "IT Park Central",
+        "description": "Grade A commercial office space in OMR with tech giants as tenants",
+        "location": "Old Mahabalipuram Road",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "totalValue": 52000000,
+        "minInvestment": 50000,
+        "expectedReturn": "13.80",
+        "fundingProgress": 42,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "commercial",
+        "isActive": true
+      },
+      {
+        "id": "43c06f51-09bd-4124-a9e5-25e2b04ae19d",
+        "name": "Marina Bay Residences",
+        "description": "Luxury waterfront apartments with sea views and premium amenities near Marina Beach",
+        "location": "Marina Beach Road",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "totalValue": 45000000,
+        "minInvestment": 45000,
+        "expectedReturn": "12.50",
+        "fundingProgress": 68,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "residential",
+        "isActive": true
+      },
+      {
+        "id": "f2c91a83-4af7-4090-9648-0c8ecdfe4ef2",
+        "name": "IT Park Central",
+        "description": "Grade A commercial office space in OMR with tech giants as tenants",
+        "location": "Old Mahabalipuram Road",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "totalValue": 52000000,
+        "minInvestment": 50000,
+        "expectedReturn": "13.80",
+        "fundingProgress": 42,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "commercial",
+        "isActive": true
+      },
+      {
+        "id": "e344b68b-aa64-468b-986a-088030350d95",
+        "name": "Emerald Heights",
+        "description": "Premium residential towers with modern amenities in heart of Chennai",
+        "location": "T. Nagar",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "totalValue": 38000000,
+        "minInvestment": 38000,
+        "expectedReturn": "11.20",
+        "fundingProgress": 85,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "residential",
+        "isActive": true
+      },
+      {
+        "id": "e0191443-c237-4b35-b065-b4ba27589be2",
+        "name": "Tech Valley Plaza",
+        "description": "Modern commercial complex in HITEC City with multinational companies",
+        "location": "HITEC City",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "totalValue": 60000000,
+        "minInvestment": 60000,
+        "expectedReturn": "14.20",
+        "fundingProgress": 55,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "commercial",
+        "isActive": true
+      },
+      {
+        "id": "5b5dccac-a67f-4b74-a976-16c81345bd4e",
+        "name": "Mill Heritage Residences",
+        "description": "Luxury villa community near textile mills with traditional and modern architecture",
+        "location": "Peelamedu",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "totalValue": 35000000,
+        "minInvestment": 35000,
+        "expectedReturn": "11.50",
+        "fundingProgress": 62,
+        "imageUrls": [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "residential",
+        "isActive": true
+      },
+      {
+        "id": "bf8a0fbe-c827-4b5c-a056-8ba1fc6b13eb",
+        "name": "Fract OWN - Chennai",
+        "description": "Premium residential towers with modern amenities in heart of Chennai",
+        "location": "T. Nagar",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "totalValue": 38000000,
+        "minInvestment": 38000,
+        "expectedReturn": "11.20",
+        "fundingProgress": 85,
+        "imageUrls": [],
+        "attachments": [],
+        "customFields": {},
+        "propertyType": "commercial",
+        "isActive": true
+      }
+    ],
+    "contacts": [
+      {
+        "id": "b4042a5c-e790-445d-abd5-174a9f9961bf",
+        "name": "Production Test",
+        "email": "test@example.com",
+        "phone": "+919999999999",
+        "investmentAmount": "10L-25L",
+        "message": "Testing production",
+        "createdAt": "2025-08-08T12:15:27.687Z"
+      },
+      {
+        "id": "efc98778-2554-4e8d-a971-ea1a3990be6e",
+        "name": "Test User Frontend",
+        "email": "user@test.com",
+        "phone": "+919876543210",
+        "investmentAmount": "₹25,000 - ₹1,00,000",
+        "message": "test invest",
+        "createdAt": "2025-08-08T12:19:29.541Z"
+      },
+      {
+        "id": "a772d075-46c7-42e9-99c9-d10a883cd589",
+        "name": "Special Test User",
+        "email": "special@test.com",
+        "phone": "+919999999999",
+        "investmentAmount": "₹25,000 - ₹1,00,000",
+        "message": "Testing special characters: ₹ symbols",
+        "createdAt": "2025-08-08T12:19:43.363Z"
+      },
+      {
+        "id": "3a062282-d1e4-4674-a169-f0b8518ac156",
+        "name": "Min Fields Test",
+        "email": "min@test.com",
+        "phone": "+911234567890",
+        "investmentAmount": "₹10L+",
+        "message": "Minimum test",
+        "createdAt": "2025-08-08T12:19:43.963Z"
+      }
+    ]
+  }
+}
