@@ -14,10 +14,16 @@ export default function Footer() {
   // Fetch dynamic content
   const { data: footerContent = [] } = useQuery<any[]>({
     queryKey: ["/api/content?section=footer"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   const { data: riskDisclosureContent = [] } = useQuery<any[]>({
     queryKey: ["/api/content?section=risk_disclosure"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   const footerSections = [

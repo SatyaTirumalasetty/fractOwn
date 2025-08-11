@@ -87,6 +87,7 @@ export default function EnhancedContentManagement() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/content/"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/content"] });
       toast({
         title: "Content Updated",
         description: `${SECTIONS.find(s => s.key === variables.key)?.label} has been updated successfully.`,
@@ -124,7 +125,7 @@ export default function EnhancedContentManagement() {
 
   // Preview Components
   const renderHomePreview = () => {
-    const homeContent = content['home_content'] || getContentValue('home_content');
+    const homeContent = content['home_content'] !== undefined ? content['home_content'] : getContentValue('home_content');
     const stats = [
       { value: "₹500 Cr+", label: "Assets Under Management" },
       { value: "15,000+", label: "Happy Investors" },
@@ -139,9 +140,9 @@ export default function EnhancedContentManagement() {
             fract<span className="bg-blue-900 px-1 rounded text-orange-500">OWN</span> - Real Estate Investment
           </h2>
           <div className="text-gray-600 space-y-2">
-            {homeContent.split('\n').filter(line => line.trim()).map((line, index) => (
+            {homeContent ? homeContent.split('\n').filter(line => line.trim()).map((line, index) => (
               <p key={index}>{line}</p>
-            ))}
+            )) : <p>Enter home page content...</p>}
           </div>
         </div>
         
@@ -158,7 +159,7 @@ export default function EnhancedContentManagement() {
   };
 
   const renderFooterPreview = () => {
-    const footerContent = content['footer_content'] || getContentValue('footer_content');
+    const footerContent = content['footer_content'] !== undefined ? content['footer_content'] : getContentValue('footer_content');
     
     return (
       <div className="bg-gray-900 text-white p-6 rounded-lg">
@@ -193,7 +194,7 @@ export default function EnhancedContentManagement() {
   };
 
   const renderHowItWorksPreview = () => {
-    const howItWorksContent = content['how_it_works_content'] || getContentValue('how_it_works_content');
+    const howItWorksContent = content['how_it_works_content'] !== undefined ? content['how_it_works_content'] : getContentValue('how_it_works_content');
     const lines = howItWorksContent.split('\n').filter(line => line.trim());
     
     return (
@@ -220,7 +221,7 @@ export default function EnhancedContentManagement() {
   };
 
   const renderRiskDisclosurePreview = () => {
-    const riskContent = content['risk_disclosure_content'] || getContentValue('risk_disclosure_content');
+    const riskContent = content['risk_disclosure_content'] !== undefined ? content['risk_disclosure_content'] : getContentValue('risk_disclosure_content');
     const lines = riskContent.split('\n').filter(line => line.trim());
     const sections: { title: string; items: string[] }[] = [];
     let currentSection: { title: string; items: string[] } | null = null;
@@ -267,7 +268,7 @@ export default function EnhancedContentManagement() {
   };
 
   const renderAboutPreview = () => {
-    const aboutContent = content['about_fractOWN_content'] || getContentValue('about_fractOWN_content');
+    const aboutContent = content['about_fractOWN_content'] !== undefined ? content['about_fractOWN_content'] : getContentValue('about_fractOWN_content');
     
     return (
       <div className="space-y-6">
@@ -375,7 +376,7 @@ export default function EnhancedContentManagement() {
                     <Textarea
                       id={section.key}
                       placeholder={`Enter ${section.label.toLowerCase()} content...`}
-                      value={content[section.key] ?? getContentValue(section.key)}
+                      value={content[section.key] !== undefined ? content[section.key] : getContentValue(section.key)}
                       onChange={(e) => handleContentChange(section.key, e.target.value)}
                       className="min-h-[200px] font-mono text-sm"
                       disabled={previewMode[section.key]}

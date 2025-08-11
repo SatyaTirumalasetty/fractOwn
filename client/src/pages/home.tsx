@@ -14,6 +14,9 @@ export default function Home() {
   // Fetch dynamic risk disclosure content
   const { data: riskDisclosureContent = [] } = useQuery<any[]>({
     queryKey: ["/api/content?section=risk_disclosure"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   // Scroll to top when component mounts (only if not navigating to a specific section)

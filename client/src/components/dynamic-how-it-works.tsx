@@ -33,6 +33,9 @@ export default function DynamicHowItWorks() {
   // Fetch dynamic how it works content
   const { data: howItWorksContent = [], isLoading } = useQuery<ContentSection[]>({
     queryKey: ["/api/content?section=how_it_works"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   if (isLoading) {

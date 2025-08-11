@@ -4,10 +4,16 @@ export default function AboutSection() {
   // Fetch dynamic about content
   const { data: aboutContent = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/content?section=about_fractOWN"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   const { data: homeContent = [] } = useQuery<any[]>({
     queryKey: ["/api/content?section=home"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   if (isLoading) {
