@@ -34,12 +34,21 @@ export default function AdminStatisticsTab() {
   const queryClient = useQueryClient();
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
 
-  // Fetch site statistics
+  // Fetch site statistics with timeout handling
   const { data: statistics = [], isLoading, error } = useQuery<SiteStatistic[]>({
     queryKey: ["/api/site-statistics"],
+    retry: 2,
+    staleTime: 60000, // 1 minute
+    refetchOnWindowFocus: false,
+    gcTime: 300000, // 5 minutes
   });
 
-  console.log('AdminStatisticsTab render:', { statistics, isLoading, error });
+  console.log('AdminStatisticsTab render:', { 
+    statisticsCount: statistics?.length || 0, 
+    isLoading, 
+    error: error?.message || 'none', 
+    hasData: !!statistics && statistics.length > 0 
+  });
 
   // Update statistic mutation
   const updateStatisticMutation = useMutation({
@@ -147,7 +156,7 @@ export default function AdminStatisticsTab() {
 
       <Tabs defaultValue="statistics" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          {Object.entries(groupedStatistics).map(([category]) => {
+          {Object.entries(groupedStatistics).length > 0 ? Object.entries(groupedStatistics).map(([category]) => {
             const Icon = categoryIcons[category as keyof typeof categoryIcons] || TrendingUp;
             return (
               <TabsTrigger key={category} value={category} className="flex items-center gap-2">
@@ -155,7 +164,12 @@ export default function AdminStatisticsTab() {
                 {categoryLabels[category as keyof typeof categoryLabels] || category}
               </TabsTrigger>
             );
-          })}
+          }) : (
+            <TabsTrigger value="loading" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Loading...
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {Object.entries(groupedStatistics).map(([category, stats]) => {

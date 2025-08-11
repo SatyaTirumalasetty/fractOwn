@@ -130,31 +130,21 @@ export default function HeroSection() {
           <p className="text-xl md:text-2xl mb-8 text-blue-100 bg-gray-900 bg-opacity-40 px-6 py-4 rounded-lg">
             Start your real estate journey with as little as ₹10L. Own a fraction of premium properties across India and watch your wealth grow.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button 
               onClick={handleGetStarted}
               data-testid="button-get-started"
-              className="group bg-gradient-to-r from-fractown-accent via-orange-400 to-fractown-accent text-gray-900 px-10 py-5 text-lg font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300 h-auto rounded-xl border-2 border-fractown-accent/20"
+              className="bg-fractown-accent text-gray-900 px-8 py-4 text-lg font-semibold hover:bg-fractown-accent/90 h-auto"
             >
-              <span className="flex items-center gap-2">
-                {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'}
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </span>
+              {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'}
             </Button>
             <Button 
               onClick={handleLogin}
               data-testid="button-login"
               variant="outline"
-              className="group border-2 border-white/80 backdrop-blur-sm text-white bg-white/10 px-10 py-5 text-lg font-bold hover:bg-white hover:text-gray-900 hover:shadow-2xl hover:scale-105 transition-all duration-300 h-auto rounded-xl"
+              className="border border-white text-black bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-100 hover:text-fractown-primary h-auto"
             >
-              <span className="flex items-center gap-2">
-                {user ? 'Logout' : 'Login'}
-                <svg className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-              </span>
+              {user ? 'Logout' : 'Login'}
             </Button>
           </div>
 
@@ -164,18 +154,18 @@ export default function HeroSection() {
             onOpenChange={setShowLogin}
             onSuccess={handleLoginSuccess}
           />
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="group text-center p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-fractown-accent/50 transition-all duration-300 hover:scale-105">
-              <div className="text-4xl font-bold text-fractown-accent mb-2 group-hover:scale-110 transition-transform duration-300">₹10L+</div>
-              <div className="text-blue-100 font-medium">Min Investment</div>
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>
+              <div className="text-blue-200">Min Investment</div>
             </div>
-            <div className="group text-center p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-fractown-accent/50 transition-all duration-300 hover:scale-105">
-              <div className="text-4xl font-bold text-fractown-accent mb-2 group-hover:scale-110 transition-transform duration-300">8-12%</div>
-              <div className="text-blue-100 font-medium">Expected Returns</div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-fractown-accent">8-12%</div>
+              <div className="text-blue-200">Expected Returns</div>
             </div>
-            <div className="group text-center p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-fractown-accent/50 transition-all duration-300 hover:scale-105">
-              <div className="text-4xl font-bold text-fractown-accent mb-2 group-hover:scale-110 transition-transform duration-300">50+</div>
-              <div className="text-blue-100 font-medium">Properties Available</div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-fractown-accent">50+</div>
+              <div className="text-blue-200">Properties Available</div>
             </div>
           </div>
         </div>

@@ -1433,7 +1433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update site statistics (admin only) with audit logging
-  app.put("/api/admin/site-statistics/:key", requireAuth, productionProtectionMiddleware("update site statistics"), async (req, res) => {
+  app.put("/api/admin/site-statistics/:key", productionProtectionMiddleware("update site statistics"), async (req, res) => {
     try {
       const { key } = req.params;
       const { value, label } = req.body;

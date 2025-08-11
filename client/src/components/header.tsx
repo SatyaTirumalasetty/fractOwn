@@ -72,92 +72,77 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shadow-lg shadow-gray-100/50">
+    <header className="bg-white shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-24">
           <div className="flex items-center space-x-4">
-            <div className="group flex items-center space-x-3 cursor-pointer" onClick={() => scrollToSection('home')}>
-              <div className="relative">
-                <img 
-                  src={logoUrl} 
-                  alt="fractOWN Logo"
-                  className="h-20 w-20 object-contain transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-fractown-primary/20 to-fractown-accent/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-2xl font-bold flex items-center group-hover:scale-105 transition-transform duration-300">
-                  <span className="bg-gradient-to-r from-fractown-primary to-blue-600 bg-clip-text text-transparent mr-1">fract</span>
-                  <span className="px-2 py-1 font-bold inline-block rounded-md shadow-lg text-[#f28718] bg-[#0b1957] pt-[0px] pb-[0px]">OWN</span>
-                </h1>
-                <p className="text-xs text-gray-500 font-medium tracking-wide">Real Estate Investment</p>
-              </div>
+            <div className="flex-shrink-0 cursor-pointer" onClick={() => scrollToSection('home')}>
+              <img 
+                src={logoUrl} 
+                alt="fractOWN Logo"
+                className="h-20 w-20 object-contain hover:opacity-80 transition-opacity"
+              />
+            </div>
+            <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
+              <h1 className="text-2xl font-bold flex items-center">
+                <span className="text-fractown-primary mr-1">fract</span>
+                <span className="bg-fractown-own-bg text-fractown-accent px-1.5 py-0.5 font-bold inline-block">OWN</span>
+              </h1>
+              <p className="text-sm text-gray-600">Real Estate Investment</p>
             </div>
             <div className="hidden md:block ml-10">
-              <div className="flex items-center space-x-1">
+              <div className="flex items-baseline space-x-4">
                 {navItems.map((item, index) => (
                   <button
                     key={item.id}
                     onClick={() => scrollToSection(item.id)}
-                    className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                    className={`px-3 py-2 text-sm font-medium transition-colors ${
                       index === 0 
-                        ? "text-gray-900 hover:text-fractown-primary hover:bg-fractown-primary/5" 
-                        : "text-gray-600 hover:text-fractown-primary hover:bg-fractown-primary/5"
-                    } group`}
+                        ? "text-gray-900 hover:text-fractown-primary" 
+                        : "text-gray-600 hover:text-fractown-primary"
+                    }`}
                   >
-                    <span className="relative z-10">{item.label}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-fractown-primary/0 to-fractown-accent/0 group-hover:from-fractown-primary/10 group-hover:to-fractown-accent/10 rounded-lg transition-all duration-300"></div>
+                    {item.label}
                   </button>
                 ))}
               </div>
             </div>
           </div>
           <div className="hidden md:block">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               {isAuthenticated && user ? (
                 <div className="flex items-center space-x-3">
-                  <div className="px-3 py-1.5 bg-gradient-to-r from-fractown-primary/10 to-fractown-accent/10 rounded-full border border-fractown-primary/20">
-                    <span className="text-sm text-gray-700">
-                      Welcome, <span className="font-semibold text-fractown-primary">{user.name}</span>
-                    </span>
-                  </div>
+                  <span className="text-sm text-gray-700">
+                    Welcome, <span className="font-medium text-fractown-primary">{user.name}</span>
+                  </span>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-fractown-primary/30 text-fractown-primary hover:bg-fractown-primary hover:text-white transition-all duration-300 hover:scale-105"
+                    className="text-gray-600 hover:text-fractown-primary border-gray-300"
                     onClick={handleLoginClick}
                   >
                     Logout
                   </Button>
                 </div>
               ) : (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    className="text-gray-600 hover:text-fractown-primary hover:bg-fractown-primary/5 transition-all duration-300 hover:scale-105 rounded-lg"
-                    onClick={handleLoginClick}
-                  >
-                    Login
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="text-gray-600 hover:text-fractown-primary hover:bg-fractown-primary/5 transition-all duration-300 hover:scale-105 rounded-lg" 
-                    onClick={() => window.location.href = '/admin/login'}
-                  >
-                    Admin
-                  </Button>
-                </>
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 hover:text-fractown-primary"
+                  onClick={handleLoginClick}
+                >
+                  Login
+                </Button>
+              )}
+              {!isAuthenticated && (
+                <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
+                  Admin
+                </Button>
               )}
               <Button 
-                className="group bg-gradient-to-r from-fractown-primary via-blue-600 to-fractown-primary text-white hover:shadow-xl hover:scale-105 transition-all duration-300 rounded-xl px-6 py-2.5 font-semibold"
+                className="bg-fractown-primary text-white hover:bg-fractown-primary/90"
                 onClick={() => scrollToSection('properties')}
               >
-                <span className="flex items-center gap-2">
-                  Get Started
-                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
+                Get Started
               </Button>
             </div>
           </div>
