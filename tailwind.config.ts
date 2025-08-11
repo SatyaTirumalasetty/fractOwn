@@ -65,7 +65,8 @@ export default {
         fractown: {
           primary: "var(--fractown-primary)", // Dark navy blue
           secondary: "var(--fractown-secondary)",
-          accent: "var(--fractown-accent)", // Orange/copper
+          accent: "var(--fractown-accent)", // Bright orange text
+          "own-bg": "var(--fractown-own-bg)", // Dark blue background for OWN
           "logo-bg": "var(--fractown-logo-bg)", // Light gray background
           "neutral-50": "var(--fractown-neutral-50)",
           "neutral-600": "var(--fractown-neutral-600)",
