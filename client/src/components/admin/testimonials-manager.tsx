@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, Plus, Trash2, MessageSquare, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
 
 interface Testimonial {
@@ -113,17 +113,7 @@ export default function TestimonialsManager() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/content/key/testimonials_content', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content: JSON.stringify(testimonials) })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save testimonials');
-      }
+      const response = await apiRequest('/api/admin/content/key/testimonials_content', 'PUT', { content: JSON.stringify(testimonials) });
 
       queryClient.invalidateQueries({ queryKey: ['/api/content'] });
 

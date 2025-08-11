@@ -64,17 +64,7 @@ export default function StatisticsManager({ initialStats = [], onSave }: Statist
       // Convert stats to content format
       const content = stats.map(stat => `• ${stat.value}: ${stat.label}`).join('\n');
       
-      const response = await fetch('/api/admin/content/key/home_content', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save statistics');
-      }
+      const response = await apiRequest('/api/admin/content/key/home_content', 'PUT', { content });
 
       queryClient.invalidateQueries({ queryKey: ['/api/content'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/content/'] });

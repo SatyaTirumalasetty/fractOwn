@@ -19,13 +19,21 @@ export default function Home() {
     staleTime: 0
   });
 
-  // Scroll to top when component mounts (only if not navigating to a specific section)
+  // Scroll to top when component mounts or page refreshes
   useEffect(() => {
-    // Check if we need to scroll to a specific section (like properties)
-    const hash = window.location.hash;
-    if (!hash) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Always scroll to top when page loads/refreshes
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    
+    // Handle browser refresh - scroll to top immediately
+    const handleBeforeUnload = () => {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
   return (

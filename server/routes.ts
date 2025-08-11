@@ -52,6 +52,51 @@ function broadcastUpdate(type: string, data?: any) {
   deadConnections.forEach(ws => wsConnections.delete(ws));
 }
 
+// Enhanced authentication middleware with security hardening
+const requireAuth = async (req: any, res: any, next: any) => {
+  try {
+    // Check both cookies and Authorization header with validation
+    let sessionToken = null;
+    
+    if (req.cookies && req.cookies.adminSessionToken) {
+      sessionToken = req.cookies.adminSessionToken;
+    } else if (req.headers.authorization) {
+      sessionToken = req.headers.authorization.replace('Bearer ', '');
+    }
+    
+    if (!sessionToken) {
+      console.log("No session token found in cookies or headers");
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    // Validate session token format for security
+    if (!SecurityValidator.validateSessionToken(sessionToken)) {
+      console.log("Invalid session token format");
+      return res.status(401).json({ message: "Invalid session format" });
+    }
+
+    console.log("Validating session token:", sessionToken.substring(0, 10) + "...");
+    const adminId = await storage.validateAdminSession(sessionToken);
+    
+    if (!adminId) {
+      console.log("Session token validation failed");
+      return res.status(401).json({ message: "Invalid or expired session" });
+    }
+
+    console.log("Authentication successful for admin:", adminId);
+    req.user = { id: adminId };
+    
+    // Set security headers
+    res.setHeader('X-Admin-Session', 'active');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    
+    next();
+  } catch (error) {
+    console.error("Authentication middleware error:", error);
+    res.status(500).json({ message: "Authentication error" });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure trust proxy before security middleware
   app.set('trust proxy', config.security.additionalSecurity.trustProxy);
@@ -973,7 +1018,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update content section by key (for dynamic content like testimonials and statistics)
-  app.put("/api/admin/content/key/:key", async (req, res) => {
+  app.put("/api/admin/content/key/:key", requireAuth, async (req, res) => {
     try {
       console.log("PUT /api/admin/content/:key called with key:", req.params.key);
       const { key } = req.params;
@@ -1107,51 +1152,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // TOTP Routes for Authenticator-based Password Reset
-  
-  // Enhanced authentication middleware with security hardening
-  const requireAuth = async (req: any, res: any, next: any) => {
-    try {
-      // Check both cookies and Authorization header with validation
-      let sessionToken = null;
-      
-      if (req.cookies && req.cookies.adminSessionToken) {
-        sessionToken = req.cookies.adminSessionToken;
-      } else if (req.headers.authorization) {
-        sessionToken = req.headers.authorization.replace('Bearer ', '');
-      }
-      
-      if (!sessionToken) {
-        console.log("No session token found in cookies or headers");
-        return res.status(401).json({ message: "Authentication required" });
-      }
-
-      // Validate session token format for security
-      if (!SecurityValidator.validateSessionToken(sessionToken)) {
-        console.log("Invalid session token format");
-        return res.status(401).json({ message: "Invalid session format" });
-      }
-
-      console.log("Validating session token:", sessionToken.substring(0, 10) + "...");
-      const adminId = await storage.validateAdminSession(sessionToken);
-      
-      if (!adminId) {
-        console.log("Session token validation failed");
-        return res.status(401).json({ message: "Invalid or expired session" });
-      }
-
-      console.log("Authentication successful for admin:", adminId);
-      req.user = { id: adminId };
-      
-      // Set security headers
-      res.setHeader('X-Admin-Session', 'active');
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-      
-      next();
-    } catch (error) {
-      console.error("Authentication middleware error:", error);
-      res.status(500).json({ message: "Authentication error" });
-    }
-  };
 
   // Generate TOTP secret and QR code for setup - Enhanced Security
   app.post("/api/admin/totp/generate", requireAuth, async (req, res) => {
