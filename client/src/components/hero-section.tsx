@@ -6,8 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function HeroSection() {
   const [showLogin, setShowLogin] = useState(false);
-  const [user, setUser] = useState(null);
-  const [sessionToken, setSessionToken] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const { features } = useFeatureFlags();
 
   // Fetch site logo from admin settings
