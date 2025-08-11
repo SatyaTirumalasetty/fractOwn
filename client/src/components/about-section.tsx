@@ -18,16 +18,14 @@ export default function AboutSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="will-change-transform animate-fade-in-up">
-            <div className="inline-flex items-center px-3 py-1 bg-fractown-primary/10 rounded-full mb-4">
-              <span className="text-sm font-medium text-fractown-primary">About fractOWN</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               About fractOWN
             </h2>
-            <p className="text-gray-600 mb-4 leading-relaxed">
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
               We're democratizing real estate investment in India by making premium properties accessible to everyone. Our mission is to enable wealth creation through fractional property ownership.
             </p>
-            <p className="text-gray-600 mb-6 leading-relaxed">
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
               Founded by real estate and fintech veterans, fractOWN combines deep market expertise with cutting-edge technology to deliver superior investment experiences.
             </p>
             
@@ -38,8 +36,8 @@ export default function AboutSection() {
                   className="glass-card p-4 rounded-xl will-change-transform fast-transition hover:rich-shadow"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="text-2xl font-bold text-blue-600 mb-1">{stat.value}</div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">{stat.value}</div>
+                  <div className="text-base text-gray-600">{stat.label}</div>
                 </div>
               ))}
             </div>
