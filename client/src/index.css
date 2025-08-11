@@ -24,10 +24,11 @@
   --ring: hsl(222, 84%, 4.9%);
   --radius: 0.5rem;
   
-  /* Custom fractOWN colors */
-  --fractown-primary: hsl(222, 82%, 39%);
+  /* Custom fractOWN colors - matching logo */
+  --fractown-primary: hsl(222, 82%, 39%); /* Dark navy blue for "fract" */
   --fractown-secondary: hsl(159, 75%, 40%);
-  --fractown-accent: hsl(38, 92%, 50%);
+  --fractown-accent: hsl(22, 85%, 55%); /* Orange/copper for "OWN" */
+  --fractown-logo-bg: hsl(40, 7%, 91%); /* Light gray background like logo */
   --fractown-neutral-50: hsl(210, 20%, 98%);
   --fractown-neutral-600: hsl(215, 14%, 39%);
   --fractown-neutral-900: hsl(222, 24%, 14%);

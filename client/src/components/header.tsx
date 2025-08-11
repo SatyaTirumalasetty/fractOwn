@@ -25,7 +25,7 @@ export default function Header() {
   });
 
   // Get logo URL from settings or fallback
-  const logoUrl = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value || '/attached_assets/fractOWN_logo1_1754210267276.jpg';
+  const logoUrl = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value || '/attached_assets/logo.jpg';
 
   const scrollToSection = (sectionId: string) => {
     // If we're not on the home page, navigate to home first
@@ -72,7 +72,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-gray-50 shadow-sm sticky top-0 z-50">
+    <header className="bg-fractown-logo-bg shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           <div className="flex items-center space-x-4">
@@ -84,8 +84,8 @@ export default function Header() {
               />
             </div>
             <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
-              <h1 className="text-2xl font-bold text-gray-900">
-                fractOWN
+              <h1 className="text-2xl font-bold">
+                <span className="text-fractown-primary">fract</span><span className="text-fractown-accent">OWN</span>
               </h1>
               <p className="text-sm text-gray-600">Real Estate Investment</p>
             </div>
