@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
+// Removed OTP login for now
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { useQuery } from "@tanstack/react-query";
 
@@ -151,12 +151,7 @@ export default function HeroSection() {
             </Button>
           </div>
 
-          {/* Auth Dialogs */}
-          <OTPLoginDialog 
-            open={showLogin} 
-            onOpenChange={setShowLogin}
-            onSuccess={handleLoginSuccess}
-          />
+          {/* Auth Dialogs - Temporarily removed */}
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>
