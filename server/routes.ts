@@ -1409,8 +1409,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // =========================== SITE STATISTICS API ===========================
   
-  // Get all site statistics with production protection
-  app.get("/api/site-statistics", productionProtectionMiddleware("fetch site statistics"), async (req, res) => {
+  // Get all site statistics (no protection needed - this is read-only data)
+  app.get("/api/site-statistics", async (req, res) => {
     try {
       const result = await db.execute(sql`
         SELECT key, value, label, category, format_type 
@@ -1432,7 +1432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update site statistics (admin only) with audit logging
+  // Update site statistics (admin only) with audit logging (keep protection for writes)
   app.put("/api/admin/site-statistics/:key", productionProtectionMiddleware("update site statistics"), async (req, res) => {
     try {
       const { key } = req.params;
