@@ -60,34 +60,41 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="bg-fractown-logo-bg shadow-sm sticky top-0 z-50">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-24">
             <div className="flex items-center space-x-4">
-              <img 
-                src={logoUrl} 
-                alt="fractOWN Logo" 
-                className="h-12 w-auto object-contain"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  <span className="text-fractown-primary">fract</span>
-                  <span className="text-white bg-fractown-primary px-1 rounded">OWN</span>
+              <div className="flex-shrink-0">
+                <img 
+                  src={logoUrl} 
+                  alt="fractOWN Logo"
+                  className="h-20 w-20 object-contain hover:opacity-80 transition-opacity"
+                />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold flex items-center">
+                  <span className="text-fractown-primary mr-1">fract</span>
+                  <span className="bg-fractown-own-bg text-fractown-accent px-1.5 py-0.5 font-bold inline-block">OWN</span>
                 </h1>
                 <p className="text-sm text-gray-600">Admin Dashboard</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {adminUser.username}
+              <span className="text-sm text-gray-700">
+                Welcome, <span className="font-medium text-fractown-primary">{adminUser.username}</span>
               </span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="text-gray-600 hover:text-fractown-primary border-gray-300"
+                onClick={handleLogout}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             </div>
           </div>
-        </div>
+        </nav>
       </header>
 
       {/* Main Content */}
