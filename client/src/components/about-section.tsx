@@ -47,10 +47,6 @@ export default function AboutSection() {
                 <Shield className="w-4 h-4 text-green-600" />
                 <span className="text-sm font-medium text-green-700">SEBI Regulated</span>
               </div>
-              <div className="flex items-center space-x-2 px-3 py-2 bg-blue-50 rounded-lg">
-                <Lock className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">Secure Platform</span>
-              </div>
             </div>
           </div>
           
