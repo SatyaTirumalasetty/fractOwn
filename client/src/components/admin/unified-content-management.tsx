@@ -18,18 +18,14 @@ export default function UnifiedContentManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="home-editor" className="flex items-center space-x-2">
             <Home className="w-4 h-4" />
             <span className="hidden sm:inline">Home Page</span>
           </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center space-x-2">
+          <TabsTrigger value="other-content" className="flex items-center space-x-2">
             <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Content Editor</span>
-          </TabsTrigger>
-          <TabsTrigger value="advanced" className="flex items-center space-x-2">
-            <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">Advanced</span>
+            <span className="hidden sm:inline">Other Pages</span>
           </TabsTrigger>
         </TabsList>
 
@@ -37,23 +33,8 @@ export default function UnifiedContentManagement() {
           <WYSIWYGHomeEditor />
         </TabsContent>
 
-        <TabsContent value="content">
+        <TabsContent value="other-content">
           <EnhancedContentManagement />
-        </TabsContent>
-
-        <TabsContent value="advanced">
-          <Card>
-            <CardHeader>
-              <CardTitle>Advanced Content Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Advanced content management features will be available here.</p>
-                <p className="text-sm">Including SEO settings, metadata, and bulk operations.</p>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>

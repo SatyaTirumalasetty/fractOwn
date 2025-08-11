@@ -7,11 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, FileText, Home, AlertTriangle, Info, Eye, Edit, BarChart3 } from "lucide-react";
+import { Save, FileText, AlertTriangle, Info, Eye, Edit, BarChart3 } from "lucide-react";
 import LivePreviewContent from "./live-preview-content";
-import StatisticsManager from "./statistics-manager";
-import TestimonialsManager from "./testimonials-manager";
-import HomePageLiveEditor from "./home-page-live-editor";
 
 interface ContentSection {
   id: string;
@@ -28,14 +25,6 @@ interface ContentSection {
 }
 
 const SECTIONS = [
-  { 
-    key: 'home_content', 
-    label: 'Home Page', 
-    icon: Home, 
-    description: 'Main page content including statistics and descriptions',
-    contentKey: 'home_content',
-    statsKeys: ['home_total_value', 'home_investors', 'home_properties', 'home_cities']
-  },
   { 
     key: 'footer_content', 
     label: 'Footer Content', 
@@ -69,7 +58,7 @@ const SECTIONS = [
 export default function EnhancedContentManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("home_content");
+  const [activeTab, setActiveTab] = useState("footer_content");
   const [previewMode, setPreviewMode] = useState<Record<string, boolean>>({});
   const [content, setContent] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
@@ -319,8 +308,6 @@ export default function EnhancedContentManagement() {
 
   const renderPreview = (sectionKey: string) => {
     switch (sectionKey) {
-      case 'home_content':
-        return renderHomePreview();
       case 'footer_content':
         return renderFooterPreview();
       case 'how_it_works_content':
@@ -336,8 +323,6 @@ export default function EnhancedContentManagement() {
 
   const getFormatInstructions = (sectionKey: string) => {
     switch (sectionKey) {
-      case 'home_content':
-        return "Enter main description text. Each line will be a separate paragraph. Statistics are managed separately.";
       case 'footer_content':
         return "Enter company description. Each line will be a separate paragraph in the footer.";
       case 'how_it_works_content':
@@ -365,7 +350,7 @@ export default function EnhancedContentManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           {SECTIONS.map((section) => (
             <TabsTrigger key={section.key} value={section.key} className="flex items-center space-x-2">
               <section.icon className="w-4 h-4" />
@@ -452,15 +437,7 @@ export default function EnhancedContentManagement() {
         ))}
       </Tabs>
 
-      {/* Statistics Management Section */}
-      <div className="mt-8">
-        <StatisticsManager />
-      </div>
 
-      {/* Testimonials Management Section */}
-      <div className="mt-8">
-        <TestimonialsManager />
-      </div>
     </div>
   );
 }
