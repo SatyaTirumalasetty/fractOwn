@@ -973,8 +973,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update content section by key (for dynamic content like testimonials and statistics)
-  app.put("/api/admin/content/:key", async (req, res) => {
+  app.put("/api/admin/content/key/:key", async (req, res) => {
     try {
+      console.log("PUT /api/admin/content/:key called with key:", req.params.key);
       const { key } = req.params;
       const { content } = req.body;
       
@@ -1000,11 +1001,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         res.json(updatedSection);
       } else {
-        // Create new section
+        // Create new section with required fields
+        let title = "Dynamic Content";
+        let section = "dynamic";
+        
+        if (key === "testimonials_content") {
+          title = "Customer Testimonials";
+          section = "testimonials";
+        } else if (key === "home_content" || key === "statistics_content") {
+          title = "Statistics";
+          section = "statistics";
+        }
+        
         const [newSection] = await db.insert(contentSections)
           .values({
             key,
+            title,
             content,
+            section,
             updatedAt: new Date()
           })
           .returning();

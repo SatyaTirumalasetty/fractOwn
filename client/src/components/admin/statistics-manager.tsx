@@ -64,7 +64,7 @@ export default function StatisticsManager({ initialStats = [], onSave }: Statist
       // Convert stats to content format
       const content = stats.map(stat => `• ${stat.value}: ${stat.label}`).join('\n');
       
-      const response = await fetch('/api/admin/content/home_content', {
+      const response = await fetch('/api/admin/content/key/home_content', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

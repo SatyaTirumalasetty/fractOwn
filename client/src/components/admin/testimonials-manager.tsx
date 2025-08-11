@@ -113,7 +113,7 @@ export default function TestimonialsManager() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/content/testimonials_content', {
+      const response = await fetch('/api/admin/content/key/testimonials_content', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
