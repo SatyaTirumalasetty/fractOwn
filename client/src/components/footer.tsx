@@ -112,8 +112,13 @@ export default function Footer() {
               className="h-28 w-auto mb-4"
             />
             <p className="text-gray-400 mb-4">
-              {footerContent.find((c: any) => c.key === 'footer_company_description')?.content || 
-               "Democratizing real estate investment through fractional ownership. Start your wealth journey today."}
+              {(() => {
+                const content = footerContent.find((c: any) => c.key === 'footer_content');
+                if (!content) return 'Democratizing real estate investment through fractional ownership. Start your wealth journey today.';
+                const lines = content.content.split('\n').filter((line: string) => line.trim());
+                const contactIndex = lines.findIndex((line: string) => line.toLowerCase().includes('contact'));
+                return lines.slice(0, contactIndex > 0 ? contactIndex : 1).join(' ');
+              })()}
             </p>
             {socialLinks.length > 0 && (
               <div>
