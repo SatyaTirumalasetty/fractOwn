@@ -25,7 +25,7 @@ export default function HowItWorks() {
 
     for (const line of lines) {
       if (line.includes(':') && stepIndex < icons.length) {
-        const [title, description] = line.split(':').map(s => s.trim());
+        const [title, description] = line.split(':').map((s: string) => s.trim());
         steps.push({
           icon: icons[stepIndex],
           title: `${stepIndex + 1}. ${title}`,

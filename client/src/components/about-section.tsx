@@ -6,7 +6,9 @@ export default function AboutSection() {
     queryKey: ["/api/content?section=about_fractOWN"],
   });
 
-
+  const { data: homeContent = [] } = useQuery<any[]>({
+    queryKey: ["/api/content?section=home"],
+  });
 
   if (isLoading) {
     return (
@@ -32,10 +34,6 @@ export default function AboutSection() {
       </section>
     );
   }
-
-  const { data: homeContent = [] } = useQuery<any[]>({
-    queryKey: ["/api/content?section=home"],
-  });
 
   const getAboutContent = () => {
     const content = aboutContent.find((c: any) => c.key === 'about_fractOWN_content');
