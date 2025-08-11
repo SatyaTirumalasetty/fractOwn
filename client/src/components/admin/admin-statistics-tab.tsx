@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,13 +34,20 @@ export default function AdminStatisticsTab() {
   const queryClient = useQueryClient();
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
 
-  // Fetch site statistics with timeout handling
+  // Clear cache on mount and fetch site statistics
+  React.useEffect(() => {
+    queryClient.removeQueries({ queryKey: ["/api/site-statistics"] });
+  }, [queryClient]);
+
+  // Fetch site statistics with timeout handling and forced refresh
   const { data: statistics = [], isLoading, error } = useQuery<SiteStatistic[]>({
     queryKey: ["/api/site-statistics"],
     retry: 2,
-    staleTime: 60000, // 1 minute
-    refetchOnWindowFocus: false,
-    gcTime: 300000, // 5 minutes
+    staleTime: 0, // Always fresh data
+    refetchOnWindowFocus: true,
+    gcTime: 0, // No caching
+    refetchInterval: false,
+    refetchOnMount: 'always',
   });
 
   console.log('AdminStatisticsTab render:', { 
@@ -56,9 +63,12 @@ export default function AdminStatisticsTab() {
       return apiRequest(`/api/admin/site-statistics/${key}`, "PUT", { value, label });
     },
     onSuccess: () => {
+      // Force refetch with cache invalidation
       queryClient.invalidateQueries({ queryKey: ["/api/site-statistics"] });
+      queryClient.refetchQueries({ queryKey: ["/api/site-statistics"] });
+      queryClient.removeQueries({ queryKey: ["/api/site-statistics"] });
       toast({
-        title: "Success",
+        title: "Success", 
         description: "Statistic updated successfully",
       });
       setEditingValues({});
