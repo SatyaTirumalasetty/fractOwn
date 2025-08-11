@@ -5,7 +5,7 @@ import HeroSection from "@/components/hero-section";
 
 import PropertiesSection from "@/components/properties-section";
 import DynamicHowItWorks from "@/components/dynamic-how-it-works";
-import Testimonials from "@/components/testimonials";
+import TestimonialsSection from "@/components/testimonials-section";
 import AboutSection from "@/components/about-section";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
@@ -42,7 +42,7 @@ export default function Home() {
         <div id="how-it-works">
           <DynamicHowItWorks />
         </div>
-        <Testimonials />
+        <TestimonialsSection />
         <div id="about">
           <AboutSection />
         </div>

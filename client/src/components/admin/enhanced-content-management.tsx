@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, FileText, Home, AlertTriangle, Info, Eye, Edit, BarChart3 } from "lucide-react";
 import LivePreviewContent from "./live-preview-content";
 import StatisticsManager from "./statistics-manager";
+import TestimonialsManager from "./testimonials-manager";
 
 interface ContentSection {
   id: string;
@@ -453,6 +454,11 @@ export default function EnhancedContentManagement() {
       {/* Statistics Management Section */}
       <div className="mt-8">
         <StatisticsManager />
+      </div>
+
+      {/* Testimonials Management Section */}
+      <div className="mt-8">
+        <TestimonialsManager />
       </div>
     </div>
   );
