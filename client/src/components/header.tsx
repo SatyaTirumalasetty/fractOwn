@@ -81,14 +81,14 @@ export default function Header() {
                 <img 
                   src={logoUrl} 
                   alt="fractOWN Logo"
-                  className="h-16 w-16 object-contain transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg"
+                  className="h-20 w-20 object-contain transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-fractown-primary/20 to-fractown-accent/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
               </div>
               <div className="flex flex-col">
                 <h1 className="text-2xl font-bold flex items-center group-hover:scale-105 transition-transform duration-300">
                   <span className="bg-gradient-to-r from-fractown-primary to-blue-600 bg-clip-text text-transparent mr-1">fract</span>
-                  <span className="bg-gradient-to-r from-fractown-accent to-orange-500 text-white px-2 py-1 font-bold inline-block rounded-md shadow-lg">OWN</span>
+                  <span className="bg-blue-900 text-orange-600 px-2 py-1 font-bold inline-block rounded-md shadow-lg">OWN</span>
                 </h1>
                 <p className="text-xs text-gray-500 font-medium tracking-wide">Real Estate Investment</p>
               </div>
