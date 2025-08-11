@@ -132,12 +132,23 @@ export default function AdminStatisticsTab() {
     );
   }
 
-  if (!statistics || statistics.length === 0) {
+  // Debug: log the current state 
+  console.log('Statistics check:', { 
+    statistics, 
+    statisticsLength: statistics?.length, 
+    isArray: Array.isArray(statistics),
+    statisticsType: typeof statistics 
+  });
+
+  if (!statistics || !Array.isArray(statistics) || statistics.length === 0) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <p className="text-lg font-medium">No statistics found</p>
           <p className="text-muted-foreground">Statistics will appear here once they are configured.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Debug: {statistics ? `Got ${statistics?.length} items` : 'No data received'}
+          </p>
         </div>
       </div>
     );
