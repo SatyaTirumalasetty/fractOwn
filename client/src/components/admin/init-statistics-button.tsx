@@ -10,7 +10,7 @@ export default function InitStatisticsButton() {
   const queryClient = useQueryClient();
 
   const initMutation = useMutation({
-    mutationFn: () => apiRequest("/api/admin/initialize-statistics", "POST"),
+    mutationFn: () => apiRequest("/api/admin/initialize-statistics", "POST", {}),
     onSuccess: (data: any) => {
       toast({
         title: "Statistics Initialized",

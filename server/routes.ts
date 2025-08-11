@@ -1618,7 +1618,7 @@ async function sendPasswordChangeNotification(adminUser: any) {
   });
 
   // Manual statistics initialization (production-safe)
-  app.post('/api/admin/initialize-statistics', isAuthenticated, async (req, res) => {
+  app.post('/api/admin/initialize-statistics', requireSessionAuth, async (req, res) => {
     try {
       const { initializeSiteStatistics } = await import("./seed-statistics");
       const result = await initializeSiteStatistics();
