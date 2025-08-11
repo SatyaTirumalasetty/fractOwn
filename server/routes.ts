@@ -43,6 +43,14 @@ const config = {
   },
   business: {
     minInvestment: 1000000 // 10 Lakhs
+  },
+  app: {
+    features: {
+      enableUserRegistration: false,
+      enableEmailNotifications: false,
+      enableSMSNotifications: false,
+      enablePaymentIntegration: false
+    }
   }
 };
 
