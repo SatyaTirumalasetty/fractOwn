@@ -2,10 +2,10 @@ import { Shield, Lock, Award } from "lucide-react";
 
 export default function AboutSection() {
   const stats = [
-    { value: "₹500 Cr+", label: "Assets Under Management" },
-    { value: "15,000+", label: "Happy Investors" },
-    { value: "50+", label: "Properties Listed" },
-    { value: "8 Cities", label: "Across India" }
+    { value: "₹50 Cr+", label: "Assets Under Management" },
+    { value: "20+", label: "Happy Investors" },
+    { value: "10+", label: "Properties Listed" },
+    { value: "4 Cities", label: "Across India" }
   ];
 
   const certifications = [
@@ -56,12 +56,7 @@ export default function AboutSection() {
               className="rounded-2xl shadow-lg w-full h-auto"
             />
             
-            {/* Floating stats card */}
-            <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-              <div className="text-sm text-gray-500 mb-1">Average Monthly Returns</div>
-              <div className="text-2xl font-bold text-fractown-secondary">₹8,500</div>
-              <div className="text-sm text-fractown-secondary">Per ₹1 Lakh Invested</div>
-            </div>
+
           </div>
         </div>
       </div>

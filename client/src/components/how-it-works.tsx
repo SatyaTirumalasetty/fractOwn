@@ -17,7 +17,7 @@ export default function HowItWorks() {
     {
       icon: CreditCard,
       title: "3. Invest Securely",
-      description: "Complete KYC verification and invest with secure payment methods starting from ₹5,000",
+      description: "Complete KYC verification and invest with secure payment methods starting from ₹10 Lakh",
       color: "bg-fractown-accent"
     },
     {
@@ -31,7 +31,7 @@ export default function HowItWorks() {
   const benefits = [
     {
       title: "Lower Entry Barrier",
-      description: "Start with as little as ₹5,000 instead of crores for full property ownership"
+      description: "Start with as little as ₹10 Lakh instead of crores for full property ownership"
     },
     {
       title: "Diversified Portfolio",

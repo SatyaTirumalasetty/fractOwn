@@ -150,9 +150,7 @@ export default function Footer() {
           <div>
             <p>&copy; 2024 fractOWN Technologies Pvt. Ltd. All rights reserved.</p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <p>CIN: U74999MH2023PTC123456</p>
-          </div>
+
         </div>
       </div>
     </footer>
