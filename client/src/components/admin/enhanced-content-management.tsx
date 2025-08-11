@@ -11,6 +11,7 @@ import { Save, FileText, Home, AlertTriangle, Info, Eye, Edit, BarChart3 } from 
 import LivePreviewContent from "./live-preview-content";
 import StatisticsManager from "./statistics-manager";
 import TestimonialsManager from "./testimonials-manager";
+import HomePageLiveEditor from "./home-page-live-editor";
 
 interface ContentSection {
   id: string;

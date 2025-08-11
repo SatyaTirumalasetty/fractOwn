@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPropertiesTab } from "@/components/admin/admin-properties-tab";
 import { AdminContactsTab } from "@/components/admin/admin-contacts-tab";
 import AdminSettingsTab from "@/components/admin/admin-settings-tab";
-import EnhancedContentManagement from "@/components/admin/enhanced-content-management";
+import UnifiedContentManagement from "@/components/admin/unified-content-management";
 import { EnhancedAdminDashboard } from "@/components/admin/enhanced-admin-dashboard";
 import { LogOut, Building, MessageSquare, Settings, BarChart3, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="content" className="flex items-center space-x-2">
               <FileText className="h-4 w-4" />
-              <span>Content</span>
+              <span>Website Content</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
@@ -142,17 +142,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="content">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-                <CardDescription>
-                  Manage footer content, risk disclosure, and "How It Works" sections
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EnhancedContentManagement />
-              </CardContent>
-            </Card>
+            <UnifiedContentManagement />
           </TabsContent>
 
           <TabsContent value="settings">
