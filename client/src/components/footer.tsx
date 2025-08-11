@@ -97,9 +97,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <img 
-              src="/attached_assets/logo.jpg" 
+              src="/attached_assets/fractOWN_logo_1754908511402.png" 
               alt="fractOWN Logo"
-              className="h-28 w-auto mb-4"
+              className="h-32 w-auto mb-4"
             />
             <p className="text-gray-400 mb-4">
               Democratizing real estate investment through fractional ownership. Start your wealth journey today.
