@@ -6,9 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPropertiesTab } from "@/components/admin/admin-properties-tab";
 import { AdminContactsTab } from "@/components/admin/admin-contacts-tab";
 import AdminSettingsTab from "@/components/admin/admin-settings-tab";
-import UnifiedContentManagement from "@/components/admin/unified-content-management";
 import { EnhancedAdminDashboard } from "@/components/admin/enhanced-admin-dashboard";
-import { LogOut, Building, MessageSquare, Settings, BarChart3, FileText } from "lucide-react";
+import { LogOut, Building, MessageSquare, Settings, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -86,7 +85,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Dashboard</span>
@@ -98,10 +97,6 @@ export default function AdminDashboard() {
             <TabsTrigger value="contacts" className="flex items-center space-x-2">
               <MessageSquare className="h-4 w-4" />
               <span>Contact Inquiries</span>
-            </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center space-x-2">
-              <FileText className="h-4 w-4" />
-              <span>Website Content</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
@@ -139,10 +134,6 @@ export default function AdminDashboard() {
                 <AdminContactsTab />
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="content">
-            <UnifiedContentManagement />
           </TabsContent>
 
           <TabsContent value="settings">

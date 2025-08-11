@@ -1,605 +1,796 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Save, X, FileText, Home, AlertTriangle, ArrowUpDown } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { 
+  Save, 
+  FileText, 
+  Users, 
+  TrendingUp, 
+  Shield, 
+  Home,
+  Star,
+  Building2,
+  MessageSquare,
+  PlusCircle,
+  Minus,
+  Palette
+} from 'lucide-react';
 
 interface ContentSection {
   id: string;
-  key: string;
   title: string;
-  content: string;
-  contentType: string;
-  section: string;
-  isActive: boolean;
-  displayOrder: number;
-  metadata: Record<string, any>;
-  createdAt: string;
-  updatedAt: string;
+  subtitle?: string;
+  description: string;
+  content?: any;
+  enabled: boolean;
 }
 
-interface ContentFormData {
-  key: string;
-  title: string;
-  content: string;
-  contentType: string;
-  section: string;
-  isActive: boolean;
-  displayOrder: number;
-  metadata: Record<string, any>;
+interface SiteContent {
+  hero: {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+  };
+  howItWorks: {
+    title: string;
+    subtitle: string;
+    steps: Array<{
+      title: string;
+      description: string;
+      icon: string;
+    }>;
+  };
+  whyChoose: {
+    title: string;
+    benefits: Array<{
+      title: string;
+      description: string;
+      icon: string;
+    }>;
+  };
+  testimonials: {
+    title: string;
+    subtitle: string;
+    reviews: Array<{
+      name: string;
+      role: string;
+      location: string;
+      rating: number;
+      comment: string;
+      avatar?: string;
+    }>;
+  };
+  about: {
+    title: string;
+    description: string;
+    stats: Array<{
+      value: string;
+      label: string;
+    }>;
+    certifications: Array<{
+      title: string;
+      icon: string;
+    }>;
+    monthlyReturns: {
+      amount: string;
+      period: string;
+    };
+  };
+  riskDisclosure: {
+    title: string;
+    points: string[];
+    registrationInfo: string;
+  };
+  footer: {
+    companyInfo: string;
+    registrationDetails: string;
+  };
 }
 
-const SECTION_TYPES = [
-  { value: "footer", label: "Footer Content", icon: FileText },
-  { value: "how_it_works", label: "How It Works", icon: Home },
-  { value: "risk_disclosure", label: "Risk Disclosure", icon: AlertTriangle },
-  { value: "about_fractOWN", label: "About fractOWN", icon: FileText }
-];
+const defaultContent: SiteContent = {
+  hero: {
+    title: "Invest in Premium Real Estate with Fractional Ownership",
+    subtitle: "Start your real estate investment journey with as little as ₹10 Lakhs",
+    ctaText: "Get Started"
+  },
+  howItWorks: {
+    title: "How Fractional Ownership Works",
+    subtitle: "Simple steps to start your real estate investment journey",
+    steps: [
+      {
+        title: "Browse Properties",
+        description: "Explore vetted properties across major Indian cities with detailed financial and projections",
+        icon: "🔍"
+      },
+      {
+        title: "Calculate Returns",
+        description: "Use our investment calculator to determine your share size and expected returns",
+        icon: "📊"
+      },
+      {
+        title: "Invest Securely",
+        description: "Complete KYC verification and invest with secure payment methods starting from ₹5,000",
+        icon: "💳"
+      },
+      {
+        title: "Earn Returns",
+        description: "Benefit from property appreciation and market growth over time",
+        icon: "📈"
+      }
+    ]
+  },
+  whyChoose: {
+    title: "Why Choose Fractional Ownership?",
+    benefits: [
+      {
+        title: "Lower Entry Barrier",
+        description: "Start with as little as ₹5,000 instead of crores for full property ownership",
+        icon: "✅"
+      },
+      {
+        title: "Diversified Portfolio",
+        description: "Spread investments across multiple properties and locations to reduce risk",
+        icon: "✅"
+      },
+      {
+        title: "Professional Management",
+        description: "No tenant hassles - we handle everything from maintenance to rent collection",
+        icon: "✅"
+      },
+      {
+        title: "High Liquidity",
+        description: "Trade your fractional shares on our secondary marketplace",
+        icon: "✅"
+      }
+    ]
+  },
+  testimonials: {
+    title: "What Our Investors Say",
+    subtitle: "Real stories from successful fractional property investors",
+    reviews: [
+      {
+        name: "Priya Sharma",
+        role: "Software Engineer",
+        location: "Bangalore",
+        rating: 5,
+        comment: "I started with just ₹25,000 and my investment has grown significantly. fractOWN made real estate investment so accessible for someone like me.",
+        avatar: ""
+      },
+      {
+        name: "Rajesh Kumar",
+        role: "Marketing Manager",
+        location: "Mumbai",
+        rating: 5,
+        comment: "The transparency and professional management is outstanding. I can track my investments and returns in real-time. Already planning my next investment!",
+        avatar: ""
+      },
+      {
+        name: "Anjali Patel",
+        role: "Financial Advisor",
+        location: "Pune",
+        rating: 5,
+        comment: "Diversifying across 5 properties has given me excellent returns and portfolio growth. Much better than my fixed deposits!",
+        avatar: ""
+      }
+    ]
+  },
+  about: {
+    title: "About fractOWN",
+    description: "We're democratizing real estate investment in India by making premium properties accessible to everyone. Our mission is to enable wealth creation through fractional property ownership.",
+    stats: [
+      { value: "₹500 Cr+", label: "Assets Under Management" },
+      { value: "15,000+", label: "Happy Investors" },
+      { value: "50+", label: "Properties Listed" },
+      { value: "8 Cities", label: "Across India" }
+    ],
+    certifications: [
+      { title: "SEBI Registered", icon: "🏛️" },
+      { title: "Bank Grade Security", icon: "🔒" },
+      { title: "ISO 27001 Certified", icon: "✅" }
+    ],
+    monthlyReturns: {
+      amount: "₹8,500",
+      period: "Per ₹1 Lakh Invested"
+    }
+  },
+  riskDisclosure: {
+    title: "Investment Risk Disclosure",
+    points: [
+      "Real estate investments are subject to market risks and regulatory changes that may affect returns.",
+      "Past performance does not guarantee future results. Property values may fluctuate based on market conditions.",
+      "Rental income is not guaranteed and may vary based on occupancy rates and market demand.",
+      "Fractional ownership investments may have limited liquidity compared to traditional securities.",
+      "Please read all investment documents carefully and consult with financial advisors before investing.",
+      "fractOWN is registered with SEBI as an Alternative Investment Fund (AIF) - Registration No: AIF/XXX/XXXX."
+    ],
+    registrationInfo: "fractOWN is registered with SEBI as an Alternative Investment Fund (AIF) - Registration No: AIF/XXX/XXXX."
+  },
+  footer: {
+    companyInfo: "© 2024 fractOWN Technologies Pvt. Ltd. All rights reserved.",
+    registrationDetails: "SEBI Registration: AIF/XXX/XXXX | CIN: U74999MH2023PTC123456"
+  }
+};
 
-const CONTENT_TYPES = [
-  { value: "text", label: "Plain Text" },
-  { value: "html", label: "HTML" },
-  { value: "markdown", label: "Markdown" }
-];
-
-export default function ContentManagementTab() {
+export function ContentManagementTab() {
+  const [content, setContent] = useState<SiteContent>(defaultContent);
+  const [activeSection, setActiveSection] = useState('hero');
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingContent, setEditingContent] = useState<ContentSection | null>(null);
-  const [selectedSection, setSelectedSection] = useState("all");
-  const [formData, setFormData] = useState<ContentFormData>({
-    key: "",
-    title: "",
-    content: "",
-    contentType: "text",
-    section: "footer",
-    isActive: true,
-    displayOrder: 0,
-    metadata: {}
+
+  // Load content from API
+  const { data: savedContent, isLoading } = useQuery({
+    queryKey: ['/api/admin/site-content'],
   });
 
-  // Fetch content sections
-  const { data: contentSections = [], isLoading } = useQuery<ContentSection[]>({
-    queryKey: ["/api/admin/content", selectedSection !== "all" ? selectedSection : undefined],
-  });
+  useEffect(() => {
+    if (savedContent) {
+      setContent({ ...defaultContent, ...savedContent });
+    }
+  }, [savedContent]);
 
-  // Create content mutation
-  const createMutation = useMutation({
-    mutationFn: async (data: ContentFormData) => {
-      return apiRequest("/api/admin/content", "POST", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/content"] });
-      toast({
-        title: "Content Created",
-        description: "New content section has been created successfully.",
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/admin/site-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminSessionToken')}`
+        },
+        body: JSON.stringify(content)
       });
-      setIsCreateOpen(false);
-      resetForm();
-    },
-    onError: (error: any) => {
+
+      if (!response.ok) throw new Error('Failed to save content');
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/site-content'] });
+      
+      toast({
+        title: "Success",
+        description: "Site content updated successfully",
+      });
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create content section",
-        variant: "destructive",
+        description: "Failed to save content changes",
+        variant: "destructive"
       });
-    },
-  });
-
-  // Update content mutation
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ContentFormData> }) => {
-      return apiRequest(`/api/admin/content/${id}`, "PUT", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/content"] });
-      toast({
-        title: "Content Updated",
-        description: "Content section has been updated successfully.",
-      });
-      setIsEditOpen(false);
-      setEditingContent(null);
-      resetForm();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update content section",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete content mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest(`/api/admin/content/${id}`, "DELETE");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/content"] });
-      toast({
-        title: "Content Deleted",
-        description: "Content section has been deleted successfully.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete content section",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const resetForm = () => {
-    setFormData({
-      key: "",
-      title: "",
-      content: "",
-      contentType: "text",
-      section: "footer",
-      isActive: true,
-      displayOrder: 0,
-      metadata: {}
-    });
-  };
-
-  const handleCreate = () => {
-    createMutation.mutate(formData);
-  };
-
-  const handleEdit = (content: ContentSection) => {
-    setEditingContent(content);
-    setFormData({
-      key: content.key,
-      title: content.title,
-      content: content.content,
-      contentType: content.contentType,
-      section: content.section,
-      isActive: content.isActive,
-      displayOrder: content.displayOrder,
-      metadata: content.metadata || {}
-    });
-    setIsEditOpen(true);
-  };
-
-  const handleUpdate = () => {
-    if (!editingContent) return;
-    updateMutation.mutate({
-      id: editingContent.id,
-      data: formData
-    });
-  };
-
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this content section?")) {
-      deleteMutation.mutate(id);
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const generateKey = (title: string, section: string) => {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    return `${section}_${cleanTitle}`;
+  const updateContent = (section: keyof SiteContent, field: string, value: any) => {
+    setContent(prev => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] as any),
+        [field]: value
+      }
+    }));
   };
 
-  const getSectionIcon = (section: string) => {
-    const sectionType = SECTION_TYPES.find(t => t.value === section);
-    const Icon = sectionType?.icon || FileText;
-    return <Icon className="h-4 w-4" />;
+  const addArrayItem = (section: keyof SiteContent, field: string, newItem: any) => {
+    setContent(prev => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] as any),
+        [field]: [...((prev[section] as any)[field] || []), newItem]
+      }
+    }));
   };
 
-  const groupedSections = (contentSections as ContentSection[]).reduce((groups: Record<string, ContentSection[]>, section: ContentSection) => {
-    if (!groups[section.section]) {
-      groups[section.section] = [];
-    }
-    groups[section.section].push(section);
-    return groups;
-  }, {} as Record<string, ContentSection[]>);
+  const removeArrayItem = (section: keyof SiteContent, field: string, index: number) => {
+    setContent(prev => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] as any),
+        [field]: (prev[section] as any)[field].filter((_: any, i: number) => i !== index)
+      }
+    }));
+  };
+
+  const updateArrayItem = (section: keyof SiteContent, field: string, index: number, updatedItem: any) => {
+    setContent(prev => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] as any),
+        [field]: (prev[section] as any)[field].map((item: any, i: number) => i === index ? updatedItem : item)
+      }
+    }));
+  };
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <div className="p-6">Loading content...</div>;
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Content Management</h3>
-          <p className="text-sm text-gray-600">
-            Manage footer content, risk disclosure, and "How It Works" sections
+          <h3 className="text-lg font-medium text-gray-900">Content Management</h3>
+          <p className="text-sm text-gray-500">
+            Manage all website content sections including text, images, and layout
           </p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Content
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create Content Section</DialogTitle>
-              <DialogDescription>
-                Add a new content section to manage dynamic website content
-              </DialogDescription>
-            </DialogHeader>
-            <ContentForm
-              formData={formData}
-              setFormData={setFormData}
-              onSubmit={handleCreate}
-              onCancel={() => setIsCreateOpen(false)}
-              isLoading={createMutation.isPending}
-              generateKey={generateKey}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Section Filter */}
-      <div className="flex space-x-2">
-        <Button 
-          variant={selectedSection === "all" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setSelectedSection("all")}
-        >
-          All Sections
+        <Button onClick={handleSave} disabled={isSaving} className="bg-[#FF6B35] hover:bg-[#FF6B35]/90">
+          <Save className="h-4 w-4 mr-2" />
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
-        {SECTION_TYPES.map((type) => (
-          <Button
-            key={type.value}
-            variant={selectedSection === type.value ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedSection(type.value)}
-            className="flex items-center space-x-2"
-          >
-            <type.icon className="h-4 w-4" />
-            <span>{type.label}</span>
-          </Button>
-        ))}
       </div>
 
-      {/* Content Sections */}
-      <div className="space-y-6">
-        {selectedSection === "all" ? (
-          // Show all sections grouped
-          <div className="space-y-6">
-          {Object.keys(groupedSections).length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Content Sections</h3>
-                <p className="text-gray-600 mb-4">
-                  Create your first content section to start managing dynamic website content.
-                </p>
-                <Button onClick={() => setIsCreateOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Content Section
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            Object.entries(groupedSections).map(([sectionType, sections]) => (
-              <div key={sectionType} className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  {getSectionIcon(sectionType)}
-                  <h4 className="text-md font-medium capitalize">
-                    {SECTION_TYPES.find(t => t.value === sectionType)?.label || sectionType}
-                  </h4>
-                  <Badge variant="secondary">{(sections as ContentSection[]).length}</Badge>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(sections as ContentSection[]).map((section: ContentSection) => (
-                    <ContentSectionCard
-                      key={section.id}
-                      section={section}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      getSectionIcon={getSectionIcon}
-                    />
-                  ))}
-                </div>
+      <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="hero" className="flex items-center space-x-1">
+            <Home className="h-4 w-4" />
+            <span>Hero</span>
+          </TabsTrigger>
+          <TabsTrigger value="howItWorks" className="flex items-center space-x-1">
+            <TrendingUp className="h-4 w-4" />
+            <span>How it Works</span>
+          </TabsTrigger>
+          <TabsTrigger value="whyChoose" className="flex items-center space-x-1">
+            <Shield className="h-4 w-4" />
+            <span>Why Choose</span>
+          </TabsTrigger>
+          <TabsTrigger value="testimonials" className="flex items-center space-x-1">
+            <Star className="h-4 w-4" />
+            <span>Testimonials</span>
+          </TabsTrigger>
+          <TabsTrigger value="about" className="flex items-center space-x-1">
+            <Building2 className="h-4 w-4" />
+            <span>About</span>
+          </TabsTrigger>
+          <TabsTrigger value="legal" className="flex items-center space-x-1">
+            <FileText className="h-4 w-4" />
+            <span>Legal</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Hero Section */}
+        <TabsContent value="hero" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#1E3A8A]">Hero Section</CardTitle>
+              <CardDescription>Main landing page content and call-to-action</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="hero-title">Main Title</Label>
+                <Input
+                  id="hero-title"
+                  value={content.hero.title}
+                  onChange={(e) => updateContent('hero', 'title', e.target.value)}
+                  placeholder="Enter hero title"
+                />
               </div>
-            ))
-          )}
-          </div>
-        ) : (
-          // Show specific section content
-          <div className="space-y-4">
-            {(contentSections as ContentSection[]).length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No {SECTION_TYPES.find(t => t.value === selectedSection)?.label} Content
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Create content sections for this category to start managing dynamic website content.
-                  </p>
-                  <Button onClick={() => setIsCreateOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Content Section
+              <div>
+                <Label htmlFor="hero-subtitle">Subtitle</Label>
+                <Textarea
+                  id="hero-subtitle"
+                  value={content.hero.subtitle}
+                  onChange={(e) => updateContent('hero', 'subtitle', e.target.value)}
+                  placeholder="Enter hero subtitle"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <Label htmlFor="hero-cta">Call-to-Action Button Text</Label>
+                <Input
+                  id="hero-cta"
+                  value={content.hero.ctaText}
+                  onChange={(e) => updateContent('hero', 'ctaText', e.target.value)}
+                  placeholder="Enter CTA button text"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* How It Works Section */}
+        <TabsContent value="howItWorks" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#1E3A8A]">How It Works Section</CardTitle>
+              <CardDescription>Step-by-step process explanation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="how-title">Section Title</Label>
+                <Input
+                  id="how-title"
+                  value={content.howItWorks.title}
+                  onChange={(e) => updateContent('howItWorks', 'title', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="how-subtitle">Section Subtitle</Label>
+                <Input
+                  id="how-subtitle"
+                  value={content.howItWorks.subtitle}
+                  onChange={(e) => updateContent('howItWorks', 'subtitle', e.target.value)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Process Steps</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addArrayItem('howItWorks', 'steps', { title: '', description: '', icon: '🔍' })}
+                    className="text-[#FF6B35] border-[#FF6B35] hover:bg-[#FF6B35]/10"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    Add Step
                   </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(contentSections as ContentSection[]).map((section: ContentSection) => (
-                  <ContentSectionCard
-                    key={section.id}
-                    section={section}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    getSectionIcon={getSectionIcon}
-                  />
+                </div>
+                
+                {content.howItWorks.steps.map((step, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-[#1E3A8A]">Step {index + 1}</Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeArrayItem('howItWorks', 'steps', index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <Label>Icon</Label>
+                          <Input
+                            value={step.icon}
+                            onChange={(e) => updateArrayItem('howItWorks', 'steps', index, { ...step, icon: e.target.value })}
+                            placeholder="🔍"
+                          />
+                        </div>
+                        <div>
+                          <Label>Title</Label>
+                          <Input
+                            value={step.title}
+                            onChange={(e) => updateArrayItem('howItWorks', 'steps', index, { ...step, title: e.target.value })}
+                            placeholder="Step title"
+                          />
+                        </div>
+                        <div>
+                          <Label>Description</Label>
+                          <Textarea
+                            value={step.description}
+                            onChange={(e) => updateArrayItem('howItWorks', 'steps', index, { ...step, description: e.target.value })}
+                            placeholder="Step description"
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
                 ))}
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Content Section</DialogTitle>
-            <DialogDescription>
-              Update the content section details
-            </DialogDescription>
-          </DialogHeader>
-          <ContentForm
-            formData={formData}
-            setFormData={setFormData}
-            onSubmit={handleUpdate}
-            onCancel={() => {
-              setIsEditOpen(false);
-              setEditingContent(null);
-            }}
-            isLoading={updateMutation.isPending}
-            generateKey={generateKey}
-            isEdit={true}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+        {/* Why Choose Section */}
+        <TabsContent value="whyChoose" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#1E3A8A]">Why Choose Us Section</CardTitle>
+              <CardDescription>Benefits and advantages of your platform</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="why-title">Section Title</Label>
+                <Input
+                  id="why-title"
+                  value={content.whyChoose.title}
+                  onChange={(e) => updateContent('whyChoose', 'title', e.target.value)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Benefits</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addArrayItem('whyChoose', 'benefits', { title: '', description: '', icon: '✅' })}
+                    className="text-[#FF6B35] border-[#FF6B35] hover:bg-[#FF6B35]/10"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    Add Benefit
+                  </Button>
+                </div>
+                
+                {content.whyChoose.benefits.map((benefit, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-[#1E3A8A]">Benefit {index + 1}</Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeArrayItem('whyChoose', 'benefits', index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <Label>Icon</Label>
+                          <Input
+                            value={benefit.icon}
+                            onChange={(e) => updateArrayItem('whyChoose', 'benefits', index, { ...benefit, icon: e.target.value })}
+                            placeholder="✅"
+                          />
+                        </div>
+                        <div>
+                          <Label>Title</Label>
+                          <Input
+                            value={benefit.title}
+                            onChange={(e) => updateArrayItem('whyChoose', 'benefits', index, { ...benefit, title: e.target.value })}
+                            placeholder="Benefit title"
+                          />
+                        </div>
+                        <div>
+                          <Label>Description</Label>
+                          <Textarea
+                            value={benefit.description}
+                            onChange={(e) => updateArrayItem('whyChoose', 'benefits', index, { ...benefit, description: e.target.value })}
+                            placeholder="Benefit description"
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-// Content Section Card Component
-interface ContentSectionCardProps {
-  section: ContentSection;
-  onEdit: (section: ContentSection) => void;
-  onDelete: (id: string) => void;
-  getSectionIcon: (section: string) => JSX.Element;
-}
+        {/* Testimonials Section */}
+        <TabsContent value="testimonials" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#1E3A8A]">Testimonials Section</CardTitle>
+              <CardDescription>Customer reviews and success stories</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="testimonials-title">Section Title</Label>
+                <Input
+                  id="testimonials-title"
+                  value={content.testimonials.title}
+                  onChange={(e) => updateContent('testimonials', 'title', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="testimonials-subtitle">Section Subtitle</Label>
+                <Input
+                  id="testimonials-subtitle"
+                  value={content.testimonials.subtitle}
+                  onChange={(e) => updateContent('testimonials', 'subtitle', e.target.value)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Customer Reviews</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addArrayItem('testimonials', 'reviews', { name: '', role: '', location: '', rating: 5, comment: '', avatar: '' })}
+                    className="text-[#FF6B35] border-[#FF6B35] hover:bg-[#FF6B35]/10"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    Add Review
+                  </Button>
+                </div>
+                
+                {content.testimonials.reviews.map((review, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-[#1E3A8A]">Review {index + 1}</Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeArrayItem('testimonials', 'reviews', index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Name</Label>
+                          <Input
+                            value={review.name}
+                            onChange={(e) => updateArrayItem('testimonials', 'reviews', index, { ...review, name: e.target.value })}
+                            placeholder="Customer name"
+                          />
+                        </div>
+                        <div>
+                          <Label>Role</Label>
+                          <Input
+                            value={review.role}
+                            onChange={(e) => updateArrayItem('testimonials', 'reviews', index, { ...review, role: e.target.value })}
+                            placeholder="Job title"
+                          />
+                        </div>
+                        <div>
+                          <Label>Location</Label>
+                          <Input
+                            value={review.location}
+                            onChange={(e) => updateArrayItem('testimonials', 'reviews', index, { ...review, location: e.target.value })}
+                            placeholder="City"
+                          />
+                        </div>
+                        <div>
+                          <Label>Rating</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="5"
+                            value={review.rating}
+                            onChange={(e) => updateArrayItem('testimonials', 'reviews', index, { ...review, rating: parseInt(e.target.value) })}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Comment</Label>
+                        <Textarea
+                          value={review.comment}
+                          onChange={(e) => updateArrayItem('testimonials', 'reviews', index, { ...review, comment: e.target.value })}
+                          placeholder="Customer testimonial"
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-function ContentSectionCard({ section, onEdit, onDelete, getSectionIcon }: ContentSectionCardProps) {
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-2">
-            {getSectionIcon(section.section)}
-            <div>
-              <h5 className="font-medium text-sm">{section.title}</h5>
-              <p className="text-xs text-gray-500">{section.key}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1">
-            <Badge variant={section.isActive ? "default" : "secondary"} className="text-xs">
-              {section.isActive ? "Active" : "Inactive"}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          <div className="text-sm text-gray-600 line-clamp-3">
-            {section.content.length > 100 
-              ? `${section.content.substring(0, 100)}...` 
-              : section.content
-            }
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span className="capitalize">{section.contentType}</span>
-            <span>Order: {section.displayOrder}</span>
-          </div>
-          <div className="flex space-x-2 pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onEdit(section)}
-              className="flex-1"
-            >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onDelete(section.id)}
-              className="text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Content Form Component
-interface ContentFormProps {
-  formData: ContentFormData;
-  setFormData: (data: ContentFormData) => void;
-  onSubmit: () => void;
-  onCancel: () => void;
-  isLoading: boolean;
-  generateKey: (title: string, section: string) => string;
-  isEdit?: boolean;
-}
-
-function ContentForm({ 
-  formData, 
-  setFormData, 
-  onSubmit, 
-  onCancel, 
-  isLoading, 
-  generateKey,
-  isEdit = false 
-}: ContentFormProps) {
-  // Auto-generate key when title or section changes
-  useEffect(() => {
-    if (!isEdit && formData.title && formData.section) {
-      setFormData({
-        ...formData,
-        key: generateKey(formData.title, formData.section)
-      });
-    }
-  }, [formData.title, formData.section, isEdit]);
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="section">Section Type</Label>
-          <Select
-            value={formData.section}
-            onValueChange={(value) => setFormData({ ...formData, section: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SECTION_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  <div className="flex items-center space-x-2">
-                    <type.icon className="h-4 w-4" />
-                    <span>{type.label}</span>
+        {/* About Section */}
+        <TabsContent value="about" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#1E3A8A]">About Section</CardTitle>
+              <CardDescription>Company information and statistics</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="about-title">Section Title</Label>
+                <Input
+                  id="about-title"
+                  value={content.about.title}
+                  onChange={(e) => updateContent('about', 'title', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="about-description">Description</Label>
+                <Textarea
+                  id="about-description"
+                  value={content.about.description}
+                  onChange={(e) => updateContent('about', 'description', e.target.value)}
+                  rows={3}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <Label>Company Statistics</Label>
+                {content.about.stats.map((stat, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Value</Label>
+                      <Input
+                        value={stat.value}
+                        onChange={(e) => updateArrayItem('about', 'stats', index, { ...stat, value: e.target.value })}
+                        placeholder="₹500 Cr+"
+                      />
+                    </div>
+                    <div>
+                      <Label>Label</Label>
+                      <Input
+                        value={stat.label}
+                        onChange={(e) => updateArrayItem('about', 'stats', index, { ...stat, label: e.target.value })}
+                        placeholder="Assets Under Management"
+                      />
+                    </div>
                   </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="contentType">Content Type</Label>
-          <Select
-            value={formData.contentType}
-            onValueChange={(value) => setFormData({ ...formData, contentType: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CONTENT_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Enter content title"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="key">Unique Key</Label>
-        <Input
-          id="key"
-          value={formData.key}
-          onChange={(e) => setFormData({ ...formData, key: e.target.value })}
-          placeholder="Unique identifier for this content"
-          disabled={!isEdit}
-        />
-        {!isEdit && (
-          <p className="text-xs text-gray-500">
-            Key will be auto-generated based on title and section
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="content">Content</Label>
-        <Textarea
-          id="content"
-          value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          placeholder="Enter the content..."
-          rows={6}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="displayOrder">Display Order</Label>
-          <Input
-            id="displayOrder"
-            type="number"
-            value={formData.displayOrder}
-            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-            placeholder="0"
-          />
-        </div>
-        <div className="flex items-center space-x-2 pt-6">
-          <Switch
-            id="isActive"
-            checked={formData.isActive}
-            onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-          />
-          <Label htmlFor="isActive">Active</Label>
-        </div>
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button variant="outline" onClick={onCancel}>
-          <X className="h-4 w-4 mr-2" />
-          Cancel
-        </Button>
-        <Button onClick={onSubmit} disabled={isLoading}>
-          <Save className="h-4 w-4 mr-2" />
-          {isLoading ? "Saving..." : isEdit ? "Update" : "Create"}
-        </Button>
-      </div>
+        {/* Legal Section */}
+        <TabsContent value="legal" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#1E3A8A]">Legal & Compliance</CardTitle>
+              <CardDescription>Risk disclosure and regulatory information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="risk-title">Risk Disclosure Title</Label>
+                <Input
+                  id="risk-title"
+                  value={content.riskDisclosure.title}
+                  onChange={(e) => updateContent('riskDisclosure', 'title', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <Label>Risk Points</Label>
+                {content.riskDisclosure.points.map((point, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Textarea
+                      value={point}
+                      onChange={(e) => updateArrayItem('riskDisclosure', 'points', index, e.target.value)}
+                      rows={2}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeArrayItem('riskDisclosure', 'points', index)}
+                      className="text-red-500 hover:text-red-700 self-start"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addArrayItem('riskDisclosure', 'points', '')}
+                  className="text-[#FF6B35] border-[#FF6B35] hover:bg-[#FF6B35]/10"
+                >
+                  <PlusCircle className="h-4 w-4 mr-1" />
+                  Add Risk Point
+                </Button>
+              </div>
+              
+              <div>
+                <Label htmlFor="registration-info">Registration Information</Label>
+                <Textarea
+                  id="registration-info"
+                  value={content.riskDisclosure.registrationInfo}
+                  onChange={(e) => updateContent('riskDisclosure', 'registrationInfo', e.target.value)}
+                  rows={2}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

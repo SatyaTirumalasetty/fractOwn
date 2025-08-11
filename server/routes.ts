@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers, contentSections, insertContentSectionSchema } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
@@ -23,6 +23,7 @@ import { performanceMonitor, databaseMonitor } from "./performance/monitor";
 import { sessionCache, propertyCache, configCache } from "./performance/cache";
 import { totpSecurityManager, TOTP_CONFIG } from "./security/totp-security";
 import securePropertiesRouter from "./routes/secureProperties";
+
 
 // Load configuration
 import config from '../config/app.config.js';
@@ -51,51 +52,6 @@ function broadcastUpdate(type: string, data?: any) {
   // Clean up dead connections
   deadConnections.forEach(ws => wsConnections.delete(ws));
 }
-
-// Enhanced authentication middleware with security hardening
-const requireAuth = async (req: any, res: any, next: any) => {
-  try {
-    // Check both cookies and Authorization header with validation
-    let sessionToken = null;
-    
-    if (req.cookies && req.cookies.adminSessionToken) {
-      sessionToken = req.cookies.adminSessionToken;
-    } else if (req.headers.authorization) {
-      sessionToken = req.headers.authorization.replace('Bearer ', '');
-    }
-    
-    if (!sessionToken) {
-      console.log("No session token found in cookies or headers");
-      return res.status(401).json({ message: "Authentication required" });
-    }
-
-    // Validate session token format for security
-    if (!SecurityValidator.validateSessionToken(sessionToken)) {
-      console.log("Invalid session token format");
-      return res.status(401).json({ message: "Invalid session format" });
-    }
-
-    console.log("Validating session token:", sessionToken.substring(0, 10) + "...");
-    const adminId = await storage.validateAdminSession(sessionToken);
-    
-    if (!adminId) {
-      console.log("Session token validation failed");
-      return res.status(401).json({ message: "Invalid or expired session" });
-    }
-
-    console.log("Authentication successful for admin:", adminId);
-    req.user = { id: adminId };
-    
-    // Set security headers
-    res.setHeader('X-Admin-Session', 'active');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    
-    next();
-  } catch (error) {
-    console.error("Authentication middleware error:", error);
-    res.status(500).json({ message: "Authentication error" });
-  }
-};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure trust proxy before security middleware
@@ -915,167 +871,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Content Management API Endpoints
-  
-  // Get all content sections
-  app.get("/api/admin/content", async (req, res) => {
-    try {
-      const { section } = req.query;
-      let query = db.select().from(contentSections);
-      
-      if (section) {
-        query = query.where(eq(contentSections.section, section as string));
-      }
-      
-      const sections = await query.orderBy(contentSections.displayOrder);
-      res.json(sections);
-    } catch (error) {
-      console.error("Failed to fetch content sections:", error);
-      res.status(500).json({ message: "Failed to fetch content sections" });
-    }
-  });
-
-  // Get public content sections (for frontend display)
-  app.get("/api/content", async (req, res) => {
-    try {
-      const { section } = req.query;
-      let query = db.select().from(contentSections).where(eq(contentSections.isActive, true));
-      
-      if (section) {
-        query = query.where(eq(contentSections.section, section as string));
-      }
-      
-      const sections = await query.orderBy(contentSections.displayOrder);
-      res.json(sections);
-    } catch (error) {
-      console.error("Failed to fetch content sections:", error);
-      res.status(500).json({ message: "Failed to fetch content sections" });
-    }
-  });
-
-  // Create content section
-  app.post("/api/admin/content", async (req, res) => {
-    try {
-      const validatedData = insertContentSectionSchema.parse(req.body);
-      
-      const [newSection] = await db.insert(contentSections)
-        .values({
-          ...validatedData,
-          updatedAt: new Date()
-        })
-        .returning();
-      
-      res.status(201).json(newSection);
-    } catch (error) {
-      console.error("Failed to create content section:", error);
-      res.status(500).json({ message: "Failed to create content section" });
-    }
-  });
-
-  // Update content section
-  app.put("/api/admin/content/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const validatedData = insertContentSectionSchema.partial().parse(req.body);
-      
-      const [updatedSection] = await db.update(contentSections)
-        .set({
-          ...validatedData,
-          updatedAt: new Date()
-        })
-        .where(eq(contentSections.id, id))
-        .returning();
-      
-      if (!updatedSection) {
-        return res.status(404).json({ message: "Content section not found" });
-      }
-      
-      res.json(updatedSection);
-    } catch (error) {
-      console.error("Failed to update content section:", error);
-      res.status(500).json({ message: "Failed to update content section" });
-    }
-  });
-
-  // Delete content section
-  app.delete("/api/admin/content/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      
-      const [deletedSection] = await db.delete(contentSections)
-        .where(eq(contentSections.id, id))
-        .returning();
-      
-      if (!deletedSection) {
-        return res.status(404).json({ message: "Content section not found" });
-      }
-      
-      res.json({ message: "Content section deleted successfully" });
-    } catch (error) {
-      console.error("Failed to delete content section:", error);
-      res.status(500).json({ message: "Failed to delete content section" });
-    }
-  });
-
-  // Update content section by key (for dynamic content like testimonials and statistics)
-  app.put("/api/admin/content/key/:key", requireAuth, async (req, res) => {
-    try {
-      console.log("PUT /api/admin/content/:key called with key:", req.params.key);
-      const { key } = req.params;
-      const { content } = req.body;
-      
-      if (!content) {
-        return res.status(400).json({ message: "Content is required" });
-      }
-      
-      // Check if content section exists
-      const existingSection = await db.select()
-        .from(contentSections)
-        .where(eq(contentSections.key, key))
-        .limit(1);
-      
-      if (existingSection.length > 0) {
-        // Update existing section
-        const [updatedSection] = await db.update(contentSections)
-          .set({
-            content,
-            updatedAt: new Date()
-          })
-          .where(eq(contentSections.key, key))
-          .returning();
-        
-        res.json(updatedSection);
-      } else {
-        // Create new section with required fields
-        let title = "Dynamic Content";
-        let section = "dynamic";
-        
-        if (key === "testimonials_content") {
-          title = "Customer Testimonials";
-          section = "testimonials";
-        } else if (key === "home_content" || key === "statistics_content") {
-          title = "Statistics";
-          section = "statistics";
-        }
-        
-        const [newSection] = await db.insert(contentSections)
-          .values({
-            key,
-            title,
-            content,
-            section,
-            updatedAt: new Date()
-          })
-          .returning();
-        
-        res.status(201).json(newSection);
-      }
-    } catch (error) {
-      console.error("Failed to update content section:", error);
-      res.status(500).json({ message: "Failed to update content section" });
-    }
-  });
-
   // Admin password reset - request OTP
   app.post("/api/admin/forgot-password", async (req, res) => {
     try {
@@ -1152,6 +947,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // TOTP Routes for Authenticator-based Password Reset
+  
+  // Enhanced authentication middleware with security hardening
+  const requireAuth = async (req: any, res: any, next: any) => {
+    try {
+      // Check both cookies and Authorization header with validation
+      let sessionToken = null;
+      
+      if (req.cookies && req.cookies.adminSessionToken) {
+        sessionToken = req.cookies.adminSessionToken;
+      } else if (req.headers.authorization) {
+        sessionToken = req.headers.authorization.replace('Bearer ', '');
+      }
+      
+      if (!sessionToken) {
+        console.log("No session token found in cookies or headers");
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Validate session token format for security
+      if (!SecurityValidator.validateSessionToken(sessionToken)) {
+        console.log("Invalid session token format");
+        return res.status(401).json({ message: "Invalid session format" });
+      }
+
+      console.log("Validating session token:", sessionToken.substring(0, 10) + "...");
+      const adminId = await storage.validateAdminSession(sessionToken);
+      
+      if (!adminId) {
+        console.log("Session token validation failed");
+        return res.status(401).json({ message: "Invalid or expired session" });
+      }
+
+      console.log("Authentication successful for admin:", adminId);
+      req.user = { id: adminId };
+      
+      // Set security headers
+      res.setHeader('X-Admin-Session', 'active');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      
+      next();
+    } catch (error) {
+      console.error("Authentication middleware error:", error);
+      res.status(500).json({ message: "Authentication error" });
+    }
+  };
 
   // Generate TOTP secret and QR code for setup - Enhanced Security
   app.post("/api/admin/totp/generate", requireAuth, async (req, res) => {
@@ -1617,6 +1457,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to delete custom field:', error);
       res.status(500).json({ error: 'Failed to delete custom field' });
+    }
+  });
+
+  // Site content management routes
+  let siteContent: any = null;
+
+  // Get site content
+  app.get('/api/admin/site-content', (req, res) => {
+    try {
+      res.json(siteContent || {});
+    } catch (error) {
+      console.error('Error fetching site content:', error);
+      res.status(500).json({ error: 'Failed to fetch site content' });
+    }
+  });
+
+  // Update site content (admin only)
+  app.post('/api/admin/site-content', requireAuth, (req, res) => {
+    try {
+      siteContent = req.body;
+      res.json({ 
+        success: true, 
+        message: 'Site content updated successfully',
+        content: siteContent 
+      });
+    } catch (error) {
+      console.error('Error updating site content:', error);
+      res.status(500).json({ error: 'Failed to update site content' });
     }
   });
 

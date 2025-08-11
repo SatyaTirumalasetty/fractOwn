@@ -1,59 +1,34 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
 
 import PropertiesSection from "@/components/properties-section";
-import DynamicHowItWorks from "@/components/dynamic-how-it-works";
-import TestimonialsSection from "@/components/testimonials-section";
+import HowItWorks from "@/components/how-it-works";
+import Testimonials from "@/components/testimonials";
 import AboutSection from "@/components/about-section";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
 
 export default function Home() {
-  // Fetch dynamic risk disclosure content
-  const { data: riskDisclosureContent = [] } = useQuery<any[]>({
-    queryKey: ["/api/content?section=risk_disclosure"],
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0
-  });
-
-  // Scroll to top when component mounts or page refreshes
+  // Scroll to top when component mounts (only if not navigating to a specific section)
   useEffect(() => {
-    // Always scroll to top when page loads/refreshes
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    
-    // Handle browser refresh - scroll to top immediately
-    const handleBeforeUnload = () => {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
+    // Check if we need to scroll to a specific section (like properties)
+    const hash = window.location.hash;
+    if (!hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, []);
 
   return (
     <div className="min-h-screen">
       <Header />
       <main>
-        <div id="home">
-          <HeroSection />
-        </div>
+        <HeroSection />
 
-        <div id="properties">
-          <PropertiesSection />
-        </div>
-        <div id="how-it-works">
-          <DynamicHowItWorks />
-        </div>
-        <TestimonialsSection />
-        <div id="about">
-          <AboutSection />
-        </div>
+        <PropertiesSection />
+        <HowItWorks />
+        <Testimonials />
+        <AboutSection />
         <div className="py-12 bg-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-white rounded-xl p-8">
@@ -64,57 +39,17 @@ export default function Home() {
                 Investment Risk Disclosure
               </h3>
               <div className="text-sm text-gray-600 space-y-2">
-                {(() => {
-                  const content = riskDisclosureContent.find((c: any) => c.key === 'risk_disclosure_content');
-                  if (!content) return (
-                    <p>Real estate investments are subject to market risks. Please read all investment documents carefully and consult with financial advisors before investing.</p>
-                  );
-                  
-                  const lines = content.content.split('\n').filter((line: string) => line.trim());
-                  const sections: { title: string; items: string[] }[] = [];
-                  let currentSection: { title: string; items: string[] } | null = null;
-                  
-                  for (const line of lines) {
-                    if (line.startsWith('•')) {
-                      if (currentSection) {
-                        currentSection.items.push(line.substring(1).trim());
-                      }
-                    } else if (line.trim() && !line.startsWith('•')) {
-                      if (currentSection) {
-                        sections.push(currentSection);
-                      }
-                      currentSection = { title: line.trim(), items: [] };
-                    }
-                  }
-                  
-                  if (currentSection) {
-                    sections.push(currentSection);
-                  }
-                  
-                  return (
-                    <div className="space-y-4">
-                      {sections.map((section, index) => (
-                        <div key={index}>
-                          <h4 className="font-semibold text-gray-800 mb-2">{section.title}</h4>
-                          {section.items.length > 0 && (
-                            <ul className="list-disc list-inside space-y-1 ml-2">
-                              {section.items.map((item, itemIndex) => (
-                                <li key={itemIndex} className="text-gray-600">{item}</li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
+                <p>• Real estate investments are subject to market risks and regulatory changes that may affect returns.</p>
+                <p>• Past performance does not guarantee future results. Property values may fluctuate based on market conditions.</p>
+                <p>• Rental income is not guaranteed and may vary based on occupancy rates and market demand.</p>
+                <p>• Fractional ownership investments may have limited liquidity compared to traditional securities.</p>
+                <p>• Please read all investment documents carefully and consult with financial advisors before investing.</p>
+                <p>• fractOWN is registered with SEBI as an Alternative Investment Fund (AIF) - Registration No: AIF/XXX/XXXX.</p>
               </div>
             </div>
           </div>
         </div>
-        <div id="contact">
-          <ContactSection />
-        </div>
+        <ContactSection />
       </main>
       <Footer />
     </div>

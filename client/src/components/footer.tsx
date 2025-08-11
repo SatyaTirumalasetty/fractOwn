@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Linkedin, Twitter, Instagram } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 interface SocialLink {
   icon: any;
@@ -10,21 +9,6 @@ interface SocialLink {
 
 export default function Footer() {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-
-  // Fetch dynamic content
-  const { data: footerContent = [] } = useQuery<any[]>({
-    queryKey: ["/api/content?section=footer"],
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0
-  });
-
-  const { data: riskDisclosureContent = [] } = useQuery<any[]>({
-    queryKey: ["/api/content?section=risk_disclosure"],
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0
-  });
 
   const footerSections = [
     {
@@ -50,7 +34,8 @@ export default function Footer() {
       links: [
         "Terms of Service",
         "Privacy Policy",
-        "Risk Disclosure"
+        "Risk Disclosure",
+        "SEBI Compliance"
       ]
     }
   ];
@@ -118,13 +103,7 @@ export default function Footer() {
               className="h-28 w-auto mb-4"
             />
             <p className="text-gray-400 mb-4">
-              {(() => {
-                const content = footerContent.find((c: any) => c.key === 'footer_content');
-                if (!content) return 'Democratizing real estate investment through fractional ownership. Start your wealth journey today.';
-                const lines = content.content.split('\n').filter((line: string) => line.trim());
-                const contactIndex = lines.findIndex((line: string) => line.toLowerCase().includes('contact'));
-                return lines.slice(0, contactIndex > 0 ? contactIndex : 1).join(' ');
-              })()}
+              Democratizing real estate investment through fractional ownership. Start your wealth journey today.
             </p>
             {socialLinks.length > 0 && (
               <div>
@@ -172,20 +151,8 @@ export default function Footer() {
           <div>
             <p>&copy; 2024 fractOWN Technologies Pvt. Ltd. All rights reserved.</p>
           </div>
-          <div className="mt-4 md:mt-0 space-y-1">
-            {riskDisclosureContent.find((c: any) => c.key === 'footer_risk_disclosure_content') && (
-              <p className="text-xs max-w-2xl">
-                {riskDisclosureContent.find((c: any) => c.key === 'footer_risk_disclosure_content')?.content}
-              </p>
-            )}
-            <div className="flex space-x-4 text-xs">
-              <span>
-                Email: {footerContent.find((c: any) => c.key === 'footer_contact_email')?.content || 'support@fractown.in'}
-              </span>
-              <span>
-                Phone: {footerContent.find((c: any) => c.key === 'footer_contact_phone')?.content || '+91 98765 43210'}
-              </span>
-            </div>
+          <div className="mt-4 md:mt-0">
+            <p>SEBI Registration: AIF/XXX/XXXX | CIN: U74999MH2023PTC123456</p>
           </div>
         </div>
       </div>
