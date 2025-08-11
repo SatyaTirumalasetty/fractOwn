@@ -1,36 +1,7 @@
 import { db } from "./db";
 import { properties, adminUsers } from "@shared/schema";
 import bcrypt from "bcrypt";
-
-// Production Data Protection - Prevent dev data migration
-const PRODUCTION_ENVIRONMENT_CHECK = {
-  isProduction: () => {
-    return process.env.NODE_ENV === 'production' || 
-           process.env.REPL_DEPLOYMENT === 'true' ||
-           process.env.DATABASE_URL?.includes('prod') ||
-           process.env.REPL_OWNER?.includes('prod');
-  },
-  
-  shouldPreventSeeding: () => {
-    const isProd = PRODUCTION_ENVIRONMENT_CHECK.isProduction();
-    if (isProd) {
-      console.log("🚫 PRODUCTION ENVIRONMENT DETECTED");
-      console.log("🛡️ Development data seeding is BLOCKED to protect production");
-      console.log("📊 Production data remains isolated and unaffected");
-      return true;
-    }
-    return false;
-  },
-  
-  getEnvironmentInfo: () => {
-    return {
-      nodeEnv: process.env.NODE_ENV,
-      isReplitDeployment: process.env.REPL_DEPLOYMENT,
-      databaseUrl: process.env.DATABASE_URL ? '***' + process.env.DATABASE_URL.slice(-10) : 'not set',
-      replOwner: process.env.REPL_OWNER || 'not set'
-    };
-  }
-};
+import { ProductionProtection, DatabaseProtection } from "./production-protection";
 
 const sampleProperties = [
   {
@@ -135,9 +106,9 @@ const sampleProperties = [
 
 async function seedDatabase() {
   try {
-    // CRITICAL: Check production environment first
-    if (PRODUCTION_ENVIRONMENT_CHECK.shouldPreventSeeding()) {
-      console.log("Environment info:", PRODUCTION_ENVIRONMENT_CHECK.getEnvironmentInfo());
+    // CRITICAL: Use comprehensive production protection
+    if (!ProductionProtection.canSeedData()) {
+      ProductionProtection.logEnvironmentStatus();
       return {
         success: false,
         message: "Seeding blocked to protect production data",
@@ -146,7 +117,7 @@ async function seedDatabase() {
     }
 
     console.log("🌱 Seeding database with development data...");
-    console.log("Environment:", PRODUCTION_ENVIRONMENT_CHECK.getEnvironmentInfo());
+    ProductionProtection.logEnvironmentStatus();
     
     // Add sample properties
     await db.insert(properties).values(sampleProperties);

@@ -5,6 +5,8 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import { ProductionProtection, productionProtectionMiddleware } from "./production-protection";
+import { seedSiteStatistics, getStatisticsStatus } from "./seed-statistics";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
@@ -1407,8 +1409,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // =========================== SITE STATISTICS API ===========================
   
-  // Get all site statistics
-  app.get("/api/site-statistics", async (req, res) => {
+  // Get all site statistics with production protection
+  app.get("/api/site-statistics", productionProtectionMiddleware("fetch site statistics"), async (req, res) => {
     try {
       const result = await db.execute(sql`
         SELECT key, value, label, category, format_type 
@@ -1418,6 +1420,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Handle different result formats from different database drivers
       const rows = Array.isArray(result) ? result : (result.rows || []);
+      
+      // Add environment context for debugging (non-sensitive info only)
+      const env = ProductionProtection.getEnvironmentInfo();
+      res.setHeader('X-Environment', env.isProduction ? 'production' : 'development');
+      
       res.json(rows);
     } catch (error) {
       console.error('Failed to fetch site statistics:', error);
@@ -1425,11 +1432,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update site statistics (admin only)
-  app.put("/api/admin/site-statistics/:key", async (req, res) => {
+  // Update site statistics (admin only) with audit logging
+  app.put("/api/admin/site-statistics/:key", productionProtectionMiddleware("update site statistics"), async (req, res) => {
     try {
       const { key } = req.params;
       const { value, label } = req.body;
+      const env = ProductionProtection.getEnvironmentInfo();
+      
+      // Log the update for audit trail
+      console.log(`📊 Statistics update: ${key} = "${value}" in ${env.isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
       
       const result = await db.execute(sql`
         UPDATE site_statistics 
@@ -1443,6 +1454,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!rows || rows.length === 0) {
         return res.status(404).json({ error: 'Statistic not found' });
       }
+      
+      // Broadcast real-time update
+      broadcastUpdate('statistic-updated', { key, value, label, environment: env.isProduction ? 'production' : 'development' });
       
       res.json(rows[0]);
     } catch (error) {
@@ -1574,4 +1588,45 @@ async function sendPasswordChangeNotification(adminUser: any) {
   } catch (error) {
     console.error('Failed to send password change notification:', error);
   }
+
+  // =========================== PRODUCTION PROTECTION API ===========================
+  
+  // Get environment and protection status (admin only)
+  app.get("/api/admin/environment-status", async (req, res) => {
+    try {
+      const env = ProductionProtection.getEnvironmentInfo();
+      const statsStatus = await getStatisticsStatus();
+      
+      res.json({
+        environment: {
+          type: env.isProduction ? 'production' : 'development',
+          nodeEnv: env.nodeEnv,
+          isReplitDeployment: env.isReplitDeployment,
+          hostname: env.hostname,
+          deploymentId: env.deploymentId
+        },
+        protection: {
+          seedingBlocked: env.isProduction,
+          dataProtected: env.isProduction,
+          statisticsProtected: env.isProduction
+        },
+        statistics: statsStatus
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // =========================== INITIALIZATION ===========================
+  
+  // Initialize site statistics with production protection
+  try {
+    const statsResult = await seedSiteStatistics();
+    console.log(`📊 Statistics initialization: ${statsResult.message}`);
+  } catch (error) {
+    console.error("Failed to initialize statistics:", error);
+  }
+
+  const httpServer = createServer(app);
+  return httpServer;
 }
