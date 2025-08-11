@@ -1,34 +1,54 @@
 import { Shield, Lock, Award } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AboutSection() {
-  const stats = [
+  // Load site content
+  const { data: siteContent = {} } = useQuery({
+    queryKey: ['/api/admin/site-content'],
+  });
+
+  const defaultStats = [
     { value: "₹500 Cr+", label: "Assets Under Management" },
     { value: "15,000+", label: "Happy Investors" },
     { value: "50+", label: "Properties Listed" },
     { value: "8 Cities", label: "Across India" }
   ];
 
-  const certifications = [
+  // Use dynamic content or fallback to defaults
+  const stats = (siteContent as any)?.about?.stats || defaultStats;
+
+  const defaultCertifications = [
     { icon: Shield, label: "SEBI Registered" },
     { icon: Lock, label: "Bank Grade Security" },
     { icon: Award, label: "ISO 27001 Certified" }
   ];
+
+  // Use dynamic content or fallback to defaults  
+  const certifications = (siteContent as any)?.about?.certifications || defaultCertifications;
 
   return (
     <section id="about" className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">About fractOWN</h2>
-            <p className="text-lg text-gray-600 mb-6">
-              We're democratizing real estate investment in India by making premium properties accessible to everyone. Our mission is to enable wealth creation through fractional property ownership.
-            </p>
-            <p className="text-lg text-gray-600 mb-6">
-              Founded by real estate and fintech veterans, fractOWN combines deep market expertise with cutting-edge technology to deliver superior investment experiences.
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{(siteContent as any)?.about?.title || "About fractOWN"}</h2>
+            {(siteContent as any)?.about?.paragraphs ? (
+              (siteContent as any).about.paragraphs.map((paragraph: string, index: number) => (
+                <p key={index} className="text-lg text-gray-600 mb-6">{paragraph}</p>
+              ))
+            ) : (
+              <>
+                <p className="text-lg text-gray-600 mb-6">
+                  We're democratizing real estate investment in India by making premium properties accessible to everyone. Our mission is to enable wealth creation through fractional property ownership.
+                </p>
+                <p className="text-lg text-gray-600 mb-6">
+                  Founded by real estate and fintech veterans, fractOWN combines deep market expertise with cutting-edge technology to deliver superior investment experiences.
+                </p>
+              </>
+            )}
             
             <div className="grid grid-cols-2 gap-6 mb-8">
-              {stats.map((stat, index) => (
+              {stats.map((stat: any, index: number) => (
                 <div key={index}>
                   <div className="text-3xl font-bold text-fractown-primary">{stat.value}</div>
                   <div className="text-gray-600">{stat.label}</div>
@@ -37,7 +57,7 @@ export default function AboutSection() {
             </div>
             
             <div className="flex flex-wrap gap-4">
-              {certifications.map((cert, index) => {
+              {certifications.map((cert: any, index: number) => {
                 const IconComponent = cert.icon;
                 return (
                   <div key={index} className="flex items-center bg-gray-50 px-4 py-2 rounded-lg">
