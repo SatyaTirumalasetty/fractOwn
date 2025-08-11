@@ -108,6 +108,21 @@ export const userSessions = pgTable("user_sessions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Content Management Schema
+export const contentSections = pgTable("content_sections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key").notNull().unique(), // e.g., 'footer_risk_disclosure', 'how_it_works_step1'
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  contentType: varchar("content_type").notNull().default("text"), // text, html, markdown
+  section: varchar("section").notNull(), // footer, how_it_works, risk_disclosure
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  metadata: jsonb("metadata").default("{}"), // Additional settings like icons, colors
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertPropertySchema = createInsertSchema(properties).omit({
   id: true,
 });
@@ -180,3 +195,12 @@ export type AdminSession = typeof adminSessions.$inferSelect;
 export type InsertAdminPasswordResetOtp = z.infer<typeof insertAdminPasswordResetOtpSchema>;
 export type AdminPasswordResetOtp = typeof adminPasswordResetOtps.$inferSelect;
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;
+
+export const insertContentSectionSchema = createInsertSchema(contentSections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type ContentSection = typeof contentSections.$inferSelect;
+export type InsertContentSection = z.infer<typeof insertContentSectionSchema>;

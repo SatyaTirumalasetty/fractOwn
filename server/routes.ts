@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers, contentSections, insertContentSectionSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
@@ -867,6 +867,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Failed to fetch contact info:", error);
       res.status(500).json({ message: "Failed to fetch contact information" });
+    }
+  });
+
+  // Content Management API Endpoints
+  
+  // Get all content sections
+  app.get("/api/admin/content", async (req, res) => {
+    try {
+      const { section } = req.query;
+      let query = db.select().from(contentSections);
+      
+      if (section) {
+        query = query.where(eq(contentSections.section, section as string));
+      }
+      
+      const sections = await query.orderBy(contentSections.displayOrder);
+      res.json(sections);
+    } catch (error) {
+      console.error("Failed to fetch content sections:", error);
+      res.status(500).json({ message: "Failed to fetch content sections" });
+    }
+  });
+
+  // Get public content sections (for frontend display)
+  app.get("/api/content", async (req, res) => {
+    try {
+      const { section } = req.query;
+      let query = db.select().from(contentSections).where(eq(contentSections.isActive, true));
+      
+      if (section) {
+        query = query.where(eq(contentSections.section, section as string));
+      }
+      
+      const sections = await query.orderBy(contentSections.displayOrder);
+      res.json(sections);
+    } catch (error) {
+      console.error("Failed to fetch content sections:", error);
+      res.status(500).json({ message: "Failed to fetch content sections" });
+    }
+  });
+
+  // Create content section
+  app.post("/api/admin/content", async (req, res) => {
+    try {
+      const validatedData = insertContentSectionSchema.parse(req.body);
+      
+      const [newSection] = await db.insert(contentSections)
+        .values({
+          ...validatedData,
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      res.status(201).json(newSection);
+    } catch (error) {
+      console.error("Failed to create content section:", error);
+      res.status(500).json({ message: "Failed to create content section" });
+    }
+  });
+
+  // Update content section
+  app.put("/api/admin/content/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertContentSectionSchema.partial().parse(req.body);
+      
+      const [updatedSection] = await db.update(contentSections)
+        .set({
+          ...validatedData,
+          updatedAt: new Date()
+        })
+        .where(eq(contentSections.id, id))
+        .returning();
+      
+      if (!updatedSection) {
+        return res.status(404).json({ message: "Content section not found" });
+      }
+      
+      res.json(updatedSection);
+    } catch (error) {
+      console.error("Failed to update content section:", error);
+      res.status(500).json({ message: "Failed to update content section" });
+    }
+  });
+
+  // Delete content section
+  app.delete("/api/admin/content/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const [deletedSection] = await db.delete(contentSections)
+        .where(eq(contentSections.id, id))
+        .returning();
+      
+      if (!deletedSection) {
+        return res.status(404).json({ message: "Content section not found" });
+      }
+      
+      res.json({ message: "Content section deleted successfully" });
+    } catch (error) {
+      console.error("Failed to delete content section:", error);
+      res.status(500).json({ message: "Failed to delete content section" });
     }
   });
 
