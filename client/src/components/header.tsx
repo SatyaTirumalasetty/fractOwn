@@ -88,7 +88,7 @@ export default function Header() {
               <div className="flex flex-col">
                 <h1 className="text-2xl font-bold flex items-center group-hover:scale-105 transition-transform duration-300">
                   <span className="bg-gradient-to-r from-fractown-primary to-blue-600 bg-clip-text text-transparent mr-1">fract</span>
-                  <span className="bg-blue-900 px-2 py-1 font-bold inline-block rounded-md shadow-lg text-yellow-400">OWN</span>
+                  <span className="px-2 py-1 font-bold inline-block rounded-md shadow-lg text-[#f28718] bg-[#0b1957] pt-[0px] pb-[0px]">OWN</span>
                 </h1>
                 <p className="text-xs text-gray-500 font-medium tracking-wide">Real Estate Investment</p>
               </div>
