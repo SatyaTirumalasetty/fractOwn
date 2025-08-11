@@ -77,7 +77,7 @@ export default function AboutSection() {
     if (!content) return [
       { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
       { value: "15,000+", label: "Happy Investors" },
-      { value: "50+", label: "Properties Listed" },
+      { value: "50\u00A0Cr+", label: "Properties Listed" },
       { value: "8\u00A0Cities", label: "Across India" }
     ];
 
@@ -100,7 +100,7 @@ export default function AboutSection() {
     return stats.length > 0 ? stats : [
       { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
       { value: "15,000+", label: "Happy Investors" },
-      { value: "50+", label: "Properties Listed" },
+      { value: "50\u00A0Cr+", label: "Properties Listed" },
       { value: "8\u00A0Cities", label: "Across India" }
     ];
   };

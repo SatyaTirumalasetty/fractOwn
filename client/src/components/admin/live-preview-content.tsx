@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface LivePreviewContentProps {
   sectionKey: string;
@@ -11,11 +11,15 @@ export default function LivePreviewContent({ sectionKey, content, renderPreview 
 
   useEffect(() => {
     setRefreshKey(prev => prev + 1);
-  }, [content]);
+  }, [content, sectionKey]);
+
+  const previewContent = useMemo(() => {
+    return renderPreview(sectionKey);
+  }, [sectionKey, content, renderPreview, refreshKey]);
 
   return (
-    <div key={`${sectionKey}-${refreshKey}`} className="w-full h-full">
-      {renderPreview(sectionKey)}
+    <div key={`${sectionKey}-${refreshKey}-${content?.slice(0, 50)}`} className="w-full h-full">
+      {previewContent}
     </div>
   );
 }

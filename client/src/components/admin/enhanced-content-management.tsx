@@ -130,7 +130,7 @@ export default function EnhancedContentManagement() {
     const stats = [
       { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
       { value: "15,000+", label: "Happy Investors" },
-      { value: "50+", label: "Properties Listed" },
+      { value: "50\u00A0Cr+", label: "Properties Listed" },
       { value: "8\u00A0Cities", label: "Across India" }
     ];
 
@@ -410,12 +410,8 @@ export default function EnhancedContentManagement() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border rounded-lg p-4 bg-white min-h-[300px]">
-                    <LivePreviewContent 
-                      sectionKey={section.key}
-                      content={content[section.key] !== undefined ? content[section.key] : getContentValue(section.key)}
-                      renderPreview={renderPreview}
-                    />
+                  <div className="border rounded-lg p-4 bg-white min-h-[300px]" key={`${section.key}-${content[section.key] || getContentValue(section.key)}`}>
+                    {renderPreview(section.key)}
                   </div>
                 </CardContent>
               </Card>
