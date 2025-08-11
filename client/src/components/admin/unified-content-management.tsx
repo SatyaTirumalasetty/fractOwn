@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, BarChart3, MessageSquare, FileText, Settings } from "lucide-react";
-import HomePageLiveEditor from "./home-page-live-editor";
+import WYSIWYGHomeEditor from "./wysiwyg-home-editor";
 import StatisticsManager from "./statistics-manager";
 import TestimonialsManager from "./testimonials-manager";
 import EnhancedContentManagement from "./enhanced-content-management";
@@ -23,7 +23,7 @@ export default function UnifiedContentManagement() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="home-editor" className="flex items-center space-x-2">
             <Home className="w-4 h-4" />
-            <span className="hidden sm:inline">Home Page Live</span>
+            <span className="hidden sm:inline">Home Page</span>
           </TabsTrigger>
           <TabsTrigger value="statistics" className="flex items-center space-x-2">
             <BarChart3 className="w-4 h-4" />
@@ -44,7 +44,7 @@ export default function UnifiedContentManagement() {
         </TabsList>
 
         <TabsContent value="home-editor">
-          <HomePageLiveEditor />
+          <WYSIWYGHomeEditor />
         </TabsContent>
 
         <TabsContent value="statistics">
