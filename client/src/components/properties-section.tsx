@@ -68,22 +68,45 @@ export default function PropertiesSection() {
           </p>
         </div>
         
-        {/* Dynamic City Filters */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {availableCities.map((city) => (
-            <Button
-              key={city}
-              onClick={() => handleCityFilter(city)}
-              variant={selectedCity === (city === "All Properties" ? "all" : city.toLowerCase()) ? "default" : "outline"}
-              className={`px-6 py-2 rounded-full text-sm font-medium ${
-                selectedCity === (city === "All Properties" ? "all" : city.toLowerCase())
-                  ? "bg-fractown-primary text-white"
-                  : "bg-white text-gray-600 border hover:text-fractown-primary"
-              }`}
-            >
-              {city}
-            </Button>
-          ))}
+        {/* Modern City Filters */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {availableCities.map((city, index) => {
+            const isSelected = selectedCity === (city === "All Properties" ? "all" : city.toLowerCase());
+            return (
+              <Button
+                key={city}
+                onClick={() => handleCityFilter(city)}
+                variant={isSelected ? "default" : "outline"}
+                className={`group relative px-8 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
+                  isSelected
+                    ? "bg-gradient-to-r from-fractown-primary to-blue-600 text-white shadow-lg shadow-fractown-primary/25 border-0"
+                    : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 hover:border-fractown-primary/50 hover:text-fractown-primary hover:bg-fractown-primary/5"
+                }`}
+                style={{
+                  animationDelay: `${index * 100}ms`
+                }}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {city === "All Properties" && (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  )}
+                  {city !== "All Properties" && (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  )}
+                  {city}
+                </span>
+                {isSelected && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-fractown-primary/20 to-blue-600/20 rounded-2xl blur-xl -z-10 group-hover:blur-2xl transition-all duration-300"></div>
+                )}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Button>
+            );
+          })}
         </div>
 
         {/* Properties Grid */}
