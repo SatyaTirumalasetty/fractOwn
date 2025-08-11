@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, BarChart3, MessageSquare, FileText, Settings } from "lucide-react";
 import WYSIWYGHomeEditor from "./wysiwyg-home-editor";
-import StatisticsManager from "./statistics-manager";
+
 import TestimonialsManager from "./testimonials-manager";
 import EnhancedContentManagement from "./enhanced-content-management";
 
@@ -20,14 +20,10 @@ export default function UnifiedContentManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="home-editor" className="flex items-center space-x-2">
             <Home className="w-4 h-4" />
             <span className="hidden sm:inline">Home Page</span>
-          </TabsTrigger>
-          <TabsTrigger value="statistics" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Statistics</span>
           </TabsTrigger>
           <TabsTrigger value="testimonials" className="flex items-center space-x-2">
             <MessageSquare className="w-4 h-4" />
@@ -47,19 +43,7 @@ export default function UnifiedContentManagement() {
           <WYSIWYGHomeEditor />
         </TabsContent>
 
-        <TabsContent value="statistics">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BarChart3 className="w-5 h-5 mr-2" />
-                Statistics Manager
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <StatisticsManager />
-            </CardContent>
-          </Card>
-        </TabsContent>
+
 
         <TabsContent value="testimonials">
           <Card>

@@ -191,19 +191,29 @@ export default function WYSIWYGHomeEditor() {
     
     if (isEditing) {
       return (
-        <div className="bg-gradient-to-r from-blue-50 to-orange-50 py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-4">
-              <Label>Hero Content</Label>
+        <section className="relative bg-gradient-fractown text-white">
+          <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          ></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div className="max-w-3xl">
+              <Label className="text-white mb-4 block">Hero Content (Main Description)</Label>
               <Textarea
                 value={content || ''}
                 onChange={(e) => updateTempContent('hero_content', e.target.value)}
-                className="min-h-[120px] text-center text-lg"
-                placeholder="Enter hero section content..."
+                className="min-h-[120px] text-black mb-4"
+                placeholder="Enter hero section description text..."
               />
+              <p className="text-sm text-blue-200 mb-4">Note: Title, buttons, and statistics are managed separately in the design.</p>
             </div>
           </div>
-        </div>
+        </section>
       );
     }
     
@@ -218,7 +228,10 @@ export default function WYSIWYGHomeEditor() {
       return (
         <div className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">Our Impact</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">
+              fract<span className="bg-blue-900 px-1 rounded text-orange-500">OWN</span> - Real Estate Investment
+            </h2>
+            <p className="text-center text-gray-600 mb-8">Edit Statistics Below:</p>
             <div className="space-y-4">
               {(stats || []).map((stat: any, index: number) => (
                 <div key={index} className="grid grid-cols-2 gap-4 p-3 border rounded">
@@ -267,12 +280,17 @@ export default function WYSIWYGHomeEditor() {
     return (
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">Our Impact</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            fract<span className="bg-blue-900 px-1 rounded text-orange-500">OWN</span> - Real Estate Investment
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+            {sectionContent['about_content'] || 'Democratizing real estate investment in India through fractional ownership of premium properties.'}
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {(stats || []).map((stat: any, index: number) => (
               <div key={index} className="text-center">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{stat.value}</div>
-                <div className="text-gray-600">{stat.label}</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2" style={{ whiteSpace: 'nowrap', display: 'inline-block' }}>{stat.value}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -407,7 +425,7 @@ export default function WYSIWYGHomeEditor() {
       </CardHeader>
       <CardContent className="p-0">
         <div className="border rounded-lg overflow-hidden bg-white">
-          {/* Hero Section */}
+          {/* Hero Section with Statistics */}
           <EditableWrapper sectionKey="hero_content" title="Hero">
             <EditableHeroSection />
           </EditableWrapper>
