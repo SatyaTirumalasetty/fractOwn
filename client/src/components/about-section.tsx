@@ -21,14 +21,14 @@ export default function AboutSection() {
             <div className="inline-flex items-center px-3 py-1 bg-fractown-primary/10 rounded-full mb-4">
               <span className="text-sm font-medium text-fractown-primary">About fractOWN</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gradient mb-4">
-              Democratizing Real Estate Investment
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              About fractOWN
             </h2>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              We're making premium properties accessible to everyone through fractional ownership. Our mission is to enable wealth creation for all investors.
+              We're democratizing real estate investment in India by making premium properties accessible to everyone. Our mission is to enable wealth creation through fractional property ownership.
             </p>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Founded by real estate and fintech veterans, we combine deep market expertise with cutting-edge technology.
+              Founded by real estate and fintech veterans, fractOWN combines deep market expertise with cutting-edge technology to deliver superior investment experiences.
             </p>
             
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -38,7 +38,7 @@ export default function AboutSection() {
                   className="glass-card p-4 rounded-xl will-change-transform fast-transition hover:rich-shadow"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="text-2xl font-bold text-gradient-accent mb-1">{stat.value}</div>
+                  <div className="text-2xl font-bold text-blue-600 mb-1">{stat.value}</div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
                 </div>
               ))}
