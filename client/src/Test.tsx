@@ -1,4 +1,12 @@
+import React from 'react';
+
 export default function Test() {
+  console.log('Test component is rendering');
+  
+  React.useEffect(() => {
+    console.log('Test component mounted successfully');
+  }, []);
+
   return (
     <div style={{ padding: '20px', fontSize: '24px', color: 'red' }}>
       <h1>Test Component - React is Working!</h1>
