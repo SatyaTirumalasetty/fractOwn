@@ -42,7 +42,8 @@ interface ContentFormData {
 const SECTION_TYPES = [
   { value: "footer", label: "Footer Content", icon: FileText },
   { value: "how_it_works", label: "How It Works", icon: Home },
-  { value: "risk_disclosure", label: "Risk Disclosure", icon: AlertTriangle }
+  { value: "risk_disclosure", label: "Risk Disclosure", icon: AlertTriangle },
+  { value: "about_fractOWN", label: "About fractOWN", icon: FileText }
 ];
 
 const CONTENT_TYPES = [
