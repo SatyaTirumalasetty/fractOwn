@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers, contacts } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ProductionProtection, productionProtectionMiddleware } from "./production-protection";
@@ -1612,7 +1612,7 @@ async function sendPasswordChangeNotification(adminUser: any) {
         },
         statistics: statsStatus
       });
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
