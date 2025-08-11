@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -1410,12 +1410,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all site statistics
   app.get("/api/site-statistics", async (req, res) => {
     try {
-      const result = await db.query(`
+      const result = await db.execute(sql`
         SELECT key, value, label, category, format_type 
         FROM site_statistics 
         ORDER BY category, key
       `);
-      res.json(result.rows);
+      
+      // Handle different result formats from different database drivers
+      const rows = Array.isArray(result) ? result : (result.rows || []);
+      res.json(rows);
     } catch (error) {
       console.error('Failed to fetch site statistics:', error);
       res.status(500).json({ error: 'Failed to fetch site statistics' });
@@ -1428,18 +1431,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { key } = req.params;
       const { value, label } = req.body;
       
-      const result = await db.query(`
+      const result = await db.execute(sql`
         UPDATE site_statistics 
-        SET value = $1, label = $2, updated_at = NOW() 
-        WHERE key = $3 
+        SET value = ${value}, label = ${label || null}, updated_at = NOW() 
+        WHERE key = ${key} 
         RETURNING *
-      `, [value, label || null, key]);
+      `);
       
-      if (result.rows.length === 0) {
+      // Handle different result formats from different database drivers
+      const rows = Array.isArray(result) ? result : (result.rows || []);
+      if (!rows || rows.length === 0) {
         return res.status(404).json({ error: 'Statistic not found' });
       }
       
-      res.json(result.rows[0]);
+      res.json(rows[0]);
     } catch (error) {
       console.error('Failed to update site statistic:', error);
       res.status(500).json({ error: 'Failed to update site statistic' });

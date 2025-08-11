@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +16,20 @@ export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [adminUser, setAdminUser] = useState<any>(null);
+
+  // Fetch site logo from admin settings
+  const { data: siteSettings } = useQuery({
+    queryKey: ['/api/admin/settings/site'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/settings/site');
+      if (!response.ok) return [];
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Get logo URL from settings or fallback
+  const logoUrl = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value || '/attached_assets/logo.jpg';
 
   useEffect(() => {
     const storedUser = localStorage.getItem("adminUser");
@@ -50,13 +65,14 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <img 
-                src="/attached_assets/fractOWN_logo1_1754210267276.jpg" 
+                src={logoUrl} 
                 alt="fractOWN Logo" 
-                className="h-16 w-16 object-contain"
+                className="h-12 w-auto object-contain"
               />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  fractOWN
+                  <span className="text-fractown-primary">fract</span>
+                  <span className="text-white bg-fractown-primary px-1 rounded">OWN</span>
                 </h1>
                 <p className="text-sm text-gray-600">Admin Dashboard</p>
               </div>
