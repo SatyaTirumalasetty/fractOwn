@@ -149,7 +149,7 @@ export default function EnhancedContentManagement() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
             <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-fractown-primary">{stat.value}</div>
+              <div className="text-2xl font-bold text-fractown-primary whitespace-nowrap">{stat.value}</div>
               <div className="text-sm text-gray-600">{stat.label}</div>
             </div>
           ))}

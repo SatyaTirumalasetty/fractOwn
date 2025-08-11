@@ -156,15 +156,15 @@ export default function HeroSection() {
           />
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>
+              <div className="text-3xl font-bold text-fractown-accent whitespace-nowrap">₹10L+</div>
               <div className="text-blue-200">Min Investment</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">8-12%</div>
+              <div className="text-3xl font-bold text-fractown-accent whitespace-nowrap">8-12%</div>
               <div className="text-blue-200">Expected Returns</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-fractown-accent">50+</div>
+              <div className="text-3xl font-bold text-fractown-accent whitespace-nowrap">50+</div>
               <div className="text-blue-200">Properties Available</div>
             </div>
           </div>

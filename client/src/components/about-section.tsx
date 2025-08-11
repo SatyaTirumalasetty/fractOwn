@@ -141,7 +141,7 @@ export default function AboutSection() {
             <div className="grid grid-cols-2 gap-6">
               {stats.map((stat, index) => (
                 <div key={index}>
-                  <div className="text-3xl font-bold text-fractown-primary">{stat.value}</div>
+                  <div className="text-3xl font-bold text-fractown-primary whitespace-nowrap">{stat.value}</div>
                   <div className="text-gray-600">{stat.label}</div>
                 </div>
               ))}
