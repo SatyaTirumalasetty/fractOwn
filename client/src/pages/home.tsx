@@ -29,22 +29,47 @@ export default function Home() {
         <HowItWorks />
         <Testimonials />
         <AboutSection />
-        <div className="py-12 bg-gray-100">
+        <div className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-xl p-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <svg className="w-6 h-6 text-yellow-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                Investment Risk Disclosure
-              </h3>
-              <div className="text-sm text-gray-600 space-y-2">
-                <p>• Real estate investments are subject to market risks and regulatory changes that may affect returns.</p>
-                <p>• Past performance does not guarantee future results. Property values may fluctuate based on market conditions.</p>
-                <p>• Rental income is not guaranteed and may vary based on occupancy rates and market demand.</p>
-                <p>• Fractional ownership investments may have limited liquidity compared to traditional securities.</p>
-                <p>• Please read all investment documents carefully and consult with financial advisors before investing.</p>
-                <p>• fractOWN operates under applicable Indian regulations for real estate investment platforms.</p>
+            <div className="gpu-accelerated bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-2xl border border-gray-100/50 hover:shadow-3xl smooth-transition">
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="flex-shrink-0 p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Investment Risk Disclosure</h3>
+                  <p className="text-gray-600 font-medium">Important information about real estate investment risks</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { icon: "📈", text: "Real estate investments are subject to market risks and regulatory changes that may affect returns." },
+                  { icon: "📊", text: "Past performance does not guarantee future results. Property values may fluctuate based on market conditions." },
+                  { icon: "🏠", text: "Rental income is not guaranteed and may vary based on occupancy rates and market demand." },
+                  { icon: "💧", text: "Fractional ownership investments may have limited liquidity compared to traditional securities." },
+                  { icon: "📋", text: "Please read all investment documents carefully and consult with financial advisors before investing." },
+                  { icon: "⚖️", text: "fractOWN operates under applicable Indian regulations for real estate investment platforms." }
+                ].map((item, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50/50 to-white/50 rounded-2xl border border-gray-100/50 hover:border-gray-200/50 smooth-transition hover:shadow-lg"
+                    style={{
+                      animationDelay: `${index * 100}ms`
+                    }}
+                  >
+                    <span className="text-2xl flex-shrink-0 bg-white rounded-lg p-2 shadow-sm">{item.icon}</span>
+                    <p className="text-gray-700 leading-relaxed font-medium">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+                <p className="text-center text-blue-800 font-semibold">
+                  📞 For detailed risk assessment and investment guidance, please consult with our certified financial advisors
+                </p>
               </div>
             </div>
           </div>
