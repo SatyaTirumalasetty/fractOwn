@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Home, BarChart3, MessageSquare, FileText, Settings } from "lucide-react";
+import { Home, FileText, Settings } from "lucide-react";
 import WYSIWYGHomeEditor from "./wysiwyg-home-editor";
-
-import TestimonialsManager from "./testimonials-manager";
 import EnhancedContentManagement from "./enhanced-content-management";
 
 export default function UnifiedContentManagement() {
   const [activeTab, setActiveTab] = useState("home-editor");
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Website Content Management</h2>
@@ -20,14 +18,10 @@ export default function UnifiedContentManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="home-editor" className="flex items-center space-x-2">
             <Home className="w-4 h-4" />
             <span className="hidden sm:inline">Home Page</span>
-          </TabsTrigger>
-          <TabsTrigger value="testimonials" className="flex items-center space-x-2">
-            <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Testimonials</span>
           </TabsTrigger>
           <TabsTrigger value="content" className="flex items-center space-x-2">
             <FileText className="w-4 h-4" />
@@ -41,22 +35,6 @@ export default function UnifiedContentManagement() {
 
         <TabsContent value="home-editor">
           <WYSIWYGHomeEditor />
-        </TabsContent>
-
-
-
-        <TabsContent value="testimonials">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MessageSquare className="w-5 h-5 mr-2" />
-                Testimonials Manager
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TestimonialsManager />
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="content">

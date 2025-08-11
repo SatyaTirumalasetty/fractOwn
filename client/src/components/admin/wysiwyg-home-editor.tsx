@@ -420,7 +420,7 @@ export default function WYSIWYGHomeEditor() {
           <Badge variant="secondary">WYSIWYG Mode</Badge>
         </CardTitle>
         <p className="text-sm text-gray-600">
-          This is the exact view users see. Hover over any section and click "Edit" to modify content.
+          This is the exact view users see. Hover over any section and click "Edit" to modify content including statistics and testimonials.
         </p>
       </CardHeader>
       <CardContent className="p-0">
