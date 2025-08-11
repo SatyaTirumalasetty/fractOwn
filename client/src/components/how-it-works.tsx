@@ -1,32 +1,50 @@
-import { Search, Calculator, CreditCard, TrendingUp } from "lucide-react";
+import { Search, Calculator, CreditCard, TrendingUp, Shield } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HowItWorks() {
-  const steps = [
-    {
-      icon: Search,
-      title: "1. Browse Properties",
-      description: "Explore vetted properties across major Indian cities with detailed financials and projections",
-      color: "bg-fractown-primary"
-    },
-    {
-      icon: Calculator,
-      title: "2. Calculate Returns",
-      description: "Use our investment calculator to determine your share size and expected returns",
-      color: "bg-fractown-secondary"
-    },
-    {
-      icon: CreditCard,
-      title: "3. Invest Securely",
-      description: "Complete KYC verification and invest with secure payment methods starting from ₹5,000",
-      color: "bg-fractown-accent"
-    },
-    {
-      icon: TrendingUp,
-      title: "4. Earn Returns",
-      description: "Benefit from property appreciation and market growth over time",
-      color: "bg-purple-600"
+  const { data: howItWorksContent = [] } = useQuery<any[]>({
+    queryKey: ["/api/content?section=how_it_works"],
+  });
+
+  const getStepsFromContent = () => {
+    const content = howItWorksContent.find((c: any) => c.key === 'how_it_works_content');
+    if (!content) {
+      return [
+        { icon: Search, title: 'Browse Properties', description: 'Explore vetted properties across major Indian cities with detailed financials and projections', color: "bg-fractown-primary" },
+        { icon: Calculator, title: 'Calculate Returns', description: 'Use our investment calculator to determine your share size and expected returns', color: "bg-fractown-secondary" },
+        { icon: Shield, title: 'Invest Securely', description: 'Complete your investment through our secure platform with bank-grade security', color: "bg-fractown-accent" },
+        { icon: TrendingUp, title: 'Track Performance', description: 'Monitor your investment performance and receive regular updates on property appreciation', color: "bg-purple-600" }
+      ];
     }
-  ];
+
+    const lines = content.content.split('\n').filter((line: string) => line.trim());
+    const steps = [];
+    const icons = [Search, Calculator, Shield, TrendingUp];
+    const colors = ["bg-fractown-primary", "bg-fractown-secondary", "bg-fractown-accent", "bg-purple-600"];
+    let stepIndex = 0;
+
+    for (const line of lines) {
+      if (line.includes(':') && stepIndex < icons.length) {
+        const [title, description] = line.split(':').map(s => s.trim());
+        steps.push({
+          icon: icons[stepIndex],
+          title: `${stepIndex + 1}. ${title}`,
+          description: description || title,
+          color: colors[stepIndex]
+        });
+        stepIndex++;
+      }
+    }
+
+    return steps.length > 0 ? steps : [
+      { icon: Search, title: '1. Browse Properties', description: 'Explore vetted properties', color: "bg-fractown-primary" },
+      { icon: Calculator, title: '2. Calculate Returns', description: 'Determine your returns', color: "bg-fractown-secondary" },
+      { icon: Shield, title: '3. Invest Securely', description: 'Secure investment platform', color: "bg-fractown-accent" },
+      { icon: TrendingUp, title: '4. Track Performance', description: 'Monitor your investments', color: "bg-purple-600" }
+    ];
+  };
+
+  const steps = getStepsFromContent();
 
   const benefits = [
     {

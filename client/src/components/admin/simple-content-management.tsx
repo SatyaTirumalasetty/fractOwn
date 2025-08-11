@@ -24,6 +24,7 @@ interface ContentSection {
 }
 
 const SECTIONS = [
+  { key: 'home_content', label: 'Home Page', icon: Home, description: 'Main page content including statistics and descriptions' },
   { key: 'footer_content', label: 'Footer Content', icon: FileText, description: 'Company description, contact information, and footer text' },
   { key: 'how_it_works_content', label: 'How It Works', icon: Home, description: 'Steps explaining how the platform works' },
   { key: 'risk_disclosure_content', label: 'Risk Disclosure', icon: AlertTriangle, description: 'Investment risk warnings and compliance information' },
@@ -33,7 +34,7 @@ const SECTIONS = [
 export default function SimpleContentManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("footer_content");
+  const [activeTab, setActiveTab] = useState("home_content");
   const [content, setContent] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
 
@@ -116,15 +117,15 @@ export default function SimpleContentManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           {SECTIONS.map((section) => (
             <TabsTrigger 
               key={section.key} 
               value={section.key}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-1"
             >
-              <section.icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{section.label}</span>
+              <section.icon className="h-3 w-3" />
+              <span className="hidden sm:inline text-xs">{section.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -179,6 +180,12 @@ export default function SimpleContentManagement() {
                   </div>
                 )}
                 
+                {section.key === 'home_content' && (
+                  <div className="text-xs text-gray-500 mt-2">
+                    <strong>Format:</strong> Include main heading, description, and statistics. Use "₹" for currency and "+" symbols for statistics.
+                  </div>
+                )}
+
                 {section.key === 'about_fractOWN_content' && (
                   <div className="text-xs text-gray-500 mt-2">
                     <strong>Format:</strong> Include company description, vision (starting with "Vision:"), and mission (starting with "Mission:"). Separate with blank lines.

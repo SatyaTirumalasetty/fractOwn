@@ -6,12 +6,7 @@ export default function AboutSection() {
     queryKey: ["/api/content?section=about_fractOWN"],
   });
 
-  const stats = [
-    { value: "₹500 Cr+", label: "Assets Under Management" },
-    { value: "15,000+", label: "Happy Investors" },
-    { value: "50+", label: "Properties Listed" },
-    { value: "8 Cities", label: "Across India" }
-  ];
+
 
   if (isLoading) {
     return (
@@ -38,10 +33,76 @@ export default function AboutSection() {
     );
   }
 
-  const getContentValue = (key: string, fallback: string) => {
-    const content = aboutContent.find((c: any) => c.key === key);
-    return content?.content || fallback;
+  const { data: homeContent = [] } = useQuery<any[]>({
+    queryKey: ["/api/content?section=home"],
+  });
+
+  const getAboutContent = () => {
+    const content = aboutContent.find((c: any) => c.key === 'about_fractOWN_content');
+    if (!content) return {
+      description: "We're democratizing real estate investment in India by making premium properties accessible to everyone.",
+      vision: "To become India's leading platform for fractional real estate investment.",
+      mission: "To democratize real estate investing by providing transparent, secure, and accessible fractional ownership opportunities."
+    };
+
+    const lines = content.content.split('\n').filter((line: string) => line.trim());
+    let description = '';
+    let vision = '';
+    let mission = '';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.toLowerCase().includes('vision:')) {
+        vision = line.replace(/vision:\s*/i, '').trim();
+      } else if (line.toLowerCase().includes('mission:')) {
+        mission = line.replace(/mission:\s*/i, '').trim();
+      } else if (!line.toLowerCase().includes('vision:') && !line.toLowerCase().includes('mission:') && line.trim()) {
+        description += (description ? ' ' : '') + line.trim();
+      }
+    }
+
+    return {
+      description: description || "We're democratizing real estate investment in India.",
+      vision: vision || "To become India's leading platform for fractional real estate investment.",
+      mission: mission || "To democratize real estate investing through accessible opportunities."
+    };
   };
+
+  const getHomeStats = () => {
+    const content = homeContent.find((c: any) => c.key === 'home_content');
+    if (!content) return [
+      { value: "₹500 Cr+", label: "Assets Under Management" },
+      { value: "15,000+", label: "Happy Investors" },
+      { value: "50+", label: "Properties Listed" },
+      { value: "8 Cities", label: "Across India" }
+    ];
+
+    const lines = content.content.split('\n').filter((line: string) => line.trim());
+    const stats = [];
+    
+    for (const line of lines) {
+      if ((line.includes('₹') || line.includes('+') || line.includes('Cities')) && 
+          !line.toLowerCase().includes('about') && 
+          !line.toLowerCase().includes('statistics:')) {
+        const parts = line.split(' ');
+        if (parts.length >= 2) {
+          const value = parts[0];
+          const label = parts.slice(1).join(' ');
+          stats.push({ value, label });
+        }
+      }
+    }
+
+    return stats.length > 0 ? stats : [
+      { value: "₹500 Cr+", label: "Assets Under Management" },
+      { value: "15,000+", label: "Happy Investors" },
+      { value: "50+", label: "Properties Listed" },
+      { value: "8 Cities", label: "Across India" }
+    ];
+  };
+
+  const aboutInfo = getAboutContent();
+  const stats = getHomeStats();
 
   return (
     <section id="about" className="py-16 bg-white">
@@ -49,26 +110,26 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              {getContentValue('about_fractOWN_title', 'About fractOWN')}
+              About fractOWN
             </h2>
             <p className="text-lg text-gray-600 mb-6">
-              {getContentValue('about_fractOWN_description', 'We\'re democratizing real estate investment in India by making premium properties accessible to everyone.')}
+              {aboutInfo.description}
             </p>
             
-            {getContentValue('about_fractOWN_vision', '') && (
+            {aboutInfo.vision && (
               <div className="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                 <h4 className="font-semibold text-blue-900 mb-2">Our Vision</h4>
                 <p className="text-blue-800">
-                  {getContentValue('about_fractOWN_vision', '')}
+                  {aboutInfo.vision}
                 </p>
               </div>
             )}
             
-            {getContentValue('about_fractOWN_mission', '') && (
+            {aboutInfo.mission && (
               <div className="mb-6 p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
                 <h4 className="font-semibold text-green-900 mb-2">Our Mission</h4>
                 <p className="text-green-800">
-                  {getContentValue('about_fractOWN_mission', '')}
+                  {aboutInfo.mission}
                 </p>
               </div>
             )}
