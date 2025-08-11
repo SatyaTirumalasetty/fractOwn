@@ -972,6 +972,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update content section by key (for dynamic content like testimonials and statistics)
+  app.put("/api/admin/content/:key", async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { content } = req.body;
+      
+      if (!content) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+      
+      // Check if content section exists
+      const existingSection = await db.select()
+        .from(contentSections)
+        .where(eq(contentSections.key, key))
+        .limit(1);
+      
+      if (existingSection.length > 0) {
+        // Update existing section
+        const [updatedSection] = await db.update(contentSections)
+          .set({
+            content,
+            updatedAt: new Date()
+          })
+          .where(eq(contentSections.key, key))
+          .returning();
+        
+        res.json(updatedSection);
+      } else {
+        // Create new section
+        const [newSection] = await db.insert(contentSections)
+          .values({
+            key,
+            content,
+            updatedAt: new Date()
+          })
+          .returning();
+        
+        res.status(201).json(newSection);
+      }
+    } catch (error) {
+      console.error("Failed to update content section:", error);
+      res.status(500).json({ message: "Failed to update content section" });
+    }
+  });
+
   // Admin password reset - request OTP
   app.post("/api/admin/forgot-password", async (req, res) => {
     try {
