@@ -1,8 +1,8 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, contacts, users, insertUserSchema, adminUsers } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcrypt";
@@ -24,35 +24,8 @@ import { sessionCache, propertyCache, configCache } from "./performance/cache";
 import { totpSecurityManager, TOTP_CONFIG } from "./security/totp-security";
 import securePropertiesRouter from "./routes/secureProperties";
 
-
 // Load configuration
-const config = {
-  security: {
-    rateLimit: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100
-    },
-    additionalSecurity: {
-      trustProxy: 1,
-      enableCors: true,
-      corsOptions: {
-        origin: true,
-        credentials: true
-      }
-    }
-  },
-  business: {
-    minInvestment: 1000000 // 10 Lakhs
-  },
-  app: {
-    features: {
-      enableUserRegistration: false,
-      enableEmailNotifications: false,
-      enableSMSNotifications: false,
-      enablePaymentIntegration: false
-    }
-  }
-};
+import config from '../config/app.config.js';
 
 // WebSocket connections for real-time updates - optimized memory management
 let wsConnections: Set<any> = new Set();
@@ -88,31 +61,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     app.use(cors(config.security.additionalSecurity.corsOptions));
   }
 
-  // Security middleware - development-friendly for Vite
-  if (process.env.NODE_ENV === 'production') {
-    app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-          imgSrc: ["'self'", "data:", "https:", "blob:"],
-          connectSrc: ["'self'", "ws:", "wss:", "https:", "http:"],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-          frameAncestors: ["'none'"]
-        }
-      }
-    }));
-  } else {
-    // Development mode - disable CSP for Vite compatibility
-    app.use(helmet({
-      contentSecurityPolicy: false,
-      crossOriginEmbedderPolicy: false
-    }));
-  }
+  // Security middleware - comprehensive protection
+  app.use(helmet(config.security.helmet));
   
   // Enhanced input validation and sanitization
   app.use(validationMiddleware);
@@ -1506,34 +1456,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to delete custom field:', error);
       res.status(500).json({ error: 'Failed to delete custom field' });
-    }
-  });
-
-  // Site content management routes
-  let siteContent: any = null;
-
-  // Get site content
-  app.get('/api/admin/site-content', (req, res) => {
-    try {
-      res.json(siteContent || {});
-    } catch (error) {
-      console.error('Error fetching site content:', error);
-      res.status(500).json({ error: 'Failed to fetch site content' });
-    }
-  });
-
-  // Update site content (admin only)
-  app.post('/api/admin/site-content', requireAuth, (req, res) => {
-    try {
-      siteContent = req.body;
-      res.json({ 
-        success: true, 
-        message: 'Site content updated successfully',
-        content: siteContent 
-      });
-    } catch (error) {
-      console.error('Error updating site content:', error);
-      res.status(500).json({ error: 'Failed to update site content' });
     }
   });
 

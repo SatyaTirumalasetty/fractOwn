@@ -2,11 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
+import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const { user, isAuthenticated, login, logout } = useAuth();
   const [location, setLocation] = useLocation();
 
   // Fetch site logo from admin settings
@@ -45,9 +49,18 @@ export default function Header() {
   };
 
   const handleLoginClick = () => {
-    // Temporary: redirect to admin login
-    setLocation('/admin/login');
+    if (isAuthenticated) {
+      logout();
+    } else {
+      setShowLoginDialog(true);
+    }
     setIsOpen(false);
+  };
+
+  const handleLoginSuccess = (userData: any, sessionToken: string) => {
+    // Update auth state with user data and session token
+    login(userData, sessionToken);
+    setShowLoginDialog(false);
   };
 
   const navItems = [
@@ -71,8 +84,8 @@ export default function Header() {
               />
             </div>
             <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
-              <h1 className="text-2xl font-bold text-[#1E3A8A]">
-                fract <span className="bg-[#1E3A8A] text-[#FF6B35] px-1 rounded">OWN</span>
+              <h1 className="text-2xl font-bold text-gray-900">
+                fractOWN
               </h1>
               <p className="text-sm text-gray-600">Real Estate Investment</p>
             </div>
@@ -96,16 +109,34 @@ export default function Header() {
           </div>
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 hover:text-fractown-primary"
-                onClick={handleLoginClick}
-              >
-                Login
-              </Button>
-              <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => setLocation('/admin/login')}>
-                Admin
-              </Button>
+              {isAuthenticated && user ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-700">
+                    Welcome, <span className="font-medium text-fractown-primary">{user.name}</span>
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-gray-600 hover:text-fractown-primary border-gray-300"
+                    onClick={handleLoginClick}
+                  >
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 hover:text-fractown-primary"
+                  onClick={handleLoginClick}
+                >
+                  Login
+                </Button>
+              )}
+              {!isAuthenticated && (
+                <Button variant="ghost" className="text-gray-600 hover:text-fractown-primary" onClick={() => window.location.href = '/admin/login'}>
+                  Admin
+                </Button>
+              )}
               <Button 
                 className="bg-fractown-primary text-white hover:bg-fractown-primary/90"
                 onClick={() => scrollToSection('properties')}
@@ -133,23 +164,40 @@ export default function Header() {
                     </button>
                   ))}
                   <div className="border-t pt-4 space-y-2">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start"
-                      onClick={handleLoginClick}
-                    >
-                      Login
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-gray-600 hover:text-fractown-primary" 
-                      onClick={() => {
-                        setLocation('/admin/login');
-                        setIsOpen(false);
-                      }}
-                    >
-                      Admin
-                    </Button>
+                    {isAuthenticated && user ? (
+                      <div className="px-3 py-2 space-y-2">
+                        <p className="text-sm text-gray-700">
+                          Welcome, <span className="font-medium text-fractown-primary">{user.name}</span>
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start"
+                          onClick={handleLoginClick}
+                        >
+                          Logout
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={handleLoginClick}
+                      >
+                        Login
+                      </Button>
+                    )}
+                    {!isAuthenticated && (
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-gray-600 hover:text-fractown-primary" 
+                        onClick={() => {
+                          window.location.href = '/admin/login';
+                          setIsOpen(false);
+                        }}
+                      >
+                        Admin
+                      </Button>
+                    )}
                     <Button 
                       className="w-full bg-fractown-primary text-white hover:bg-fractown-primary/90"
                       onClick={() => {
@@ -167,7 +215,11 @@ export default function Header() {
         </div>
       </nav>
 
-
+      <OTPLoginDialog 
+        open={showLoginDialog} 
+        onOpenChange={setShowLoginDialog}
+        onSuccess={handleLoginSuccess}
+      />
     </header>
   );
 }

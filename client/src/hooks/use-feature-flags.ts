@@ -1,21 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
+
+interface FeatureFlags {
+  enableUserRegistration: boolean;
+  enableEmailNotifications: boolean;
+  enableSMSNotifications: boolean;
+  enablePaymentIntegration: boolean;
+}
 
 export function useFeatureFlags() {
-  const { data: features } = useQuery({
+  const { data: features, isLoading } = useQuery<FeatureFlags>({
     queryKey: ['/api/config/features'],
-    queryFn: async () => {
-      const response = await fetch('/api/config/features');
-      if (!response.ok) {
-        return {
-          enableUserRegistration: false,
-          enableEmailNotifications: false,
-          enableSMSNotifications: false,
-          enablePaymentIntegration: false
-        };
-      }
-      return response.json();
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   return {
@@ -23,7 +18,8 @@ export function useFeatureFlags() {
       enableUserRegistration: false,
       enableEmailNotifications: false,
       enableSMSNotifications: false,
-      enablePaymentIntegration: false
-    }
+      enablePaymentIntegration: false,
+    },
+    isLoading,
   };
 }

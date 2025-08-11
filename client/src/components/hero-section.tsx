@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-// Removed OTP login for now
+import { OTPLoginDialog } from "@/components/auth/otp-login-dialog";
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { useQuery } from "@tanstack/react-query";
 
@@ -23,11 +23,6 @@ export default function HeroSection() {
 
   // Get logo URL from settings or fallback
   const logoUrl = siteSettings?.find((setting: any) => setting.key === 'site_logo')?.value || '/attached_assets/image_1754379283931.png';
-
-  // Load site content
-  const { data: siteContent = {} } = useQuery({
-    queryKey: ['/api/admin/site-content'],
-  });
 
   useEffect(() => {
     // Check for stored user and session
@@ -127,11 +122,13 @@ export default function HeroSection() {
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
             <span className="bg-gray-900 bg-opacity-40 text-white px-2 sm:px-3 py-2 rounded-lg inline-block mb-2 whitespace-nowrap">
-              {(siteContent as any)?.hero?.title || "Invest in Premium Real Estate with Fractional Ownership"}
-            </span>
+              Own Premium Properties with
+            </span>{" "}
+            <br />
+            <span className="text-fractown-accent">Fractional Investment</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-blue-100 bg-gray-900 bg-opacity-40 px-6 py-4 rounded-lg">
-            {(siteContent as any)?.hero?.subtitle || "Start your real estate investment journey with as little as ₹10 Lakhs"}
+            Start your real estate journey with as little as ₹10L. Own a fraction of premium properties across India and watch your wealth grow.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button 
@@ -139,7 +136,7 @@ export default function HeroSection() {
               data-testid="button-get-started"
               className="bg-fractown-accent text-gray-900 px-8 py-4 text-lg font-semibold hover:bg-fractown-accent/90 h-auto"
             >
-              {user ? 'Start Investing Today' : features.enableUserRegistration ? ((siteContent as any)?.hero?.ctaText || 'Get Started') : 'Contact Us'}
+              {user ? 'Start Investing Today' : features.enableUserRegistration ? 'Get Started' : 'Contact Us'}
             </Button>
             <Button 
               onClick={handleLogin}
@@ -151,7 +148,12 @@ export default function HeroSection() {
             </Button>
           </div>
 
-          {/* Auth Dialogs - Temporarily removed */}
+          {/* Auth Dialogs */}
+          <OTPLoginDialog 
+            open={showLogin} 
+            onOpenChange={setShowLogin}
+            onSuccess={handleLoginSuccess}
+          />
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-fractown-accent">₹10L+</div>

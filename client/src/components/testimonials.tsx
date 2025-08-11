@@ -1,14 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 export default function Testimonials() {
-  // Load site content
-  const { data: siteContent = {} } = useQuery({
-    queryKey: ['/api/admin/site-content'],
-  });
-
-  const defaultTestimonials = [
+  const testimonials = [
     {
       quote: "I started with just ₹25,000 and my investment has grown significantly. fractOWN made real estate investment so accessible for someone like me.",
       name: "Priya Sharma",
@@ -29,19 +23,16 @@ export default function Testimonials() {
     }
   ];
 
-  // Use dynamic content or fallback to defaults
-  const testimonials = (siteContent as any)?.testimonials?.testimonials || defaultTestimonials;
-
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{(siteContent as any)?.testimonials?.title || "What Our Investors Say"}</h2>
-          <p className="text-xl text-gray-600">{(siteContent as any)?.testimonials?.subtitle || "Real stories from successful fractional property investors"}</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Our Investors Say</h2>
+          <p className="text-xl text-gray-600">Real stories from successful fractional property investors</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial: any, index: number) => (
+          {testimonials.map((testimonial, index) => (
             <Card key={index} className="bg-white rounded-2xl shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">

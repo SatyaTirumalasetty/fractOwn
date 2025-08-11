@@ -8,11 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail, RefreshCw, Download, Search, Filter, TrendingUp, Activity, CheckCircle, Clock, DollarSign, MessageSquare } from "lucide-react";
+import { Upload, Save, RotateCcw, Settings, Palette, FileText, Database, Flag, Shield, Key, Phone, Mail, RefreshCw, Download, Search, Filter, TrendingUp, Activity, CheckCircle, Clock, DollarSign } from "lucide-react";
 import FeatureFlagsTab from "./feature-flags-tab";
 import AdminContactSettings from "./admin-contact-settings";
 import AdminSecurityTab from "./admin-security-tab";
-import { ContentManagementTab } from "./content-management-tab";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -523,7 +522,7 @@ export default function AdminSettingsTab() {
       </div>
 
       <Tabs defaultValue="contact" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="contact" className="flex items-center gap-2">
             <Phone className="h-4 w-4" />
             Contact
@@ -543,10 +542,6 @@ export default function AdminSettingsTab() {
           <TabsTrigger value="content" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Content
-          </TabsTrigger>
-          <TabsTrigger value="siteContent" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Site Content
           </TabsTrigger>
           <TabsTrigger value="features" className="flex items-center gap-2">
             <Flag className="h-4 w-4" />
@@ -1280,10 +1275,6 @@ export default function AdminSettingsTab() {
             <Save className="h-4 w-4 mr-2" />
             Save System Settings
           </Button>
-        </TabsContent>
-
-        <TabsContent value="siteContent" className="space-y-4">
-          <ContentManagementTab />
         </TabsContent>
 
         <TabsContent value="features" className="space-y-4">
