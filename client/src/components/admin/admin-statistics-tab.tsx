@@ -108,6 +108,17 @@ export default function AdminStatisticsTab() {
     );
   }
 
+  if (!statistics || statistics.length === 0) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <p className="text-lg font-medium">No statistics found</p>
+          <p className="text-muted-foreground">Statistics will appear here once they are configured.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
