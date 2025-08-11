@@ -35,9 +35,11 @@ export default function AdminStatisticsTab() {
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
 
   // Fetch site statistics
-  const { data: statistics = [], isLoading } = useQuery<SiteStatistic[]>({
+  const { data: statistics = [], isLoading, error } = useQuery<SiteStatistic[]>({
     queryKey: ["/api/site-statistics"],
   });
+
+  console.log('AdminStatisticsTab render:', { statistics, isLoading, error });
 
   // Update statistic mutation
   const updateStatisticMutation = useMutation({
@@ -99,11 +101,24 @@ export default function AdminStatisticsTab() {
     return acc;
   }, {});
 
+  console.log('Grouped statistics:', groupedStatistics);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading statistics...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <p className="text-lg font-medium text-red-600">Error loading statistics</p>
+          <p className="text-muted-foreground">{error.message || 'Failed to load statistics'}</p>
+        </div>
       </div>
     );
   }
