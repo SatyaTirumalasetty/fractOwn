@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, FileText, Home, AlertTriangle, Info, Eye, Edit, BarChart3 } from "lucide-react";
 import LivePreviewContent from "./live-preview-content";
+import StatisticsManager from "./statistics-manager";
 
 interface ContentSection {
   id: string;
@@ -124,15 +125,44 @@ export default function EnhancedContentManagement() {
     setPreviewMode(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Parse statistics from content
+  const parseStatistics = (content: string) => {
+    try {
+      if (!content) return [];
+      const lines = content.split('\n').filter(line => line.trim());
+      const stats = [];
+      
+      for (const line of lines) {
+        if (line.includes('•') && line.includes(':')) {
+          const parts = line.split(':');
+          if (parts.length >= 2) {
+            const value = parts[0].replace('•', '').trim();
+            const label = parts[1].trim();
+            stats.push({ value, label });
+          }
+        }
+      }
+      
+      return stats.length > 0 ? stats : [
+        { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
+        { value: "15,000+", label: "Happy Investors" },
+        { value: "50\u00A0Cr+", label: "Properties Listed" },
+        { value: "8\u00A0Cities", label: "Across India" }
+      ];
+    } catch {
+      return [
+        { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
+        { value: "15,000+", label: "Happy Investors" },
+        { value: "50\u00A0Cr+", label: "Properties Listed" },
+        { value: "8\u00A0Cities", label: "Across India" }
+      ];
+    }
+  };
+
   // Preview Components
   const renderHomePreview = () => {
     const homeContent = content['home_content'] !== undefined ? content['home_content'] : getContentValue('home_content');
-    const stats = [
-      { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
-      { value: "15,000+", label: "Happy Investors" },
-      { value: "50\u00A0Cr+", label: "Properties Listed" },
-      { value: "8\u00A0Cities", label: "Across India" }
-    ];
+    const stats = parseStatistics(homeContent);
 
     return (
       <div className="space-y-6">
@@ -419,6 +449,11 @@ export default function EnhancedContentManagement() {
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* Statistics Management Section */}
+      <div className="mt-8">
+        <StatisticsManager />
+      </div>
     </div>
   );
 }
