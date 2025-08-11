@@ -8,10 +8,7 @@ export default function AboutSection() {
     { value: "4 Cities", label: "Across India" }
   ];
 
-  const certifications = [
-    { icon: Shield, label: "Regulated Platform" },
-    { icon: Lock, label: "Bank Grade Security" }
-  ];
+  const certifications = [];
 
   return (
     <section id="about" className="py-16 bg-white">
@@ -34,18 +31,7 @@ export default function AboutSection() {
                 </div>
               ))}
             </div>
-            
-            <div className="flex flex-wrap gap-4">
-              {certifications.map((cert, index) => {
-                const IconComponent = cert.icon;
-                return (
-                  <div key={index} className="flex items-center bg-gray-50 px-4 py-2 rounded-lg">
-                    <IconComponent className="text-fractown-primary mr-2 w-5 h-5" />
-                    <span className="text-sm font-medium">{cert.label}</span>
-                  </div>
-                );
-              })}
-            </div>
+
           </div>
           
           <div className="relative">
