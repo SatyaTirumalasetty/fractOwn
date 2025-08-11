@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPropertiesTab } from "@/components/admin/admin-properties-tab";
 import { AdminContactsTab } from "@/components/admin/admin-contacts-tab";
 import AdminSettingsTab from "@/components/admin/admin-settings-tab";
-import SimpleContentManagement from "@/components/admin/simple-content-management";
+import EnhancedContentManagement from "@/components/admin/enhanced-content-management";
 import { EnhancedAdminDashboard } from "@/components/admin/enhanced-admin-dashboard";
 import { LogOut, Building, MessageSquare, Settings, BarChart3, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <SimpleContentManagement />
+                <EnhancedContentManagement />
               </CardContent>
             </Card>
           </TabsContent>
