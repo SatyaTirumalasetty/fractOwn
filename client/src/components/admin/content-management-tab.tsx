@@ -73,12 +73,6 @@ export default function ContentManagementTab() {
   // Fetch content sections
   const { data: contentSections = [], isLoading } = useQuery<ContentSection[]>({
     queryKey: ["/api/admin/content", selectedSection !== "all" ? selectedSection : undefined],
-    queryFn: () => {
-      const url = selectedSection !== "all" 
-        ? `/api/admin/content/${selectedSection}`
-        : "/api/admin/content/";
-      return apiRequest(url);
-    },
   });
 
   // Create content mutation
@@ -206,13 +200,13 @@ export default function ContentManagementTab() {
     return <Icon className="h-4 w-4" />;
   };
 
-  const groupedSections = contentSections.reduce((groups: Record<string, ContentSection[]>, section: ContentSection) => {
+  const groupedSections = (contentSections as ContentSection[]).reduce((groups: Record<string, ContentSection[]>, section: ContentSection) => {
     if (!groups[section.section]) {
       groups[section.section] = [];
     }
     groups[section.section].push(section);
     return groups;
-  }, {});
+  }, {} as Record<string, ContentSection[]>);
 
   if (isLoading) {
     return (
@@ -320,10 +314,10 @@ export default function ContentManagementTab() {
                   <h4 className="text-md font-medium capitalize">
                     {SECTION_TYPES.find(t => t.value === sectionType)?.label || sectionType}
                   </h4>
-                  <Badge variant="secondary">{sections.length}</Badge>
+                  <Badge variant="secondary">{(sections as ContentSection[]).length}</Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {sections.map((section: ContentSection) => (
+                  {(sections as ContentSection[]).map((section: ContentSection) => (
                     <ContentSectionCard
                       key={section.id}
                       section={section}
@@ -340,7 +334,7 @@ export default function ContentManagementTab() {
         ) : (
           // Show specific section content
           <div className="space-y-4">
-            {contentSections.length === 0 ? (
+            {(contentSections as ContentSection[]).length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -358,7 +352,7 @@ export default function ContentManagementTab() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {contentSections.map((section: ContentSection) => (
+                {(contentSections as ContentSection[]).map((section: ContentSection) => (
                   <ContentSectionCard
                     key={section.id}
                     section={section}
