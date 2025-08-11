@@ -77,13 +77,13 @@ export default function PropertiesSection() {
                 key={city}
                 onClick={() => handleCityFilter(city)}
                 variant={isSelected ? "default" : "outline"}
-                className={`group relative px-8 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
+                className={`group relative px-8 py-3 rounded-2xl text-sm font-semibold smooth-transition gpu-accelerated hover:scale-[1.02] hover:shadow-lg ${
                   isSelected
-                    ? "bg-gradient-to-r from-fractown-primary to-blue-600 text-white shadow-lg shadow-fractown-primary/25 border-0"
-                    : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 hover:border-fractown-primary/50 hover:text-fractown-primary hover:bg-fractown-primary/5"
+                    ? "bg-gradient-to-r from-fractown-primary to-blue-600 text-white shadow-lg shadow-fractown-primary/30 border-0"
+                    : "bg-white/95 backdrop-blur-sm text-gray-700 border border-gray-200/80 hover:border-fractown-primary/50 hover:text-fractown-primary hover:bg-fractown-primary/8"
                 }`}
                 style={{
-                  animationDelay: `${index * 100}ms`
+                  animationDelay: `${Math.min(index * 80, 400)}ms`
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
@@ -109,14 +109,14 @@ export default function PropertiesSection() {
           })}
         </div>
 
-        {/* Modern Properties Grid */}
+        {/* Optimized Properties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
           {filteredProperties.map((property, index) => (
             <div
               key={property.id}
               className="animate-fade-in-up"
               style={{
-                animationDelay: `${index * 150}ms`,
+                animationDelay: `${Math.min(index * 100, 600)}ms`,
                 animationFillMode: 'both'
               }}
             >

@@ -56,29 +56,31 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
   };
 
   return (
-    <Card className="group bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-fractown-primary/10 transition-all duration-500 overflow-hidden border border-gray-100/50 hover:border-fractown-primary/20 transform hover:-translate-y-2">
+    <Card className="group gpu-accelerated bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-fractown-primary/15 smooth-transition overflow-hidden border border-gray-100/50 hover:border-fractown-primary/30 smooth-hover">
       <div className="relative overflow-hidden">
         <img
           src={getFirstImage()}
           alt={property.name}
-          className="w-full h-56 object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-56 object-cover smooth-transition group-hover:scale-105"
           onError={(e) => {
             e.currentTarget.src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop';
           }}
+          loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 smooth-transition"></div>
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <Badge className={`${getFundingBadgeColor(property.fundingProgress)} text-white px-3 py-1.5 rounded-full font-medium shadow-lg backdrop-blur-sm`}>
+          <Badge className={`${getFundingBadgeColor(property.fundingProgress)} text-white px-4 py-2 rounded-full font-semibold shadow-xl backdrop-blur-md border border-white/20`}>
             {getFundingBadgeText(property.fundingProgress)}
           </Badge>
-          <div className="bg-white/90 backdrop-blur-sm text-gray-700 text-sm flex items-center px-3 py-1.5 rounded-full shadow-lg">
-            <MapPin className="w-4 h-4 mr-1.5 text-fractown-primary" />
+          <div className="bg-white/95 backdrop-blur-md text-gray-700 text-sm flex items-center px-4 py-2 rounded-full shadow-xl border border-gray-200/50">
+            <MapPin className="w-4 h-4 mr-2 text-fractown-primary" />
             {property.city}, {property.state}
           </div>
         </div>
         {property.fundingProgress >= 90 && (
-          <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 animate-pulse"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/15 to-orange-500/15" style={{animation: 'pulseGlow 2s ease-in-out infinite'}}></div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/5 opacity-0 group-hover:opacity-100 smooth-transition"></div>
       </div>
       
       <CardContent className="p-6 space-y-5">
@@ -111,17 +113,21 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
           </div>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 font-medium">Funding Progress</span>
-            <span className="font-bold text-gray-900">{property.fundingProgress}%</span>
+            <span className="text-gray-600 font-semibold">Funding Progress</span>
+            <span className="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded-lg">{property.fundingProgress}%</span>
           </div>
-          <div className="relative w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div className="relative w-full bg-gray-200/80 rounded-full h-4 overflow-hidden shadow-inner">
             <div
-              className={`h-3 rounded-full transition-all duration-1000 ease-out relative ${getFundingBadgeColor(property.fundingProgress)}`}
+              className={`h-4 rounded-full smooth-transition relative ${getFundingBadgeColor(property.fundingProgress)} shadow-lg`}
               style={{ width: `${property.fundingProgress}%` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent"></div>
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20"
+                style={{ animation: 'shimmer 2s ease-in-out infinite' }}
+              ></div>
             </div>
           </div>
         </div>
@@ -129,13 +135,16 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
         <Button
           onClick={() => onViewDetails(property.id)}
           disabled={isNearlyDone}
-          className={`w-full py-4 font-semibold text-sm uppercase tracking-wide rounded-2xl transition-all duration-300 transform hover:scale-[1.02] ${
+          className={`w-full py-4 font-bold text-sm uppercase tracking-wider rounded-2xl smooth-transition relative overflow-hidden group ${
             isNearlyDone
               ? "bg-gray-400 text-white cursor-not-allowed"
-              : "bg-gradient-to-r from-fractown-primary to-blue-600 text-white hover:from-fractown-primary/90 hover:to-blue-600/90 shadow-lg hover:shadow-xl hover:shadow-fractown-primary/25"
+              : "bg-gradient-to-r from-fractown-primary to-blue-600 text-white hover:from-fractown-primary/95 hover:to-blue-600/95 shadow-lg hover:shadow-2xl hover:shadow-fractown-primary/30"
           }`}
         >
-          {isNearlyDone ? "Nearly Sold Out" : "View Details & Invest"}
+          <span className="relative z-10">{isNearlyDone ? "Nearly Sold Out" : "View Details & Invest"}</span>
+          {!isNearlyDone && (
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] smooth-transition"></div>
+          )}
         </Button>
       </CardContent>
     </Card>
