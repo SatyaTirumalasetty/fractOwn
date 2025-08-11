@@ -20,7 +20,8 @@ export default function HowItWorks() {
       icon: CreditCard,
       title: "3. Invest Securely",
       description: `Complete KYC verification and invest with secure payment methods starting from ${investStepAmount}`,
-      color: "bg-fractown-accent"
+      color: "bg-fractown-accent",
+      highlight: "invest_step_amount"
     },
     {
       icon: TrendingUp,
@@ -32,8 +33,9 @@ export default function HowItWorks() {
 
   const benefits = [
     {
-      title: "Lower Entry Barrier",
-      description: `Start with as little as ${entryBarrier} instead of crores for full property ownership`
+      title: "Lower Entry Barrier", 
+      description: `Start with as little as ${entryBarrier} instead of crores for full property ownership`,
+      highlight: "entry_barrier"
     },
     {
       title: "Diversified Portfolio",
@@ -70,7 +72,14 @@ export default function HowItWorks() {
                   <IconComponent className="text-white text-2xl w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
+                <p className="text-gray-600">
+                  {step.description}
+                  {step.highlight && (
+                    <span className="block text-xs text-fractown-primary font-medium mt-1 bg-yellow-100 px-2 py-1 rounded">
+                      🎯 Admin Control: {step.highlight}
+                    </span>
+                  )}
+                </p>
               </div>
             );
           })}
@@ -90,7 +99,14 @@ export default function HowItWorks() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">{benefit.title}</h4>
-                      <p className="text-gray-600">{benefit.description}</p>
+                      <p className="text-gray-600">
+                        {benefit.description}
+                        {benefit.highlight && (
+                          <span className="block text-xs text-fractown-primary font-medium mt-1 bg-yellow-100 px-2 py-1 rounded">
+                            🎯 Admin Control: {benefit.highlight}
+                          </span>
+                        )}
+                      </p>
                     </div>
                   </li>
                 ))}
