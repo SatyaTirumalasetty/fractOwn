@@ -73,6 +73,12 @@ export default function ContentManagementTab() {
   // Fetch content sections
   const { data: contentSections = [], isLoading } = useQuery<ContentSection[]>({
     queryKey: ["/api/admin/content", selectedSection !== "all" ? selectedSection : undefined],
+    queryFn: () => {
+      const url = selectedSection !== "all" 
+        ? `/api/admin/content/${selectedSection}`
+        : "/api/admin/content/";
+      return apiRequest(url);
+    },
   });
 
   // Create content mutation
@@ -288,8 +294,10 @@ export default function ContentManagementTab() {
       </div>
 
       {/* Content Sections */}
-      <Tabs value={selectedSection === "all" ? "all" : selectedSection} className="space-y-4">
-        <TabsContent value="all" className="space-y-6">
+      <div className="space-y-6">
+        {selectedSection === "all" ? (
+          // Show all sections grouped
+          <div className="space-y-6">
           {Object.keys(groupedSections).length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
@@ -328,8 +336,42 @@ export default function ContentManagementTab() {
               </div>
             ))
           )}
-        </TabsContent>
-      </Tabs>
+          </div>
+        ) : (
+          // Show specific section content
+          <div className="space-y-4">
+            {contentSections.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No {SECTION_TYPES.find(t => t.value === selectedSection)?.label} Content
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Create content sections for this category to start managing dynamic website content.
+                  </p>
+                  <Button onClick={() => setIsCreateOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Content Section
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {contentSections.map((section: ContentSection) => (
+                  <ContentSectionCard
+                    key={section.id}
+                    section={section}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    getSectionIcon={getSectionIcon}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
