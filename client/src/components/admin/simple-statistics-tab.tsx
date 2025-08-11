@@ -33,6 +33,7 @@ export default function SimpleStatisticsTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState("statistics");
 
   // Direct fetch without React Query
   const fetchStatistics = async () => {
@@ -90,6 +91,7 @@ export default function SimpleStatisticsTab() {
   const handleSave = async (statistic: SiteStatistic) => {
     try {
       const newValue = editingValues[statistic.key] || statistic.value;
+      const currentTab = statistic.category; // Remember which tab we're on
       
       const response = await fetch(`/api/admin/site-statistics/${statistic.key}`, {
         method: 'PUT',
@@ -114,6 +116,7 @@ export default function SimpleStatisticsTab() {
       
       setEditingValues({});
       await fetchStatistics(); // Refresh data
+      setActiveTab(currentTab); // Stay on the same tab
       
     } catch (error) {
       toast({
@@ -193,7 +196,7 @@ export default function SimpleStatisticsTab() {
         </Button>
       </div>
 
-      <Tabs defaultValue="statistics" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           {Object.entries(groupedStatistics).map(([category]) => {
             const Icon = categoryIcons[category as keyof typeof categoryIcons] || TrendingUp;
