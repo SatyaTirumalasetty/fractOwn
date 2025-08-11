@@ -34,8 +34,7 @@ export default function Footer() {
       links: [
         "Terms of Service",
         "Privacy Policy",
-        "Risk Disclosure",
-        "SEBI Compliance"
+        "Risk Disclosure"
       ]
     }
   ];
@@ -152,7 +151,7 @@ export default function Footer() {
             <p>&copy; 2024 fractOWN Technologies Pvt. Ltd. All rights reserved.</p>
           </div>
           <div className="mt-4 md:mt-0">
-            <p>SEBI Registration: AIF/XXX/XXXX | CIN: U74999MH2023PTC123456</p>
+            <p>CIN: U74999MH2023PTC123456</p>
           </div>
         </div>
       </div>

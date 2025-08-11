@@ -44,7 +44,7 @@ export default function Home() {
                 <p>• Rental income is not guaranteed and may vary based on occupancy rates and market demand.</p>
                 <p>• Fractional ownership investments may have limited liquidity compared to traditional securities.</p>
                 <p>• Please read all investment documents carefully and consult with financial advisors before investing.</p>
-                <p>• fractOWN is registered with SEBI as an Alternative Investment Fund (AIF) - Registration No: AIF/XXX/XXXX.</p>
+                <p>• fractOWN operates under applicable Indian regulations for real estate investment platforms.</p>
               </div>
             </div>
           </div>

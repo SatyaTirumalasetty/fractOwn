@@ -9,7 +9,7 @@ export default function AboutSection() {
   ];
 
   const certifications = [
-    { icon: Shield, label: "SEBI Registered" },
+    { icon: Shield, label: "Regulated Platform" },
     { icon: Lock, label: "Bank Grade Security" },
     { icon: Award, label: "ISO 27001 Certified" }
   ];
