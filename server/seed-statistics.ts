@@ -103,38 +103,17 @@ async function checkStatisticsTableStatus(): Promise<{exists: boolean, hasData: 
 }
 
 /**
- * Safely seed site statistics with production protection
+ * Production-safe statistics initialization
+ * Only creates missing statistics, never overrides existing ones
  */
-export async function seedSiteStatistics(): Promise<{success: boolean, message: string, environment: string}> {
+export async function initializeSiteStatistics(): Promise<{success: boolean, message: string, environment: string}> {
   const env = ProductionProtection.getEnvironmentInfo();
-  
-  // CRITICAL: Never override production data
-  if (env.isProduction) {
-    console.log("🔒 PRODUCTION STATISTICS PROTECTION ACTIVE");
-    console.log("🛡️ Production statistics will not be overridden");
-    console.log("📊 Existing production values preserved");
-    return {
-      success: false,
-      message: "Statistics seeding blocked to protect production data",
-      environment: "production"
-    };
-  }
   
   try {
     // Check current status
     const status = await checkStatisticsTableStatus();
     
-    if (status.hasData) {
-      console.log(`📊 Site statistics already exist (${status.count} records)`);
-      console.log("✅ Development statistics preserved");
-      return {
-        success: true,
-        message: `Existing statistics preserved (${status.count} records)`,
-        environment: "development"
-      };
-    }
-    
-    // Create table if it doesn't exist
+    // Create table if it doesn't exist (safe in both environments)
     if (!status.exists) {
       await db.execute(sql`
         CREATE TABLE IF NOT EXISTS site_statistics (
@@ -151,32 +130,52 @@ export async function seedSiteStatistics(): Promise<{success: boolean, message: 
       console.log("✅ Site statistics table created");
     }
     
-    // Insert default statistics
+    // Only insert missing statistics (production safe)
+    let insertedCount = 0;
     for (const stat of DEFAULT_SITE_STATISTICS) {
-      await db.execute(sql`
+      const result = await db.execute(sql`
         INSERT INTO site_statistics (key, value, label, category, format_type)
         VALUES (${stat.key}, ${stat.value}, ${stat.label}, ${stat.category}, ${stat.format_type})
         ON CONFLICT (key) DO NOTHING
+        RETURNING key
       `);
+      
+      if (result.rowCount && result.rowCount > 0) {
+        insertedCount++;
+      }
     }
     
-    console.log(`✅ Site statistics seeded with ${DEFAULT_SITE_STATISTICS.length} default values`);
-    console.log("🔧 Statistics can be managed through admin dashboard");
+    const finalStatus = await checkStatisticsTableStatus();
+    
+    if (env.isProduction) {
+      console.log(`🔒 PRODUCTION: Statistics table initialized safely`);
+      console.log(`📊 Total statistics: ${finalStatus.count}, New: ${insertedCount}`);
+    } else {
+      console.log(`🔧 DEVELOPMENT: Statistics initialized`);
+      console.log(`📊 Total statistics: ${finalStatus.count}, New: ${insertedCount}`);
+    }
     
     return {
       success: true,
-      message: `Statistics initialized with ${DEFAULT_SITE_STATISTICS.length} default values`,
-      environment: "development"
+      message: `Statistics initialized: ${finalStatus.count} total, ${insertedCount} new`,
+      environment: env.isProduction ? "production" : "development"
     };
     
   } catch (error) {
-    console.error("❌ Failed to seed site statistics:", error);
+    console.error("❌ Failed to initialize site statistics:", error);
     return {
       success: false,
-      message: `Failed to seed statistics: ${error.message}`,
+      message: `Initialization failed: ${error.message}`,
       environment: env.isProduction ? "production" : "development"
     };
   }
+}
+
+/**
+ * Legacy method - kept for backward compatibility but now redirects to safe initialization
+ */
+export async function seedSiteStatistics(): Promise<{success: boolean, message: string, environment: string}> {
+  return await initializeSiteStatistics();
 }
 
 /**

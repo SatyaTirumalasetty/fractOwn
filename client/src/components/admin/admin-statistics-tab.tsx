@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import InitStatisticsButton from "./init-statistics-button";
 import { Loader2, Save, TrendingUp, Users, Building, MapPin, IndianRupee } from "lucide-react";
 
 interface SiteStatistic {
@@ -126,9 +127,13 @@ export default function AdminStatisticsTab() {
   if (!statistics || statistics.length === 0) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <p className="text-lg font-medium">No statistics found</p>
           <p className="text-muted-foreground">Statistics will appear here once they are configured.</p>
+          <p className="text-sm text-muted-foreground">Debug: Got {statistics?.length || 0} items</p>
+          <div className="flex justify-center">
+            <InitStatisticsButton />
+          </div>
         </div>
       </div>
     );
@@ -143,6 +148,7 @@ export default function AdminStatisticsTab() {
             Manage dynamic content and statistics displayed on the home page
           </p>
         </div>
+        <InitStatisticsButton />
       </div>
 
       <Tabs defaultValue="statistics" className="space-y-6">

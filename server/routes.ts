@@ -1617,11 +1617,35 @@ async function sendPasswordChangeNotification(adminUser: any) {
     }
   });
 
+  // Manual statistics initialization (production-safe)
+  app.post('/api/admin/initialize-statistics', isAuthenticated, async (req, res) => {
+    try {
+      const { initializeSiteStatistics } = await import("./seed-statistics");
+      const result = await initializeSiteStatistics();
+      
+      console.log(`📊 Manual statistics initialization: ${result.message}`);
+      res.json({
+        success: result.success,
+        message: result.message,
+        environment: result.environment,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error initializing statistics:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to initialize statistics",
+        details: error.message 
+      });
+    }
+  });
+
   // =========================== INITIALIZATION ===========================
   
   // Initialize site statistics with production protection
   try {
-    const statsResult = await seedSiteStatistics();
+    const { initializeSiteStatistics } = await import("./seed-statistics");
+    const statsResult = await initializeSiteStatistics();
     console.log(`📊 Statistics initialization: ${statsResult.message}`);
   } catch (error) {
     console.error("Failed to initialize statistics:", error);
