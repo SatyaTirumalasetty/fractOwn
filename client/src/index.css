@@ -161,4 +161,12 @@
 .currency-stat, .stat-value {
   white-space: nowrap !important;
   word-break: keep-all !important;
+  display: inline-block !important;
+}
+
+/* Force all statistic values to stay on one line */
+[class*="text-"][class*="font-bold"]:contains("₹"),
+[class*="text-"][class*="font-bold"]:contains("Cr"),
+[class*="text-"][class*="font-bold"]:contains("+") {
+  white-space: nowrap !important;
 }

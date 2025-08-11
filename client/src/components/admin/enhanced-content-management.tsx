@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, FileText, Home, AlertTriangle, Info, Eye, Edit, BarChart3 } from "lucide-react";
+import LivePreviewContent from "./live-preview-content";
 
 interface ContentSection {
   id: string;
@@ -127,10 +128,10 @@ export default function EnhancedContentManagement() {
   const renderHomePreview = () => {
     const homeContent = content['home_content'] !== undefined ? content['home_content'] : getContentValue('home_content');
     const stats = [
-      { value: "₹500 Cr+", label: "Assets Under Management" },
+      { value: "₹500\u00A0Cr+", label: "Assets Under Management" },
       { value: "15,000+", label: "Happy Investors" },
       { value: "50+", label: "Properties Listed" },
-      { value: "8 Cities", label: "Across India" }
+      { value: "8\u00A0Cities", label: "Across India" }
     ];
 
     return (
@@ -149,7 +150,7 @@ export default function EnhancedContentManagement() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
             <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-fractown-primary whitespace-nowrap">{stat.value}</div>
+              <div className="text-2xl font-bold text-fractown-primary" style={{ whiteSpace: 'nowrap', display: 'inline-block' }}>{stat.value}</div>
               <div className="text-sm text-gray-600">{stat.label}</div>
             </div>
           ))}
@@ -410,7 +411,11 @@ export default function EnhancedContentManagement() {
                 </CardHeader>
                 <CardContent>
                   <div className="border rounded-lg p-4 bg-white min-h-[300px]">
-                    {renderPreview(section.key)}
+                    <LivePreviewContent 
+                      sectionKey={section.key}
+                      content={content[section.key] !== undefined ? content[section.key] : getContentValue(section.key)}
+                      renderPreview={renderPreview}
+                    />
                   </div>
                 </CardContent>
               </Card>
