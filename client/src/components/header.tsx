@@ -85,7 +85,7 @@ export default function Header() {
             </div>
             <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
               <h1 className="text-2xl font-bold text-[#1E3A8A]">
-                fract<span className="bg-[#1E3A8A] text-[#FF6B35] px-1 rounded">OWN</span>
+                fract <span className="bg-[#1E3A8A] text-[#FF6B35] px-1 rounded">OWN</span>
               </h1>
               <p className="text-sm text-gray-600">Real Estate Investment</p>
             </div>
