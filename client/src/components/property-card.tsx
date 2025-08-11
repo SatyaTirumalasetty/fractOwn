@@ -108,7 +108,7 @@ export default function PropertyCard({ property, onViewDetails }: PropertyCardPr
         
         <div className="bg-gradient-to-r from-fractown-secondary/10 to-fractown-accent/10 rounded-2xl p-4 text-center">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Expected Return</div>
-          <div className="font-bold text-2xl bg-gradient-to-r from-fractown-secondary to-fractown-accent bg-clip-text text-transparent">
+          <div className="font-bold text-2xl text-green-600">
             {property.expectedReturn}% p.a.
           </div>
         </div>
