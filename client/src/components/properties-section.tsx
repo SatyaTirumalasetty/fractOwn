@@ -109,14 +109,22 @@ export default function PropertiesSection() {
           })}
         </div>
 
-        {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProperties.map((property) => (
-            <PropertyCard
+        {/* Modern Properties Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+          {filteredProperties.map((property, index) => (
+            <div
               key={property.id}
-              property={property}
-              onViewDetails={handleViewDetails}
-            />
+              className="animate-fade-in-up"
+              style={{
+                animationDelay: `${index * 150}ms`,
+                animationFillMode: 'both'
+              }}
+            >
+              <PropertyCard
+                property={property}
+                onViewDetails={handleViewDetails}
+              />
+            </div>
           ))}
         </div>
         
