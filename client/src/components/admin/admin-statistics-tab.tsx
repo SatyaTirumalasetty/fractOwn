@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,28 +34,12 @@ export default function AdminStatisticsTab() {
   const queryClient = useQueryClient();
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
 
-  // Clear cache on mount and fetch site statistics
-  React.useEffect(() => {
-    queryClient.removeQueries({ queryKey: ["/api/site-statistics"] });
-  }, [queryClient]);
-
-  // Fetch site statistics with timeout handling and forced refresh
+  // Fetch site statistics
   const { data: statistics = [], isLoading, error } = useQuery<SiteStatistic[]>({
     queryKey: ["/api/site-statistics"],
-    retry: 2,
-    staleTime: 0, // Always fresh data
-    refetchOnWindowFocus: true,
-    gcTime: 0, // No caching
-    refetchInterval: false,
-    refetchOnMount: 'always',
   });
 
-  console.log('AdminStatisticsTab render:', { 
-    statisticsCount: statistics?.length || 0, 
-    isLoading, 
-    error: error?.message || 'none', 
-    hasData: !!statistics && statistics.length > 0 
-  });
+  console.log('AdminStatisticsTab render:', { statistics, isLoading, error });
 
   // Update statistic mutation
   const updateStatisticMutation = useMutation({
@@ -63,12 +47,9 @@ export default function AdminStatisticsTab() {
       return apiRequest(`/api/admin/site-statistics/${key}`, "PUT", { value, label });
     },
     onSuccess: () => {
-      // Force refetch with cache invalidation
       queryClient.invalidateQueries({ queryKey: ["/api/site-statistics"] });
-      queryClient.refetchQueries({ queryKey: ["/api/site-statistics"] });
-      queryClient.removeQueries({ queryKey: ["/api/site-statistics"] });
       toast({
-        title: "Success", 
+        title: "Success",
         description: "Statistic updated successfully",
       });
       setEditingValues({});
@@ -142,23 +123,12 @@ export default function AdminStatisticsTab() {
     );
   }
 
-  // Debug: log the current state 
-  console.log('Statistics check:', { 
-    statistics, 
-    statisticsLength: statistics?.length, 
-    isArray: Array.isArray(statistics),
-    statisticsType: typeof statistics 
-  });
-
-  if (!statistics || !Array.isArray(statistics) || statistics.length === 0) {
+  if (!statistics || statistics.length === 0) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <p className="text-lg font-medium">No statistics found</p>
           <p className="text-muted-foreground">Statistics will appear here once they are configured.</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Debug: {statistics ? `Got ${statistics?.length} items` : 'No data received'}
-          </p>
         </div>
       </div>
     );
@@ -177,7 +147,7 @@ export default function AdminStatisticsTab() {
 
       <Tabs defaultValue="statistics" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          {Object.entries(groupedStatistics).length > 0 ? Object.entries(groupedStatistics).map(([category]) => {
+          {Object.entries(groupedStatistics).map(([category]) => {
             const Icon = categoryIcons[category as keyof typeof categoryIcons] || TrendingUp;
             return (
               <TabsTrigger key={category} value={category} className="flex items-center gap-2">
@@ -185,12 +155,7 @@ export default function AdminStatisticsTab() {
                 {categoryLabels[category as keyof typeof categoryLabels] || category}
               </TabsTrigger>
             );
-          }) : (
-            <TabsTrigger value="loading" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Loading...
-            </TabsTrigger>
-          )}
+          })}
         </TabsList>
 
         {Object.entries(groupedStatistics).map(([category, stats]) => {

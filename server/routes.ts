@@ -1409,38 +1409,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // =========================== SITE STATISTICS API ===========================
   
-  // Get all site statistics (no protection needed - this is read-only data)
-  app.get("/api/site-statistics", async (req, res) => {
+  // Get all site statistics with production protection
+  app.get("/api/site-statistics", productionProtectionMiddleware("fetch site statistics"), async (req, res) => {
     try {
-      console.log('📊 Fetching site statistics from database...');
-      
       const result = await db.execute(sql`
         SELECT key, value, label, category, format_type 
         FROM site_statistics 
         ORDER BY category, key
       `);
       
-      console.log('📊 Database result:', { 
-        resultType: typeof result, 
-        isArray: Array.isArray(result),
-        hasRows: !!(result as any).rows,
-        resultKeys: Object.keys(result as any),
-        rawResult: result
-      });
-      
       // Handle different result formats from different database drivers
       const rows = Array.isArray(result) ? result : (result.rows || []);
-      
-      console.log('📊 Final rows to return:', { 
-        rowCount: rows.length, 
-        firstRow: rows[0],
-        allRows: rows
-      });
       
       // Add environment context for debugging (non-sensitive info only)
       const env = ProductionProtection.getEnvironmentInfo();
       res.setHeader('X-Environment', env.isProduction ? 'production' : 'development');
-      res.setHeader('X-Row-Count', rows.length.toString());
       
       res.json(rows);
     } catch (error) {
@@ -1449,7 +1432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update site statistics (admin only) with audit logging (keep protection for writes)
+  // Update site statistics (admin only) with audit logging
   app.put("/api/admin/site-statistics/:key", productionProtectionMiddleware("update site statistics"), async (req, res) => {
     try {
       const { key } = req.params;

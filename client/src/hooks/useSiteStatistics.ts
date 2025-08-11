@@ -11,10 +11,8 @@ interface SiteStatistic {
 export function useSiteStatistics() {
   const { data: statistics = [], isLoading, error } = useQuery<SiteStatistic[]>({
     queryKey: ["/api/site-statistics"],
-    staleTime: 0, // Always fresh data
-    refetchOnWindowFocus: true,
-    gcTime: 0, // No caching
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Transform statistics into an easy-to-use object

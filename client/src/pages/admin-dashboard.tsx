@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPropertiesTab } from "@/components/admin/admin-properties-tab";
 import { AdminContactsTab } from "@/components/admin/admin-contacts-tab";
 import AdminSettingsTab from "@/components/admin/admin-settings-tab";
-import SimpleStatisticsTab from "@/components/admin/simple-statistics-tab";
+import AdminStatisticsTab from "@/components/admin/admin-statistics-tab";
 import { EnhancedAdminDashboard } from "@/components/admin/enhanced-admin-dashboard";
 import { LogOut, Building, MessageSquare, Settings, BarChart3, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="statistics">
-            <SimpleStatisticsTab />
+            <AdminStatisticsTab />
           </TabsContent>
 
           <TabsContent value="settings">
