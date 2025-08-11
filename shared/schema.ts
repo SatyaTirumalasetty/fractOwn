@@ -51,7 +51,7 @@ export const adminSettings = pgTable("admin_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   key: text("key").notNull().unique(), // e.g., 'contact_phone', 'contact_email', 'support_hours'
   value: text("value").notNull(),
-  category: text("category").notNull().default("contact"), // 'contact', 'site', 'business'
+  category: text("category").notNull().default("contact"), // 'contact', 'site', 'business', 'statistics', 'content'
   description: text("description"), // Human-readable description
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),

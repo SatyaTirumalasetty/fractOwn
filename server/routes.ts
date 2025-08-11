@@ -1405,6 +1405,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =========================== SITE STATISTICS API ===========================
+  
+  // Get all site statistics
+  app.get("/api/site-statistics", async (req, res) => {
+    try {
+      const result = await db.query(`
+        SELECT key, value, label, category, format_type 
+        FROM site_statistics 
+        ORDER BY category, key
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Failed to fetch site statistics:', error);
+      res.status(500).json({ error: 'Failed to fetch site statistics' });
+    }
+  });
+
+  // Update site statistics (admin only)
+  app.put("/api/admin/site-statistics/:key", async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { value, label } = req.body;
+      
+      const result = await db.query(`
+        UPDATE site_statistics 
+        SET value = $1, label = $2, updated_at = NOW() 
+        WHERE key = $3 
+        RETURNING *
+      `, [value, label || null, key]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Statistic not found' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Failed to update site statistic:', error);
+      res.status(500).json({ error: 'Failed to update site statistic' });
+    }
+  });
+
   // =========================== CUSTOM FIELDS API ===========================
   
   // Get all custom field definitions

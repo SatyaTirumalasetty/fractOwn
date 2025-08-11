@@ -1,11 +1,14 @@
 import { Shield, Lock, Award } from "lucide-react";
+import { useSiteStatistics } from "@/hooks/useSiteStatistics";
 
 export default function AboutSection() {
+  const { aumValue, investorsCount, propertiesCount, citiesCount, isLoading } = useSiteStatistics();
+  
   const stats = [
-    { value: "₹50 Cr+", label: "Assets Under Management" },
-    { value: "20+", label: "Happy Investors" },
-    { value: "10+", label: "Properties Listed" },
-    { value: "4 Cities", label: "Across India" }
+    { value: aumValue, label: "Assets Under Management" },
+    { value: investorsCount, label: "Happy Investors" },
+    { value: propertiesCount, label: "Properties Listed" },
+    { value: `${citiesCount} Cities`, label: "Across India" }
   ];
 
   const certifications = [];

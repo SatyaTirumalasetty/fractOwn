@@ -1,10 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
+import { useSiteStatistics } from "@/hooks/useSiteStatistics";
 
 export default function Testimonials() {
+  const { testimonialAmount } = useSiteStatistics();
   const testimonials = [
     {
-      quote: "I started with just ₹10 Lakh and my investment has grown significantly. fractOWN made real estate investment so accessible for someone like me.",
+      quote: `I started with just ${testimonialAmount} and my investment has grown significantly. fractOWN made real estate investment so accessible for someone like me.`,
       name: "Priya Sharma",
       role: "Software Engineer, Bangalore",
       image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"

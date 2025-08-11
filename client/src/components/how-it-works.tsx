@@ -1,6 +1,8 @@
 import { Search, Calculator, CreditCard, TrendingUp } from "lucide-react";
+import { useSiteStatistics } from "@/hooks/useSiteStatistics";
 
 export default function HowItWorks() {
+  const { investStepAmount, entryBarrier } = useSiteStatistics();
   const steps = [
     {
       icon: Search,
@@ -17,7 +19,7 @@ export default function HowItWorks() {
     {
       icon: CreditCard,
       title: "3. Invest Securely",
-      description: "Complete KYC verification and invest with secure payment methods starting from ₹10 Lakh",
+      description: `Complete KYC verification and invest with secure payment methods starting from ${investStepAmount}`,
       color: "bg-fractown-accent"
     },
     {
@@ -31,7 +33,7 @@ export default function HowItWorks() {
   const benefits = [
     {
       title: "Lower Entry Barrier",
-      description: "Start with as little as ₹10 Lakh instead of crores for full property ownership"
+      description: `Start with as little as ${entryBarrier} instead of crores for full property ownership`
     },
     {
       title: "Diversified Portfolio",
