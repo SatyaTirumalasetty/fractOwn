@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -26,7 +26,25 @@ import securePropertiesRouter from "./routes/secureProperties";
 
 
 // Load configuration
-import config from '../config/app.config.js';
+const config = {
+  security: {
+    rateLimit: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100
+    },
+    additionalSecurity: {
+      trustProxy: 1,
+      enableCors: true,
+      corsOptions: {
+        origin: true,
+        credentials: true
+      }
+    }
+  },
+  business: {
+    minInvestment: 1000000 // 10 Lakhs
+  }
+};
 
 // WebSocket connections for real-time updates - optimized memory management
 let wsConnections: Set<any> = new Set();
@@ -62,8 +80,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     app.use(cors(config.security.additionalSecurity.corsOptions));
   }
 
-  // Security middleware - comprehensive protection
-  app.use(helmet(config.security.helmet));
+  // Security middleware - development-friendly for Vite
+  if (process.env.NODE_ENV === 'production') {
+    app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          imgSrc: ["'self'", "data:", "https:", "blob:"],
+          connectSrc: ["'self'", "ws:", "wss:", "https:", "http:"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"]
+        }
+      }
+    }));
+  } else {
+    // Development mode - disable CSP for Vite compatibility
+    app.use(helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false
+    }));
+  }
   
   // Enhanced input validation and sanitization
   app.use(validationMiddleware);
