@@ -143,7 +143,8 @@ export default function PropertyDetail() {
             {(() => {
               // Get only image URLs, filtering out document attachments from imageUrls
               const imageUrls = Array.isArray(property.imageUrls) ? property.imageUrls : [];
-              const imageAttachments = (property.attachments || []).filter((att: any) => 
+              const attachments = Array.isArray(property.attachments) ? property.attachments : [];
+              const imageAttachments = attachments.filter((att: any) => 
                 att.type === 'image'
               ).map((att: any) => att.url);
               
@@ -368,7 +369,8 @@ export default function PropertyDetail() {
 
             {/* Property Documents - Only show non-image documents */}
             {(() => {
-              const documents = (property.attachments || []).filter((att: any) => 
+              const attachments = Array.isArray(property.attachments) ? property.attachments : [];
+              const documents = attachments.filter((att: any) => 
                 att.type !== 'image'
               );
               
@@ -590,16 +592,25 @@ export default function PropertyDetail() {
         </div>
 
         {/* Image Carousel Modal */}
-        <PropertyImageCarousel
-          images={[
-            ...(property.imageUrls || []),
-            ...((property.attachments || []).filter((att: any) => att.type.startsWith('image/')).map((att: any) => att.url))
-          ].filter(Boolean)}
-          propertyName={property.name}
-          isOpen={showImageCarousel}
-          onClose={() => setShowImageCarousel(false)}
-          initialIndex={currentImageIndex}
-        />
+        {(() => {
+          const imageUrls = Array.isArray(property.imageUrls) ? property.imageUrls : [];
+          const attachments = Array.isArray(property.attachments) ? property.attachments : [];
+          const imageAttachments = attachments.filter((att: any) => 
+            att.type === 'image'
+          ).map((att: any) => att.url);
+          
+          const allImages = [...imageUrls, ...imageAttachments].filter(Boolean);
+          
+          return (
+            <PropertyImageCarousel
+              images={allImages}
+              propertyName={property.name}
+              isOpen={showImageCarousel}
+              onClose={() => setShowImageCarousel(false)}
+              initialIndex={currentImageIndex}
+            />
+          );
+        })()}
       </main>
 
       <Footer />
