@@ -51,8 +51,20 @@ export const adminSettings = pgTable("admin_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   key: text("key").notNull().unique(), // e.g., 'contact_phone', 'contact_email', 'support_hours'
   value: text("value").notNull(),
-  category: text("category").notNull().default("contact"), // 'contact', 'site', 'business', 'statistics', 'content'
+  category: text("category").notNull().default("contact"), // 'contact', 'site', 'business', 'statistics', 'content', 'homepage'
   description: text("description"), // Human-readable description
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Home page sections toggle configuration
+export const homePageSections = pgTable("home_page_sections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sectionKey: text("section_key").notNull().unique(), // 'hero', 'properties', 'how_it_works', 'testimonials', 'about', 'risk_disclosure', 'contact'
+  sectionName: text("section_name").notNull(), // Display name for admin UI
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  displayOrder: integer("display_order").notNull().default(0), // For ordering sections
+  description: text("description"), // Section description for admin reference
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -156,6 +168,12 @@ export const insertAdminPasswordResetOtpSchema = createInsertSchema(adminPasswor
   createdAt: true,
 });
 
+export const insertHomePageSectionSchema = createInsertSchema(homePageSections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const updatePropertySchema = createInsertSchema(properties).omit({
   id: true,
 }).partial();
@@ -180,3 +198,5 @@ export type AdminSession = typeof adminSessions.$inferSelect;
 export type InsertAdminPasswordResetOtp = z.infer<typeof insertAdminPasswordResetOtpSchema>;
 export type AdminPasswordResetOtp = typeof adminPasswordResetOtps.$inferSelect;
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;
+export type InsertHomePageSection = z.infer<typeof insertHomePageSectionSchema>;
+export type HomePageSection = typeof homePageSections.$inferSelect;

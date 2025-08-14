@@ -8,8 +8,9 @@ import { AdminPropertiesTab } from "@/components/admin/admin-properties-tab";
 import { AdminContactsTab } from "@/components/admin/admin-contacts-tab";
 import AdminSettingsTab from "@/components/admin/admin-settings-tab";
 import AdminStatisticsTab from "@/components/admin/admin-statistics-tab";
+import AdminHomepageSectionsTab from "@/components/admin/admin-homepage-sections-tab";
 import { EnhancedAdminDashboard } from "@/components/admin/enhanced-admin-dashboard";
-import { LogOut, Building, MessageSquare, Settings, BarChart3, TrendingUp } from "lucide-react";
+import { LogOut, Building, MessageSquare, Settings, BarChart3, TrendingUp, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Dashboard</span>
@@ -121,6 +122,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="contacts" className="flex items-center space-x-2">
               <MessageSquare className="h-4 w-4" />
               <span>Contact Inquiries</span>
+            </TabsTrigger>
+            <TabsTrigger value="homepage" className="flex items-center space-x-2">
+              <Home className="h-4 w-4" />
+              <span>Homepage</span>
             </TabsTrigger>
             <TabsTrigger value="statistics" className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4" />
@@ -162,6 +167,10 @@ export default function AdminDashboard() {
                 <AdminContactsTab />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="homepage">
+            <AdminHomepageSectionsTab />
           </TabsContent>
 
           <TabsContent value="statistics">

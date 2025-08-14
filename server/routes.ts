@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers, contacts } from "@shared/schema";
+import { insertContactSchema, insertPropertySchema, updatePropertySchema, insertAdminUserSchema, properties, users, insertUserSchema, adminUsers, contacts, homePageSections, insertHomePageSectionSchema } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ProductionProtection, productionProtectionMiddleware } from "./production-protection";
@@ -869,6 +869,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Failed to fetch contact info:", error);
       res.status(500).json({ message: "Failed to fetch contact information" });
+    }
+  });
+
+  // Home Page Sections Management API endpoints
+  
+  // Get all home page sections (public endpoint for frontend)
+  app.get("/api/homepage-sections", async (req, res) => {
+    try {
+      const sections = await db.select().from(homePageSections).orderBy(sql`display_order ASC`);
+      res.json(sections);
+    } catch (error) {
+      console.error("Failed to fetch homepage sections:", error);
+      res.status(500).json({ message: "Failed to fetch homepage sections" });
+    }
+  });
+
+  // Admin endpoint: Get all home page sections for management
+  app.get("/api/admin/homepage-sections", async (req, res) => {
+    try {
+      const sections = await db.select().from(homePageSections).orderBy(sql`display_order ASC`);
+      res.json(sections);
+    } catch (error) {
+      console.error("Failed to fetch homepage sections:", error);
+      res.status(500).json({ message: "Failed to fetch homepage sections" });
+    }
+  });
+
+  // Admin endpoint: Update home page section
+  app.put("/api/admin/homepage-sections/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isEnabled, displayOrder } = req.body;
+      
+      const updateData: any = {};
+      if (typeof isEnabled === 'boolean') updateData.isEnabled = isEnabled;
+      if (typeof displayOrder === 'number') updateData.displayOrder = displayOrder;
+      if (Object.keys(updateData).length > 0) updateData.updatedAt = new Date();
+      
+      const [updatedSection] = await db
+        .update(homePageSections)
+        .set(updateData)
+        .where(eq(homePageSections.id, id))
+        .returning();
+      
+      if (!updatedSection) {
+        return res.status(404).json({ message: "Section not found" });
+      }
+      
+      broadcastUpdate('HOMEPAGE_SECTION_UPDATED', updatedSection);
+      res.json(updatedSection);
+    } catch (error) {
+      console.error("Failed to update homepage section:", error);
+      res.status(500).json({ message: "Failed to update homepage section" });
+    }
+  });
+
+  // Admin endpoint: Bulk update home page sections
+  app.put("/api/admin/homepage-sections", async (req, res) => {
+    try {
+      const { sections } = req.body;
+      
+      if (!Array.isArray(sections)) {
+        return res.status(400).json({ message: "Sections array is required" });
+      }
+      
+      const updatedSections = [];
+      
+      for (const sectionUpdate of sections) {
+        const { id, isEnabled, displayOrder } = sectionUpdate;
+        
+        const updateData: any = {};
+        if (typeof isEnabled === 'boolean') updateData.isEnabled = isEnabled;
+        if (typeof displayOrder === 'number') updateData.displayOrder = displayOrder;
+        if (Object.keys(updateData).length > 0) updateData.updatedAt = new Date();
+        
+        const [updatedSection] = await db
+          .update(homePageSections)
+          .set(updateData)
+          .where(eq(homePageSections.id, id))
+          .returning();
+        
+        if (updatedSection) {
+          updatedSections.push(updatedSection);
+        }
+      }
+      
+      broadcastUpdate('HOMEPAGE_SECTIONS_UPDATED', updatedSections);
+      res.json(updatedSections);
+    } catch (error) {
+      console.error("Failed to bulk update homepage sections:", error);
+      res.status(500).json({ message: "Failed to update homepage sections" });
     }
   });
 
