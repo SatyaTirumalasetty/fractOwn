@@ -161,10 +161,7 @@ export default function AdminHomepageSectionsTab() {
         displayOrder: section.displayOrder,
       }));
       
-      return apiRequest('/api/admin/homepage-sections', {
-        method: 'PUT',
-        body: { sections: sectionsToUpdate }
-      });
+      return apiRequest('/api/admin/homepage-sections', 'PUT', { sections: sectionsToUpdate });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-sections'] });
